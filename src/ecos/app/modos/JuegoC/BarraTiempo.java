@@ -160,7 +160,7 @@ public class BarraTiempo extends JPanel {
         }
 
         // Texto "Turno de ..."
-        String textoNombre = "Turno de " + nombreJugador;
+        String textoNombre = nombreJugador;
         g2.setFont(fuenteNombre);
         g2.setColor(Paleta.GUINDA);
         FontMetrics fmNombre = g2.getFontMetrics();
