@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.util.function.IntConsumer;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -48,6 +49,7 @@ public class TableroJugador extends JPanel {
 
     private final CartaBoton[] botonesCartas = new CartaBoton[TOTAL_CARTAS];
     private final ImageIcon dorsoIcono;
+    private IntConsumer alClickCarta;
 
     public TableroJugador(String nombre) {
         this.nombre = nombre;
@@ -148,12 +150,18 @@ public class TableroJugador extends JPanel {
     }
 
     /**
-     * Se llama cuando el jugador pulsa una carta.
-     * TODO (lógica): aquí va la lógica del juego. Por ahora solo voltea la
-     * carta con una imagen de prueba para poder ver la interfaz.
+     * Se llama cuando el jugador pulsa una carta. La vista no decide nada:
+     * solo le avisa al controlador (el que se registró con setAlClickCarta).
      */
     private void alHacerClickEnCarta(int indice) {
-        mostrarCarta(indice, indice % TOTAL_PAREJAS);
+        if (alClickCarta != null) {
+            alClickCarta.accept(indice);
+        }
+    }
+
+    /** El controlador se registra aquí para enterarse de qué carta (0 a 35) pulsó el usuario. */
+    public void setAlClickCarta(IntConsumer accion) {
+        this.alClickCarta = accion;
     }
 
     // ---------- Métodos para que la lógica controle la interfaz ----------

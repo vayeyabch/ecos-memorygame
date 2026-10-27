@@ -13,12 +13,19 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
- * Ventana del modo clásico para dos jugadores (SOLO INTERFAZ).
+ * VISTA del modo clásico para dos jugadores (SOLO INTERFAZ).
  *
- * Para la lógica:
- *   setTurno(1) o setTurno(2) muestra solo el tablero de ese jugador, hace
- *   pasar el rectángulo del turno y, al terminar, arranca la barra de tiempo.
- *   getTablero1() / getTablero2() dan acceso a cada tablero.
+ * Esta clase NO guarda el estado del juego ni decide nada: solo muestra lo que
+ * el controlador le pide y le avisa cuando el usuario toca algo (con getters de
+ * botones y setAlClickCarta en cada tablero).
+ *
+ * Métodos para el controlador:
+ *   mostrarTurno(1 o 2)                 -> muestra el tablero de ese jugador, pasa el
+ *                                          rectángulo del turno y arranca la barra
+ *   mostrarVictoria(ganador, i1, i2)    -> abre la ventana de victoria
+ *   getTablero1() / getTablero2()       -> acceso a cada tablero
+ *   getBarraTiempo()                    -> acceso a la barra de tiempo
+ *   getBtn...()                         -> botones, para que el controlador les ponga acción
  */
 public class JuegoClasico extends JFrame {
 
@@ -33,12 +40,19 @@ public class JuegoClasico extends JFrame {
     private final TableroJugador tablero2;
     private final BarraTiempo barraTiempo;
 
+    private final BotonPixel btnAtras;
+    private final BotonPixel btnLuna;
+    private final BotonPixel btnSinBarra;
+
+    // Botones temporales de prueba (el controlador les pone la acción). BORRAR al final.
+    private final JButton btnCambiarTurno = new JButton("Cambiar turno (prueba)");
+    private final JButton btnVictoria = new JButton("Victoria (prueba)");
+    private final JButton btnPar = new JButton("Par encontrado (prueba)");
+
     private final JPanel panelAviso;   // capa transparente que cubre la ventana
     private final JLabel lblAviso;     // el rectángulo que se mueve
     private final Timer temporizadorAnimacion;
     private long inicioAnimacion;
-
-    private int turnoActual = 1;
 
     public JuegoClasico() {
         setTitle("Modo Clasico - 2 Jugadores");
@@ -60,12 +74,12 @@ public class JuegoClasico extends JFrame {
         panelBarra.setBorder(BorderFactory.createEmptyBorder(15, 25, 0, 25));
         panelBarra.add(barraTiempo, BorderLayout.CENTER);
 
-        // ----- Botones de arriba (NO funcionales): Atrás a la izquierda, luna y otro a la derecha -----
-        BotonPixel btnAtras = new BotonPixel("< Atrás", Paleta.DORADO, Paleta.TEXTO_NARANJA, 14f);
+        // ----- Botones de arriba: Atrás a la izquierda, luna y otro a la derecha -----
+        btnAtras = new BotonPixel("< Atrás", Paleta.DORADO, Paleta.TEXTO_NARANJA, 14f);
         btnAtras.setPreferredSize(new Dimension(120, 50));
         btnAtras.setBorder(BorderFactory.createEmptyBorder(4, 14, 8, 14));
-        BotonPixel btnLuna = BotonPixel.crearLuna();
-        BotonPixel btnSinBarra = BotonPixel.crearSinBarra();
+        btnLuna = BotonPixel.crearLuna();
+        btnSinBarra = BotonPixel.crearSinBarra();
 
         JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         panelIzq.setOpaque(false);
@@ -99,31 +113,10 @@ public class JuegoClasico extends JFrame {
         panelCentro.add(panelTableros);
         panelPrincipal.add(panelCentro, BorderLayout.CENTER);
 
-        // BOTÓN TEMPORAL para probar el cambio de turno. BORRAR cuando esté la lógica.
-        JButton btnPrueba = new JButton("Cambiar turno (prueba)");
-        btnPrueba.addActionListener(e -> setTurno(turnoActual == 1 ? 2 : 1));
-
-        // BOTÓN TEMPORAL para probar la ventana de victoria. BORRAR cuando esté la lógica.
-        // Gana el jugador que tenga el turno; los intentos son de ejemplo.
-        JButton btnVictoria = new JButton("Victoria (prueba)");
-        btnVictoria.addActionListener(e -> new VentanaVictoria(this, turnoActual,
-                tablero1.getNombre(), 21, tablero2.getNombre(), 27).setVisible(true));
-
-        // BOTÓN TEMPORAL para probar el par encontrado (cartas 0 y 1 del tablero actual).
-        JButton btnPar = new JButton("Par encontrado (prueba)");
-        btnPar.addActionListener(e -> {
-            TableroJugador t = (turnoActual == 1) ? tablero1 : tablero2;
-            t.mostrarCarta(0, 0);
-            t.mostrarCarta(1, 0);
-            t.marcarPareja(0, 1);
-            Timer quitar = new Timer(1500, ev -> t.quitarMarcaPareja(0, 1));
-            quitar.setRepeats(false);
-            quitar.start();
-        });
-
+        // ----- Botones temporales de prueba, abajo -----
         JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBoton.setOpaque(false);
-        panelBoton.add(btnPrueba);
+        panelBoton.add(btnCambiarTurno);
         panelBoton.add(btnVictoria);
         panelBoton.add(btnPar);
         panelPrincipal.add(panelBoton, BorderLayout.SOUTH);
@@ -152,17 +145,13 @@ public class JuegoClasico extends JFrame {
         temporizadorAnimacion = new Timer(INTERVALO_MS, e -> animarAviso());
 
         setLocationRelativeTo(null);
-        setVisible(true);
-        actualizarTurno(1); // empieza el jugador 1
+        // OJO: la ventana NO se muestra sola; el controlador llama a setVisible(true).
     }
 
-    /** Cambia el turno (1 o 2) y hace pasar el rectángulo por la pantalla. */
-    public void setTurno(int jugador) {
-        actualizarTurno(jugador);
-    }
+    // ---------- Lo que el controlador le pide a la vista ----------
 
-    private void actualizarTurno(int jugador) {
-        turnoActual = jugador;
+    /** Muestra el tablero del jugador (1 o 2) y hace pasar el rectángulo de turno. */
+    public void mostrarTurno(int jugador) {
         tablero1.setTurnoActivo(jugador == 1);
         tablero2.setTurnoActivo(jugador == 2);
 
@@ -186,6 +175,13 @@ public class JuegoClasico extends JFrame {
         inicioAnimacion = System.currentTimeMillis();
         panelAviso.setVisible(true);
         temporizadorAnimacion.start();
+    }
+
+    /** Abre la ventana de victoria (ganador = 1 o 2). */
+    public void mostrarVictoria(int ganador, int intentos1, int intentos2) {
+        new VentanaVictoria(this, ganador,
+                tablero1.getNombre(), intentos1,
+                tablero2.getNombre(), intentos2).setVisible(true);
     }
 
     /** Se ejecuta en cada "cuadro" de la animación: entra, pausa en el centro y sale. */
@@ -223,9 +219,7 @@ public class JuegoClasico extends JFrame {
         }
     }
 
-    public int getTurnoActual() {
-        return turnoActual;
-    }
+    // ---------- Getters (para que el controlador conecte acciones) ----------
 
     public TableroJugador getTablero1() {
         return tablero1;
@@ -237,5 +231,29 @@ public class JuegoClasico extends JFrame {
 
     public BarraTiempo getBarraTiempo() {
         return barraTiempo;
+    }
+
+    public BotonPixel getBtnAtras() {
+        return btnAtras;
+    }
+
+    public BotonPixel getBtnLuna() {
+        return btnLuna;
+    }
+
+    public BotonPixel getBtnSinBarra() {
+        return btnSinBarra;
+    }
+
+    public JButton getBtnCambiarTurno() {
+        return btnCambiarTurno;
+    }
+
+    public JButton getBtnVictoria() {
+        return btnVictoria;
+    }
+
+    public JButton getBtnPar() {
+        return btnPar;
     }
 }
