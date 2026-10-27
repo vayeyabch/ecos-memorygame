@@ -36,7 +36,12 @@ public class BarraTiempo extends JPanel {
 
     // Colores de la barra
     private static final Color VERDE = new Color(122, 189, 122);
+    private static final Color NARANJA = new Color(255, 165, 0);
     private static final Color ROJO = Paleta.ROJO_CARTA;
+
+    // Cuándo cambia de color la barra (en segundos restantes)
+    private static final double SEGUNDOS_NARANJA = 5.0;
+    private static final double SEGUNDOS_ROJO = 2.0;
 
     private final int duracionMs;
     private final Timer temporizador;
@@ -196,8 +201,15 @@ public class BarraTiempo extends JPanel {
             g2.setColor(Paleta.BEIGE);
             g2.fillRect(ix, iy, iw, ih);
 
-            // Color: verde, y rojo cuando queda poco
-            Color base = progreso > 0.3 ? VERDE : ROJO;
+            // Color: verde; naranja a los 5 s; rojo a los 2 s
+            Color base;
+            if (segundosRestantes <= SEGUNDOS_ROJO) {
+                base = ROJO;
+            } else if (segundosRestantes <= SEGUNDOS_NARANJA) {
+                base = NARANJA;
+            } else {
+                base = VERDE;
+            }
             Color claro = mezclar(base, Color.WHITE, 0.25);
             Color oscuro = mezclar(base, Paleta.GUINDA, 0.35);
 

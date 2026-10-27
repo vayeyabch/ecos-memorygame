@@ -5,12 +5,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 /**
  * Tablero de un jugador (SOLO INTERFAZ, sin lógica de juego).
@@ -34,7 +37,16 @@ public class TableroJugador extends JPanel {
     private final JLabel lblIntentos;
     private final JLabel lblTurno;
 
-    private final JButton[] botonesCartas = new JButton[TOTAL_CARTAS];
+    private static final Color AMARILLO_PAREJA = new Color(255, 214, 51);
+    private static final javax.swing.border.Border BORDE_PAREJA =
+            BorderFactory.createLineBorder(AMARILLO_PAREJA, 4);
+    private static final javax.swing.border.Border BORDE_NORMAL =
+            BorderFactory.createLineBorder(Paleta.GUINDA, 2);
+
+    private static final int VOLTEO_MS = 300;   // duración de la animación de voltear
+    private static final int VOLTEO_INTERVALO_MS = 15;
+
+    private final CartaBoton[] botonesCartas = new CartaBoton[TOTAL_CARTAS];
     private final ImageIcon dorsoIcono;
 
     public TableroJugador(String nombre) {
@@ -110,8 +122,8 @@ public class TableroJugador extends JPanel {
     }
 
     // ---------- Creación de un botón ----------
-    private JButton crearBoton(final int index) {
-        JButton boton = new JButton();
+    private CartaBoton crearBoton(final int index) {
+        CartaBoton boton = new CartaBoton();
         boton.setPreferredSize(new Dimension(ANCHO_CARTA, ALTO_CARTA));
 
         if (dorsoIcono != null) {
@@ -127,7 +139,7 @@ public class TableroJugador extends JPanel {
         boton.setContentAreaFilled(false);
         boton.setRolloverEnabled(false);
 
-        boton.setBorder(BorderFactory.createLineBorder(Paleta.GUINDA, 2));
+        boton.setBorder(BORDE_NORMAL);
 
         boton.addActionListener(e -> alHacerClickEnCarta(index));
 
@@ -151,17 +163,85 @@ public class TableroJugador extends JPanel {
         ImageIcon imagenFrente = Utilidades.cargarIconoRedimensionado(
                 "src/recursos/Iconos/icono" + (idImagen + 1) + ".png", ANCHO_CARTA, ALTO_CARTA);
 
-        if (imagenFrente != null) {
-            botonesCartas[indice].setIcon(imagenFrente);
-        } else {
-            botonesCartas[indice].setText(String.valueOf(idImagen + 1));
+        animarVolteo(indice, () -> {
+            if (imagenFrente != null) {
+                botonesCartas[indice].setText("");
+                botonesCartas[indice].setIcon(imagenFrente);
+            } else {
+                botonesCartas[indice].setIcon(null);
+                botonesCartas[indice].setText(String.valueOf(idImagen + 1));
+            }
+        });
+    }
+
+    /** Vuelve a tapar una carta (también con animación). */
+    public void ocultarCarta(int indice) {
+        animarVolteo(indice, () -> {
+            botonesCartas[indice].setText("");
+            botonesCartas[indice].setIcon(dorsoIcono);
+        });
+    }
+
+    /**
+     * Animación de voltear: la carta se encoge a lo ancho hasta quedar de canto,
+     * en ese momento cambia la imagen (cambioDeCara) y se vuelve a abrir.
+     */
+    private void animarVolteo(int indice, Runnable cambioDeCara) {
+        CartaBoton boton = botonesCartas[indice];
+        long inicio = System.currentTimeMillis();
+        boolean[] yaCambio = {false};
+
+        Timer temporizador = new Timer(VOLTEO_INTERVALO_MS, null);
+        temporizador.addActionListener(e -> {
+            double p = Math.min(1.0, (System.currentTimeMillis() - inicio) / (double) VOLTEO_MS);
+
+            if (p < 0.5) {
+                boton.escalaX = 1.0 - p * 2;      // 1 -> 0 (se cierra)
+            } else {
+                if (!yaCambio[0]) {               // a la mitad cambia la cara
+                    cambioDeCara.run();
+                    yaCambio[0] = true;
+                }
+                boton.escalaX = (p - 0.5) * 2;    // 0 -> 1 (se abre)
+            }
+
+            if (p >= 1.0) {
+                boton.escalaX = 1.0;
+                temporizador.stop();
+            }
+            boton.repaint();
+        });
+        temporizador.start();
+    }
+
+    /** Botón que se dibuja encogido a lo ancho para simular el giro de la carta. */
+    private static class CartaBoton extends JButton {
+        double escalaX = 1.0;
+
+        @Override
+        public void paint(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            double centro = getWidth() / 2.0;
+            g2.translate(centro, 0);
+            g2.scale(Math.max(0.02, escalaX), 1.0);
+            g2.translate(-centro, 0);
+            super.paint(g2);
+            g2.dispose();
         }
     }
 
-    /** Vuelve a tapar una carta. */
-    public void ocultarCarta(int indice) {
-        botonesCartas[indice].setText("");
-        botonesCartas[indice].setIcon(dorsoIcono);
+    /**
+     * Par encontrado: ilumina las dos cartas con borde amarillo.
+     * Llama a quitarMarcaPareja(a, b) para volver al borde normal.
+     */
+    public void marcarPareja(int indiceA, int indiceB) {
+        botonesCartas[indiceA].setBorder(BORDE_PAREJA);
+        botonesCartas[indiceB].setBorder(BORDE_PAREJA);
+    }
+
+    public void quitarMarcaPareja(int indiceA, int indiceB) {
+        botonesCartas[indiceA].setBorder(BORDE_NORMAL);
+        botonesCartas[indiceB].setBorder(BORDE_NORMAL);
     }
 
     public void setParejas(int parejas) {

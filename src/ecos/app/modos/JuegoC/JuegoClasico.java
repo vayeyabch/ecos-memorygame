@@ -59,7 +59,34 @@ public class JuegoClasico extends JFrame {
         panelBarra.setOpaque(false);
         panelBarra.setBorder(BorderFactory.createEmptyBorder(15, 25, 0, 25));
         panelBarra.add(barraTiempo, BorderLayout.CENTER);
-        panelPrincipal.add(panelBarra, BorderLayout.NORTH);
+
+        // ----- Botones de arriba (NO funcionales): Atrás a la izquierda, luna y otro a la derecha -----
+        BotonPixel btnAtras = new BotonPixel("< Atrás", Paleta.DORADO, Paleta.TEXTO_NARANJA, 14f);
+        btnAtras.setPreferredSize(new Dimension(120, 50));
+        btnAtras.setBorder(BorderFactory.createEmptyBorder(4, 14, 8, 14));
+        BotonPixel btnLuna = BotonPixel.crearLuna();
+        BotonPixel btnSinBarra = BotonPixel.crearSinBarra();
+
+        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        panelIzq.setOpaque(false);
+        panelIzq.add(btnAtras);
+
+        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        panelDer.setOpaque(false);
+        panelDer.add(btnLuna);
+        panelDer.add(btnSinBarra);
+
+        JPanel panelBotonesArriba = new JPanel(new BorderLayout());
+        panelBotonesArriba.setOpaque(false);
+        panelBotonesArriba.setBorder(BorderFactory.createEmptyBorder(15, 25, 0, 25));
+        panelBotonesArriba.add(panelIzq, BorderLayout.WEST);
+        panelBotonesArriba.add(panelDer, BorderLayout.EAST);
+
+        JPanel panelNorte = new JPanel(new BorderLayout());
+        panelNorte.setOpaque(false);
+        panelNorte.add(panelBotonesArriba, BorderLayout.NORTH);
+        panelNorte.add(panelBarra, BorderLayout.CENTER);
+        panelPrincipal.add(panelNorte, BorderLayout.NORTH);
 
         // ----- Los dos tableros (solo se ve uno a la vez), centrados -----
         JPanel panelTableros = new JPanel(new FlowLayout(FlowLayout.CENTER, 60, 0));
@@ -76,9 +103,29 @@ public class JuegoClasico extends JFrame {
         JButton btnPrueba = new JButton("Cambiar turno (prueba)");
         btnPrueba.addActionListener(e -> setTurno(turnoActual == 1 ? 2 : 1));
 
+        // BOTÓN TEMPORAL para probar la ventana de victoria. BORRAR cuando esté la lógica.
+        // Gana el jugador que tenga el turno; los intentos son de ejemplo.
+        JButton btnVictoria = new JButton("Victoria (prueba)");
+        btnVictoria.addActionListener(e -> new VentanaVictoria(this, turnoActual,
+                tablero1.getNombre(), 21, tablero2.getNombre(), 27).setVisible(true));
+
+        // BOTÓN TEMPORAL para probar el par encontrado (cartas 0 y 1 del tablero actual).
+        JButton btnPar = new JButton("Par encontrado (prueba)");
+        btnPar.addActionListener(e -> {
+            TableroJugador t = (turnoActual == 1) ? tablero1 : tablero2;
+            t.mostrarCarta(0, 0);
+            t.mostrarCarta(1, 0);
+            t.marcarPareja(0, 1);
+            Timer quitar = new Timer(1500, ev -> t.quitarMarcaPareja(0, 1));
+            quitar.setRepeats(false);
+            quitar.start();
+        });
+
         JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBoton.setOpaque(false);
         panelBoton.add(btnPrueba);
+        panelBoton.add(btnVictoria);
+        panelBoton.add(btnPar);
         panelPrincipal.add(panelBoton, BorderLayout.SOUTH);
 
         add(panelPrincipal);
