@@ -1,0 +1,20 @@
+AUDIO DE ECOS (formato WAV, 22050 Hz, mono). Java lo lee con javax.sound.sampled sin librerias extra.
+Coloquen esta carpeta en: src/recursos/audio/
+
+MUSICA (cada una es un lazo, se repite con Clip.loop):
+  intro.wav            -> PantallaIntro            (tranquila, estilo Frutiger Aero)
+  inicio.wav           -> PantallaInicio           (chill, suave)
+  acceso.wav           -> PantallaAcceso           (chill con toques digitales)
+  menu.wav             -> PantallaMenu, reglas     (chill con ritmo suave)
+  clasico.wav          -> PantallaClasico          (rock 8 bits, 134 bpm, riff repetitivo)
+  clasico_urgente.wav  -> Clasico cuando quedan 3 s o menos (158 bpm)
+  patrones.wav         -> PantallaPatrones         (rock 8 bits mas suave, 118 bpm)
+  premios.wav          -> PantallaPremios          (chill brillante)
+
+EFECTOS:
+  voltear_carta, par_encontrado, fallo, cambio_turno, ojo_espia, moneda, comprar, sin_monedas,
+  tick, alerta_tiempo, cuenta_regresiva, racha, click, teclear, escaneo, registro_ok,
+  cambio_tema, musica_on_off, victoria, derrota, nivel_superado, empezar_patron, error
+  patron_casilla_01 .. patron_casilla_16  -> una nota distinta por cada casilla de la matriz de patrones
+
+Todos los sonidos son estilo 8 bits hechos para el proyecto. Se pueden cambiar por otros WAV con el mismo nombre.
