@@ -5,6 +5,7 @@ import ecos.app.Tema;
 import ecos.componentes.VisorEscaner;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
+import ecos.componentes.DesfileMascotas;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,10 +38,7 @@ public class pantallaAcceso extends Pantalla {
     public pantallaAcceso() {
         super("acceso", "acceso");
         setLayout(new BorderLayout());
-
-        JLabel desfile = new JLabel(Sprites.gif("gifs/mascotas_saltando.gif"), SwingConstants.CENTER);
-        desfile.setBorder(BorderFactory.createEmptyBorder(16, 0, 0, 0));
-        add(desfile, BorderLayout.NORTH);
+        add(new DesfileMascotas(), BorderLayout.NORTH);
 
         tarjeta.add(visor, BorderLayout.WEST);
         tarjeta.add(crearFormulario(), BorderLayout.CENTER);

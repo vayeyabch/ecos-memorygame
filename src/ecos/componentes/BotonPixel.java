@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import java.util.function.BiConsumer;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import ecos.app.Utilidades;
 
 /**
  * Botón con estilo pixel (marco guinda, franja clara arriba y sombra abajo).
@@ -24,7 +25,7 @@ public class BotonPixel extends JButton {
     public BotonPixel(String texto, Color base, Color colorTexto, float tamanoFuente) {
         super(texto);
         this.base = base;
-        setFont(Utilidades.cargarFuentePixel(tamanoFuente).deriveFont(Font.BOLD));
+        setFont(new Font(Font.MONOSPACED, Font.BOLD, Math.round(tamanoFuente)));
         setForeground(colorTexto);
         configurar();
         setBorder(BorderFactory.createEmptyBorder(10, 22, 16, 22));
