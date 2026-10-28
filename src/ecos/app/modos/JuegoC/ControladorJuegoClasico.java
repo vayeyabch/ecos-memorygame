@@ -48,7 +48,7 @@ public class ControladorJuegoClasico {
         vista.mostrarTurno(turnoActual);
     }
 
-    /** TODO (modelo): aquí va la lógica real. Por ahora solo voltea la carta de prueba. */
+    // TODO (modelo): aquí va la lógica real. Por ahora solo voltea la carta de prueba. 
     private void alPulsarCarta(int jugador, int indice) {
         vista.mostrarCarta(jugador, indice, indice % TableroJugador.TOTAL_PAREJAS);
     }
