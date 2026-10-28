@@ -2,13 +2,11 @@ package ecos.pantallas;
 
 import ecos.app.Pantalla;
 import ecos.app.Tema;
+import ecos.componentes.DesfileMascotas;
 import ecos.componentes.VisorEscaner;
 import ecos.recursos.Sonido;
-import ecos.recursos.Sprites;
-import ecos.componentes.DesfileMascotas;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class pantallaAcceso extends Pantalla {
 

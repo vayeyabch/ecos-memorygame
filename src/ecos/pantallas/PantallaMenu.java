@@ -1,9 +1,13 @@
 package ecos.pantallas;
 
 import ecos.app.Pantalla;
+<<<<<<< HEAD
 import ecos.app.modos.JuegoC.BotonPixel;
 import ecos.app.modos.JuegoC.Paleta;
 import ecos.componentes.TarjetaModo;
+=======
+import ecos.componentes.BotonMenu;
+>>>>>>> origin/main
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
 import java.awt.FlowLayout;
@@ -11,7 +15,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -66,5 +72,48 @@ public class PantallaMenu extends Pantalla {
         c.gridy = 0; add(logo, c);
         c.gridy = 1; add(tarjetas, c);
         c.gridy = 2; add(premios, c);
+    }
+
+    private static class TarjetaModo extends JPanel {
+        private Runnable alJugar = () -> {};
+        private Runnable alVerReglas = () -> {};
+
+        TarjetaModo(String titulo, String descripcion, Image mascota) {
+            setLayout(new GridBagLayout());
+            setOpaque(false);
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(115, 145, 105), 2),
+                    BorderFactory.createEmptyBorder(12, 16, 12, 16)));
+
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.insets = new Insets(5, 5, 5, 5);
+            c.gridy = 0;
+            add(new JLabel(titulo), c);
+            c.gridy = 1;
+            add(new JLabel(new ImageIcon(Sprites.escalar(mascota, 110, 110))), c);
+            c.gridy = 2;
+            add(new JLabel("<html><div style='text-align:center;width:260px'>"
+                    + descripcion + "</div></html>"), c);
+
+            JPanel acciones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+            acciones.setOpaque(false);
+            JButton jugar = new JButton("Jugar");
+            JButton reglas = new JButton("Reglas");
+            jugar.addActionListener(e -> alJugar.run());
+            reglas.addActionListener(e -> alVerReglas.run());
+            acciones.add(jugar);
+            acciones.add(reglas);
+            c.gridy = 3;
+            add(acciones, c);
+        }
+
+        void setAlJugar(Runnable accion) {
+            alJugar = accion;
+        }
+
+        void setAlVerReglas(Runnable accion) {
+            alVerReglas = accion;
+        }
     }
 }
