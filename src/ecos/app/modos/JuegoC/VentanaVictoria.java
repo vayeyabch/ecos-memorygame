@@ -6,12 +6,12 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Window;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -30,9 +30,9 @@ public class VentanaVictoria extends JDialog {
     /**
      * @param ganador 1 o 2
      */
-    public VentanaVictoria(JFrame padre, int ganador,
+    public VentanaVictoria(Window padre, int ganador,
             String nombre1, int intentos1, String nombre2, int intentos2) {
-        super(padre, true);
+        super(padre, ModalityType.APPLICATION_MODAL);
         setUndecorated(true);
 
         String nombreGanador = (ganador == 1) ? nombre1 : nombre2;
