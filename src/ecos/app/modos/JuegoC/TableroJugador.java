@@ -30,7 +30,9 @@ public class TableroJugador extends JPanel {
     public static final int ANCHO_CARTA = 70;
     public static final int ALTO_CARTA = 70;
     public static final int TOTAL_PAREJAS = 18;
-    public static final int TOTAL_CARTAS = 36;
+    public static final int FILAS = 6;
+    public static final int COLUMNAS = 6;
+    public static final int TOTAL_CARTAS = FILAS * COLUMNAS;
 
     private final String nombre;
 
@@ -47,7 +49,8 @@ public class TableroJugador extends JPanel {
     private static final int VOLTEO_MS = 300;   // duración de la animación de voltear
     private static final int VOLTEO_INTERVALO_MS = 15;
 
-    private final CartaBoton[] botonesCartas = new CartaBoton[TOTAL_CARTAS];
+    // El tablero es una matriz de 6 x 6: botonesCartas[fila][columna]
+    private final CartaBoton[][] botonesCartas = new CartaBoton[FILAS][COLUMNAS];
     private final ImageIcon dorsoIcono;
     private IntConsumer alClickCarta;
 
@@ -90,7 +93,7 @@ public class TableroJugador extends JPanel {
         add(panelNorte, BorderLayout.NORTH);
 
         // ----- Cuadrícula de cartas, con marco guinda -----
-        JPanel panelCuadricula = new JPanel(new GridLayout(6, 6, 6, 6));
+        JPanel panelCuadricula = new JPanel(new GridLayout(FILAS, COLUMNAS, 6, 6));
         panelCuadricula.setBackground(Paleta.BEIGE);
         panelCuadricula.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createCompoundBorder(
@@ -98,8 +101,10 @@ public class TableroJugador extends JPanel {
                         BorderFactory.createLineBorder(Color.WHITE, 3)),
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)));
 
-        for (int i = 0; i < TOTAL_CARTAS; i++) {
-            panelCuadricula.add(crearBoton(i));
+        for (int fila = 0; fila < FILAS; fila++) {
+            for (int columna = 0; columna < COLUMNAS; columna++) {
+                panelCuadricula.add(crearBoton(fila, columna));
+            }
         }
 
         JPanel panelContenedor = new JPanel(new BorderLayout());
@@ -124,7 +129,8 @@ public class TableroJugador extends JPanel {
     }
 
     // ---------- Creación de un botón ----------
-    private CartaBoton crearBoton(final int index) {
+    private CartaBoton crearBoton(final int fila, final int columna) {
+        final int index = fila * COLUMNAS + columna; // número de carta (0 a 35)
         CartaBoton boton = new CartaBoton();
         boton.setPreferredSize(new Dimension(ANCHO_CARTA, ALTO_CARTA));
 
@@ -145,7 +151,7 @@ public class TableroJugador extends JPanel {
 
         boton.addActionListener(e -> alHacerClickEnCarta(index));
 
-        botonesCartas[index] = boton;
+        botonesCartas[fila][columna] = boton;
         return boton;
     }
 
@@ -157,6 +163,11 @@ public class TableroJugador extends JPanel {
         if (alClickCarta != null) {
             alClickCarta.accept(indice);
         }
+    }
+
+    /** Carta de la matriz a partir de su número (0 a 35): fila = i / 6, columna = i % 6. */
+    private CartaBoton carta(int indice) {
+        return botonesCartas[indice / COLUMNAS][indice % COLUMNAS];
     }
 
     /** El controlador se registra aquí para enterarse de qué carta (0 a 35) pulsó el usuario. */
@@ -173,11 +184,11 @@ public class TableroJugador extends JPanel {
 
         animarVolteo(indice, () -> {
             if (imagenFrente != null) {
-                botonesCartas[indice].setText("");
-                botonesCartas[indice].setIcon(imagenFrente);
+                carta(indice).setText("");
+                carta(indice).setIcon(imagenFrente);
             } else {
-                botonesCartas[indice].setIcon(null);
-                botonesCartas[indice].setText(String.valueOf(idImagen + 1));
+                carta(indice).setIcon(null);
+                carta(indice).setText(String.valueOf(idImagen + 1));
             }
         });
     }
@@ -185,8 +196,8 @@ public class TableroJugador extends JPanel {
     /** Vuelve a tapar una carta (también con animación). */
     public void ocultarCarta(int indice) {
         animarVolteo(indice, () -> {
-            botonesCartas[indice].setText("");
-            botonesCartas[indice].setIcon(dorsoIcono);
+            carta(indice).setText("");
+            carta(indice).setIcon(dorsoIcono);
         });
     }
 
@@ -195,7 +206,7 @@ public class TableroJugador extends JPanel {
      * en ese momento cambia la imagen (cambioDeCara) y se vuelve a abrir.
      */
     private void animarVolteo(int indice, Runnable cambioDeCara) {
-        CartaBoton boton = botonesCartas[indice];
+        CartaBoton boton = carta(indice);
         long inicio = System.currentTimeMillis();
         boolean[] yaCambio = {false};
 
@@ -243,13 +254,13 @@ public class TableroJugador extends JPanel {
      * Llama a quitarMarcaPareja(a, b) para volver al borde normal.
      */
     public void marcarPareja(int indiceA, int indiceB) {
-        botonesCartas[indiceA].setBorder(BORDE_PAREJA);
-        botonesCartas[indiceB].setBorder(BORDE_PAREJA);
+        carta(indiceA).setBorder(BORDE_PAREJA);
+        carta(indiceB).setBorder(BORDE_PAREJA);
     }
 
     public void quitarMarcaPareja(int indiceA, int indiceB) {
-        botonesCartas[indiceA].setBorder(BORDE_NORMAL);
-        botonesCartas[indiceB].setBorder(BORDE_NORMAL);
+        carta(indiceA).setBorder(BORDE_NORMAL);
+        carta(indiceB).setBorder(BORDE_NORMAL);
     }
 
     public void setParejas(int parejas) {

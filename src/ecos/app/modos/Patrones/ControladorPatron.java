@@ -92,20 +92,4 @@ public class ControladorPatron {
         temporizador.setRepeats(false);
         temporizador.start();
     }
-
-    public static void main(String[] args) {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            PantallaPatron pantalla = new PantallaPatron();
-            ControladorPatron controlador = new ControladorPatron(pantalla);
- 
-            javax.swing.JFrame ventana = new javax.swing.JFrame("Patrones");
-            ventana.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-            ventana.setSize(1100, 1000);
-            ventana.setContentPane(pantalla);
-            ventana.setLocationRelativeTo(null);
-            ventana.setVisible(true);
- 
-            controlador.iniciar();
-        });
-    }
 }

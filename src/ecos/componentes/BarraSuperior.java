@@ -18,7 +18,7 @@ import javax.swing.JPanel;
  */
 public class BarraSuperior extends JPanel {
 
-    private final BotonPixel atras = new BotonPixel("< Atrás", Paleta.DORADO, Paleta.TEXTO_NARANJA, 14f);
+    private final BotonPixel atras = new BotonPixel(Paleta.DORADO, "< Atrás");
     private final BotonPixel tema = BotonPixel.crearLuna();
     private final BotonPixel musica = BotonPixel.crearSinBarra();
     private final Navegador navegador;

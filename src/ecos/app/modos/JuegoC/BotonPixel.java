@@ -21,11 +21,11 @@ public class BotonPixel extends JButton {
     private BiConsumer<Graphics2D, Rectangle> dibujoIcono = null;
 
     /** Botón de texto. */
-    public BotonPixel(String texto, Color base, Color colorTexto, float tamanoFuente) {
+    public BotonPixel(Color base, String texto) {
         super(texto);
         this.base = base;
-        setFont(Utilidades.cargarFuentePixel(tamanoFuente).deriveFont(Font.BOLD));
-        setForeground(colorTexto);
+        setFont(Utilidades.cargarFuentePixel(18).deriveFont(Font.BOLD));
+        setForeground(Paleta.GUINDA);
         configurar();
         setBorder(BorderFactory.createEmptyBorder(10, 22, 16, 22));
     }

@@ -6,6 +6,7 @@ import ecos.app.modos.JuegoC.Paleta;
 import ecos.app.modos.JuegoC.TableroJugador;
 import ecos.app.modos.JuegoC.Utilidades;
 import ecos.app.modos.JuegoC.VentanaVictoria;
+import ecos.recursos.Sonido;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -46,7 +47,7 @@ public class PantallaClasico extends Pantalla {
     private static final int DURACION_ANIMACION_MS = ENTRADA_MS + PAUSA_MS + SALIDA_MS;
     private static final int INTERVALO_MS = 15; // cada cuánto se mueve (~60 cuadros/seg)
     private static final int SEGUNDOS_POR_TURNO = 10;   // duración de la barra de tiempo
-    private static final double SEGUNDOS_URGENTE = 3.0; // aquí cambia la música
+    private static final double SEGUNDOS_URGENTE = 3.0; // aquí suena la alerta de tiempo
 
     private final TableroJugador tablero1;
     private final TableroJugador tablero2;
@@ -62,7 +63,6 @@ public class PantallaClasico extends Pantalla {
     private final JLabel lblAviso;     // el rectángulo que se mueve
     private final Timer temporizadorAnimacion;
     private long inicioAnimacion;
-    private boolean musicaUrgente = false;
 
     public PantallaClasico() {
         super("clasico", "clasico");
@@ -75,11 +75,8 @@ public class PantallaClasico extends Pantalla {
 
         // ----- Barra de turno y tiempo, de lado a lado, arriba -----
         barraTiempo = new BarraTiempo(SEGUNDOS_POR_TURNO);
-        // Cuando quedan 3 s, la música cambia a la versión urgente
-        barraTiempo.setAlQuedarSegundos(SEGUNDOS_URGENTE, () -> {
-            musicaUrgente = true;
-            musica("clasico_urgente");
-        });
+        // Cuando quedan 3 s suena la alerta de tiempo
+        barraTiempo.setAlQuedarSegundos(SEGUNDOS_URGENTE, () -> efecto("alerta_tiempo"));
 
         JPanel panelBarra = new JPanel(new BorderLayout());
         panelBarra.setOpaque(false);
@@ -144,25 +141,17 @@ public class PantallaClasico extends Pantalla {
         panelAviso.setBounds(0, 0, getWidth(), getHeight());
     }
 
-    // ---------- Sonido (ajustar aquí si la clase Sonido se llama distinto) ----------
-
-    private static void musica(String nombre) {
-        // El módulo de sonido no está disponible en este proyecto.
-    }
+    // ---------- Sonido (archivos .wav de src/recursos/audio, sin la extensión) ----------
 
     private static void efecto(String nombre) {
-        // El módulo de sonido no está disponible en este proyecto.
+        Sonido.efecto(nombre);
     }
 
     // ---------- Lo que el controlador le pide a la vista ----------
 
     /** Muestra el tablero del jugador (1 o 2) y hace pasar el rectángulo de turno. */
     public void mostrarTurno(int jugador) {
-        // Si venía sonando la música urgente, regresa a la normal
-        if (musicaUrgente) {
-            musicaUrgente = false;
-            musica("clasico");
-        }
+        efecto("cambio_turno");
 
         tablero1.setTurnoActivo(jugador == 1);
         tablero2.setTurnoActivo(jugador == 2);
@@ -213,6 +202,7 @@ public class PantallaClasico extends Pantalla {
 
     /** Abre la ventana de victoria (ganador = 1 o 2). */
     public void mostrarVictoria(int ganador, int intentos1, int intentos2) {
+        efecto("victoria");
         Window ventana = SwingUtilities.getWindowAncestor(this);
         new VentanaVictoria(ventana, ganador,
                 tablero1.getNombre(), intentos1,
@@ -255,6 +245,23 @@ public class PantallaClasico extends Pantalla {
             temporizadorAnimacion.stop();
             panelAviso.setVisible(false);
             barraTiempo.iniciar(); // ahora sí empieza a gastarse el tiempo
+        }
+    }
+
+    // ---------- Aviso de que la pantalla se abrió (lo usa el controlador) ----------
+
+    private Runnable alEntrarAccion;
+
+    public void setAlEntrar(Runnable accion) {
+        this.alEntrarAccion = accion;
+    }
+
+    /** El Navegador llama esto cada vez que se muestra la pantalla. */
+    @Override
+    public void alEntrar() {
+        super.alEntrar();
+        if (alEntrarAccion != null) {
+            alEntrarAccion.run();
         }
     }
 

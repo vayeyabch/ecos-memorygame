@@ -78,16 +78,14 @@ public class VentanaVictoria extends JDialog {
         contenido.add(espacio(20));
 
         // ----- Botones -----
-        BotonPixel btnPremios = new BotonPixel("Ver premios", Paleta.DORADO,
-            Paleta.TEXTO_NARANJA, 22f);
+        BotonPixel btnPremios = new BotonPixel(Paleta.DORADO, "Ver premios");
         btnPremios.setText("Ver premios");
         btnPremios.setBackground(Paleta.DORADO);
         btnPremios.setForeground(Paleta.TEXTO_NARANJA);
         btnPremios.setFont(Utilidades.cargarFuentePixel(22f));
         // btnPremios: sin acción por ahora
 
-        BotonPixel btnCerrar = new BotonPixel("Cerrar", Color.WHITE,
-            Paleta.GUINDA, 22f);
+        BotonPixel btnCerrar = new BotonPixel(Color.WHITE, "Cerrar");
         btnCerrar.setText("Cerrar");
         btnCerrar.setBackground(Color.WHITE);
         btnCerrar.setForeground(Paleta.GUINDA);
