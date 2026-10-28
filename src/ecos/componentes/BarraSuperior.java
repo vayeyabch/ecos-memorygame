@@ -13,7 +13,7 @@ import javax.swing.JPanel; // Panel de Swing: la clase de la que hereda esta.
 
 public class BarraSuperior extends JPanel {
 
-    private final BotonPixel atras = new BotonPixel("< Atrás", Paleta.DORADO, Paleta.TEXTO_NARANJA, 14f); // Botón para volver a la pantalla anterior.
+   private final BotonPixel atras = new BotonPixel(Paleta.DORADO, "< Atrás"); // Botón para volver a la pantalla anterior.
     private final BotonPixel tema = BotonPixel.crearLuna(); // Botón de la luna que cambia entre modo claro y oscuro.
     private final BotonPixel musica = BotonPixel.crearSinBarra(); // Botón que silencia o activa la música.
     private final Navegador navegador; // El navegador, para saber si se puede volver atrás.
