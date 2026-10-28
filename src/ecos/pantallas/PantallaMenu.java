@@ -1,12 +1,11 @@
 package ecos.pantallas;
 
-
 import ecos.app.Pantalla;
-import ecos.componentes.BotonMenu;
+import ecos.app.modos.JuegoC.BotonPixel;
+import ecos.app.modos.JuegoC.Paleta;
 import ecos.componentes.TarjetaModo;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -54,7 +53,7 @@ public class PantallaMenu extends Pantalla {
         tarjetas.add(patrones);
 
         // ----- Boton de premios -----
-        BotonMenu premios = new BotonMenu("Premios", false);
+        BotonPixel premios = new BotonPixel("Premios", Paleta.DORADO, Paleta.TEXTO_NARANJA, 16f);
         premios.addActionListener(e -> {
             Sonido.efecto("click");
             irA("premios");

@@ -1,5 +1,6 @@
-package ecos.app.modos.JuegoC;
-
+package ecos.componentes;
+import ecos.app.modos.JuegoC.Paleta;
+import ecos.app.modos.JuegoC.Utilidades;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -9,8 +10,6 @@ import java.awt.Rectangle;
 import java.util.function.BiConsumer;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import ecos.app.Utilidades;
-
 /**
  * Botón con estilo pixel (marco guinda, franja clara arriba y sombra abajo).
  * Puede llevar texto o un icono dibujado con código (luna, "sin barra").
@@ -25,7 +24,7 @@ public class BotonPixel extends JButton {
     public BotonPixel(String texto, Color base, Color colorTexto, float tamanoFuente) {
         super(texto);
         this.base = base;
-        setFont(new Font(Font.MONOSPACED, Font.BOLD, Math.round(tamanoFuente)));
+        setFont(Utilidades.cargarFuentePixel(tamanoFuente).deriveFont(Font.BOLD));
         setForeground(colorTexto);
         configurar();
         setBorder(BorderFactory.createEmptyBorder(10, 22, 16, 22));
