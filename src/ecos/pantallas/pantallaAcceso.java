@@ -31,7 +31,6 @@ public class pantallaAcceso extends Pantalla {
     private final JLabel mensaje = new JLabel();
     private Timer timer;
     private boolean animando;
-    private boolean enRegistro;
 
     public pantallaAcceso() {
         super("acceso", "acceso");
@@ -104,7 +103,6 @@ public class pantallaAcceso extends Pantalla {
     }
 
     private void mostrarPestana(boolean registro) {
-        enRegistro = registro;
         cartas.show(formularios, registro ? "registro" : "login");
         visor.setEstado(VisorEscaner.Estado.NORMAL);
         visor.setDesplazamiento(0);
