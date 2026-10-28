@@ -1,4 +1,4 @@
-package ecos.app.modos.patrones;
+package ecos.app.modos.Patrones;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
