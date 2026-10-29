@@ -28,8 +28,8 @@ public class pantallaIntro extends Pantalla {
         super("intro", "intro");
         setLayout(new BorderLayout());
 
-        texto1.setPreferredSize(new Dimension(520, 40));
-        texto2.setPreferredSize(new Dimension(520, 40));
+        texto1.setPreferredSize(new Dimension(700, 70));
+        texto2.setPreferredSize(new Dimension(700, 70));
         cajaCarga.setOpaque(false);
         cajaCarga.setLayout(new BoxLayout(cajaCarga, BoxLayout.Y_AXIS));
         agregar(cajaCarga, barra, mensaje);
