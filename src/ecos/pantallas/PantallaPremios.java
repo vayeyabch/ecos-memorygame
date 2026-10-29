@@ -54,10 +54,8 @@ public class PantallaPremios extends Pantalla {
         JPanel dolar = new JPanel();
         dolar.setOpaque(false);
         dolar.setLayout(new javax.swing.BoxLayout(dolar, javax.swing.BoxLayout.Y_AXIS));
-        Etiqueta etDolar = Etiqueta.titulo("DÓLAR BCCR (VENTA)", 9f, Etiqueta.Rol.SUAVE);
         Etiqueta valor = Etiqueta.texto("₡ 487,20", 26f, Etiqueta.Rol.CARMESI);
-        Etiqueta nota = Etiqueta.texto("Valor de ejemplo. En Java se consulta el API del BCCR.", 16f, Etiqueta.Rol.SUAVE);
-        for (JComponent e : new JComponent[]{etDolar, valor, nota}) {
+        for (JComponent e : new JComponent[]{valor}) {
             e.setAlignmentX(LEFT_ALIGNMENT);
             dolar.add(e);
             dolar.add(javax.swing.Box.createVerticalStrut(4));
@@ -67,13 +65,9 @@ public class PantallaPremios extends Pantalla {
 
         // tabla
         c.gridy = 2;
-        c.insets = new Insets(0, 0, 14, 0);
+        c.insets = new Insets(0, 0, 0, 0);
         tarjeta.add(crearTabla(), c);
 
-        // fórmula (la misma del diseño)
-        c.gridy = 3;
-        c.insets = new Insets(0, 0, 0, 0);
-        tarjeta.add(Etiqueta.texto("<html>premio = 1 / puntaje × 100 × CambioDólar. El puntaje es la cantidad de intentos para ganar. Datos de ejemplo.</html>", 16f, Etiqueta.Rol.SUAVE), c);
         add(tarjeta);
     }
 
