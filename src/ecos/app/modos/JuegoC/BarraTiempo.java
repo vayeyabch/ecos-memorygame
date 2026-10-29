@@ -54,6 +54,11 @@ public class BarraTiempo extends JPanel {
     private Image avatar = null;
     private Runnable alTerminar;
 
+    // Aviso opcional cuando quedan X segundos (ej. para cambiar la música)
+    private double segundosAviso = -1;
+    private Runnable alAviso;
+    private boolean avisado = false;
+
     public BarraTiempo(int duracionSegundos) {
         this.duracionMs = duracionSegundos * 1000;
         this.fuenteNombre = Utilidades.cargarFuentePixel(22f).deriveFont(Font.BOLD);
@@ -69,6 +74,7 @@ public class BarraTiempo extends JPanel {
 
     /** La llena y empieza a vaciarla. */
     public void iniciar() {
+        avisado = false;
         progreso = 1.0;
         inicio = System.currentTimeMillis();
         temporizador.start();
@@ -83,6 +89,7 @@ public class BarraTiempo extends JPanel {
     /** La deja llena y quieta. */
     public void reiniciar() {
         temporizador.stop();
+        avisado = false;
         progreso = 1.0;
         repaint();
     }
@@ -107,10 +114,22 @@ public class BarraTiempo extends JPanel {
         this.alTerminar = accion;
     }
 
+    /** Opcional: algo que se ejecuta UNA vez por turno cuando quedan estos segundos o menos. */
+    public void setAlQuedarSegundos(double segundos, Runnable accion) {
+        this.segundosAviso = segundos;
+        this.alAviso = accion;
+    }
+
     private void actualizar() {
         long transcurrido = System.currentTimeMillis() - inicio;
         progreso = Math.max(0.0, 1.0 - transcurrido / (double) duracionMs);
         repaint();
+
+        double restantes = progreso * duracionMs / 1000.0;
+        if (alAviso != null && !avisado && restantes <= segundosAviso) {
+            avisado = true;
+            alAviso.run();
+        }
 
         if (progreso <= 0.0) {
             temporizador.stop();

@@ -2,8 +2,6 @@ package ecos;
 
 import ecos.app.Navegador;
 import ecos.app.Ventana;
-import ecos.app.modos.JuegoC.ControladorJuegoClasico;
-import ecos.app.modos.JuegoC.JuegoClasico;
 import ecos.componentes.BarraSuperior;
 import ecos.pantallas.PantallaMenu;
 import ecos.pantallas.PantallaPremios;
@@ -28,9 +26,6 @@ public class Main {
             n.registrar(new PantallaReglasClasico());
             n.registrar(new PantallaReglasPatrones());
             n.registrar(new PantallaPremios());
-
-            JuegoClasico vista = new JuegoClasico();
-            new ControladorJuegoClasico(vista);        // el controlador que tengan (temporal o real)
 
             ventana.iniciar("intro");
         });

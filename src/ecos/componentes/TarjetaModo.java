@@ -1,8 +1,6 @@
 package ecos.componentes;
 
 import ecos.app.Tema;
-import ecos.app.modos.JuegoC.BotonPixel;
-import ecos.app.modos.JuegoC.Paleta;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
@@ -31,8 +29,8 @@ public class TarjetaModo extends PanelPixel {
     private final JLabel imagen = new JLabel();
     private final JLabel titulo = new JLabel("", JLabel.CENTER);
     private final JLabel descripcion = new JLabel("", JLabel.CENTER);
-    private final BotonPixel btnJugar = new BotonPixel("Jugar", Paleta.NARANJA, java.awt.Color.WHITE, 14f);
-    private final BotonPixel btnReglas = new BotonPixel("Reglas", Paleta.DORADO, Paleta.TEXTO_NARANJA, 14f);
+    private final BotonMenu btnJugar = new BotonMenu("Jugar", true);
+    private final BotonMenu btnReglas = new BotonMenu("Reglas", false);
 
     public TarjetaModo(String textoTitulo, String textoDescripcion, Image dibujo) {
         super(new GridBagLayout());

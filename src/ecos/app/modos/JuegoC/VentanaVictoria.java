@@ -6,12 +6,12 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Window;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -30,9 +30,9 @@ public class VentanaVictoria extends JDialog {
     /**
      * @param ganador 1 o 2
      */
-    public VentanaVictoria(JFrame padre, int ganador,
+    public VentanaVictoria(Window padre, int ganador,
             String nombre1, int intentos1, String nombre2, int intentos2) {
-        super(padre, true);
+        super(padre, ModalityType.APPLICATION_MODAL);
         setUndecorated(true);
 
         String nombreGanador = (ganador == 1) ? nombre1 : nombre2;
@@ -78,16 +78,14 @@ public class VentanaVictoria extends JDialog {
         contenido.add(espacio(20));
 
         // ----- Botones -----
-        BotonPixel btnPremios = new BotonPixel("Ver premios", Paleta.DORADO,
-            Paleta.TEXTO_NARANJA, 22f);
+        BotonPixel btnPremios = new BotonPixel(Paleta.DORADO, "Ver premios");
         btnPremios.setText("Ver premios");
         btnPremios.setBackground(Paleta.DORADO);
         btnPremios.setForeground(Paleta.TEXTO_NARANJA);
         btnPremios.setFont(Utilidades.cargarFuentePixel(22f));
         // btnPremios: sin acción por ahora
 
-        BotonPixel btnCerrar = new BotonPixel("Cerrar", Color.WHITE,
-            Paleta.GUINDA, 22f);
+        BotonPixel btnCerrar = new BotonPixel(Color.WHITE, "Cerrar");
         btnCerrar.setText("Cerrar");
         btnCerrar.setBackground(Color.WHITE);
         btnCerrar.setForeground(Paleta.GUINDA);

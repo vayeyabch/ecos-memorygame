@@ -2,13 +2,11 @@ package ecos.pantallas;
 
 import ecos.app.Pantalla;
 import ecos.app.Tema;
+import ecos.componentes.DesfileMascotas;
 import ecos.componentes.VisorEscaner;
 import ecos.recursos.Sonido;
-import ecos.recursos.Sprites;
-import ecos.componentes.DesfileMascotas;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class pantallaAcceso extends Pantalla {
 
@@ -33,7 +31,6 @@ public class pantallaAcceso extends Pantalla {
     private final JLabel mensaje = new JLabel();
     private Timer timer;
     private boolean animando;
-    private boolean enRegistro;
 
     public pantallaAcceso() {
         super("acceso", "acceso");
@@ -106,7 +103,6 @@ public class pantallaAcceso extends Pantalla {
     }
 
     private void mostrarPestana(boolean registro) {
-        enRegistro = registro;
         cartas.show(formularios, registro ? "registro" : "login");
         visor.setEstado(VisorEscaner.Estado.NORMAL);
         visor.setDesplazamiento(0);
