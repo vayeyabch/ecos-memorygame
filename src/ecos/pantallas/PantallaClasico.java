@@ -1,293 +1,261 @@
 package ecos.pantallas;
 
 import ecos.app.Pantalla;
+import ecos.app.modos.Patrones.AvisoDeslizante;
 import ecos.app.modos.JuegoC.BarraTiempo;
-import ecos.app.modos.JuegoC.Paleta;
+import ecos.componentes.BotonPoder;
+import ecos.componentes.CartaPixel;
+import ecos.componentes.ChipPixel;
+import ecos.componentes.Confeti;
+import ecos.componentes.DialogoComprarOjo;
+import ecos.componentes.DialogoResultado;
+import ecos.componentes.Etiqueta;
+import ecos.componentes.ImagenPixel;
+import ecos.componentes.PanelPixel;
 import ecos.app.modos.JuegoC.TableroJugador;
-import ecos.app.modos.JuegoC.Utilidades;
-import ecos.app.modos.JuegoC.VentanaVictoria;
-import ecos.recursos.Sonido;
+import ecos.recursos.Sprites;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Window;
+import java.awt.Insets;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 
-/**
- * VISTA del modo clásico para dos jugadores (SOLO INTERFAZ).
- *
- * Ahora es una pantalla (extends Pantalla) que se muestra dentro de la Ventana
- * principal. La ventana, el fondo y los botones de arriba (Atrás, luna, sin
- * barra) los pone la Ventana / BarraSuperior, no esta clase.
- *
- * Esta clase NO guarda el estado del juego ni decide nada: solo muestra lo que
- * el controlador le pide y le avisa cuando el usuario toca algo.
- *
- * Métodos para el controlador:
- *   mostrarTurno(1 o 2)                    -> muestra el tablero de ese jugador, pasa el
- *                                             rectángulo del turno y arranca la barra
- *   mostrarCarta / ocultarCarta            -> voltea o tapa una carta (con sonido)
- *   marcarPareja / quitarMarcaPareja       -> ilumina el par encontrado (con sonido)
- *   mostrarVictoria(ganador, i1, i2)       -> abre la ventana de victoria
- *   getTablero1() / getTablero2()          -> acceso a cada tablero
- *   getBarraTiempo()                       -> acceso a la barra de tiempo
- */
+// Vista del modo clásico. No guarda el estado del juego: muestra lo que el controlador pide.
 public class PantallaClasico extends Pantalla {
 
-    private static final int ENTRADA_MS = 600;  // cuánto tarda en llegar al centro
-    private static final int PAUSA_MS = 1000;   // cuánto se queda quieto en el centro
-    private static final int SALIDA_MS = 600;   // cuánto tarda en irse por la derecha
-    private static final int DURACION_ANIMACION_MS = ENTRADA_MS + PAUSA_MS + SALIDA_MS;
-    private static final int INTERVALO_MS = 15; // cada cuánto se mueve (~60 cuadros/seg)
-    private static final int SEGUNDOS_POR_TURNO = 10;   // duración de la barra de tiempo
-    private static final double SEGUNDOS_URGENTE = 3.0; // aquí suena la alerta de tiempo
-
-    private final TableroJugador tablero1;
-    private final TableroJugador tablero2;
-    private final BarraTiempo barraTiempo;
-
-    // Botones temporales de prueba (el controlador les pone la acción). BORRAR al final.
-    private final JButton btnCambiarTurno = new JButton("Cambiar turno (prueba)");
-    private final JButton btnVictoria = new JButton("Victoria (prueba)");
-    private final JButton btnPar = new JButton("Par encontrado (prueba)");
-
-    private final JPanel contenido;    // todo lo normal de la pantalla
-    private final JPanel panelAviso;   // capa transparente encima, para el rectángulo de turno
-    private final JLabel lblAviso;     // el rectángulo que se mueve
-    private final Timer temporizadorAnimacion;
-    private long inicioAnimacion;
+    private final PanelPixel hud = new PanelPixel(new BorderLayout(14, 0)); // barra de arriba con el turno y el tiempo
+    private final JPanel quien = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // mascota y "Turno de X"
+    private final ImagenPixel mascotaTurno = new ImagenPixel(Sprites.mascota(2, 34));
+    private final Etiqueta textoTurno = Etiqueta.titulo("Turno de Jugador 1", 11f, Etiqueta.Rol.TEXTO);
+    private final BarraTiempo barra = new BarraTiempo(false);
+    private final Etiqueta reloj = Etiqueta.titulo("10.0s", 20f, Etiqueta.Rol.TEXTO);
+    private final JPanel zona = new JPanel(); // aquí va el panel del jugador en turno
+    private final JPanel contenedor = new JPanel(new GridBagLayout());
+    private final PanelPixel[] lados = new PanelPixel[2];
+    private final TableroJugador[] tableros = new TableroJugador[2];
+    private final ChipPixel[][] chips = new ChipPixel[2][3]; // intentos, parejas, monedas
+    private final BotonPoder[] ojos = new BotonPoder[2];
+    private final int[] mascotas = {2, 7};
+    private final String[] nombres = {"Jugador 1", "Invitado"};
+    private int n = 6; // cartas por lado
+    private int precioOjo = 20;
+    private BiConsumer<Integer, Integer> alClicCarta = (p, i) -> { };
+    private IntConsumer alComprarOjo = p -> { };
 
     public PantallaClasico() {
         super("clasico", "clasico");
+        setLayout(new GridBagLayout());
+        setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR - 6, 16, 12, 16));
 
-        // Sin layout: acomodamos las dos capas a mano en doLayout()
-        setLayout(null);
+        // HUD
+        quien.setOpaque(false);
+        quien.add(mascotaTurno);
+        quien.add(textoTurno);
+        reloj.setHorizontalAlignment(Etiqueta.RIGHT);
+        reloj.setPreferredSize(new Dimension(130, 28));
+        hud.setPadding(6);
+        hud.add(quien, BorderLayout.WEST);
+        JPanel centroBarra = new JPanel(new GridBagLayout());
+        centroBarra.setOpaque(false);
+        GridBagConstraints g = new GridBagConstraints();
+        g.weightx = 1;
+        g.fill = GridBagConstraints.HORIZONTAL;
+        centroBarra.add(barra, g);
+        hud.add(centroBarra, BorderLayout.CENTER);
+        hud.add(reloj, BorderLayout.EAST);
 
-        tablero1 = new TableroJugador("Jugador 1");
-        tablero2 = new TableroJugador("Visitante");
+        zona.setOpaque(false);
+        zona.setLayout(new BoxLayout(zona, BoxLayout.Y_AXIS));
 
-        // ----- Barra de turno y tiempo, de lado a lado, arriba -----
-        barraTiempo = new BarraTiempo(SEGUNDOS_POR_TURNO);
-        // Cuando quedan 3 s suena la alerta de tiempo
-        barraTiempo.setAlQuedarSegundos(SEGUNDOS_URGENTE, () -> efecto("alerta_tiempo"));
+        contenedor.setOpaque(false);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridy = 0;
+        contenedor.add(hud, c);
+        c.gridy = 1;
+        c.insets = new Insets(14, 0, 0, 0);
+        c.fill = GridBagConstraints.NONE;
+        contenedor.add(zona, c);
 
-        JPanel panelBarra = new JPanel(new BorderLayout());
-        panelBarra.setOpaque(false);
-        panelBarra.setBorder(BorderFactory.createEmptyBorder(15, 25, 0, 25));
-        panelBarra.add(barraTiempo, BorderLayout.CENTER);
-
-        // ----- Los dos tableros (solo se ve uno a la vez), centrados -----
-        JPanel panelTableros = new JPanel(new FlowLayout(FlowLayout.CENTER, 60, 0));
-        panelTableros.setOpaque(false);
-        panelTableros.add(tablero1);
-        panelTableros.add(tablero2);
-
-        JPanel panelCentro = new JPanel(new GridBagLayout()); // centra los tableros
-        panelCentro.setOpaque(false);
-        panelCentro.add(panelTableros);
-
-        // ----- Botones temporales de prueba, abajo -----
-        JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        panelBoton.setOpaque(false);
-        panelBoton.add(btnCambiarTurno);
-        panelBoton.add(btnVictoria);
-        panelBoton.add(btnPar);
-
-        contenido = new JPanel(new BorderLayout());
-        contenido.setOpaque(false);
-        contenido.add(panelBarra, BorderLayout.NORTH);
-        contenido.add(panelCentro, BorderLayout.CENTER);
-        contenido.add(panelBoton, BorderLayout.SOUTH);
-
-        // ----- Rectángulo de turno (cruza la pantalla) -----
-        Font fuente = Utilidades.cargarFuentePixel(48f).deriveFont(Font.BOLD);
-
-        lblAviso = new JLabel("", JLabel.CENTER);
-        lblAviso.setFont(fuente);
-        lblAviso.setForeground(Paleta.GUINDA);
-        lblAviso.setOpaque(true);
-        lblAviso.setBackground(Paleta.DORADO);
-        lblAviso.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Paleta.GUINDA, 6),
-                BorderFactory.createEmptyBorder(25, 70, 25, 70)));
-
-        // Capa transparente sin layout: así podemos mover el rectángulo a mano
-        panelAviso = new JPanel(null);
-        panelAviso.setOpaque(false);
-        panelAviso.add(lblAviso);
-        panelAviso.setVisible(false);
-
-        // La capa del aviso va primero (queda por encima del contenido)
-        add(panelAviso);
-        add(contenido);
-
-        temporizadorAnimacion = new Timer(INTERVALO_MS, e -> animarAviso());
+        GridBagConstraints raiz = new GridBagConstraints();
+        raiz.anchor = GridBagConstraints.NORTH;
+        raiz.weighty = 1;
+        add(contenedor, raiz);
+        hud.setMaximumSize(new Dimension(1120, 80));
+        setLayoutAncho();
     }
 
-    /** Las dos capas ocupan toda la pantalla. */
-    @Override
-    public void doLayout() {
-        if (contenido == null || panelAviso == null) {
-            return;
+    private void setLayoutAncho() {
+        hud.setPreferredSize(new Dimension(900, hud.getPreferredSize().height));
+    }
+
+    // ---------- lo que el controlador pide ----------
+
+    public void setAlClicCarta(BiConsumer<Integer, Integer> accion) {
+        this.alClicCarta = accion;
+    }
+
+    public void setAlComprarOjo(IntConsumer accion) {
+        this.alComprarOjo = accion;
+    }
+
+    // Arma los dos tableros de n x n y las cartas caen en cascada.
+    public void configurar(int n, String nombre1, String nombre2, int mascota1, int mascota2, int precioOjo, int[][] caras) {
+        this.n = n;
+        this.precioOjo = precioOjo;
+        nombres[0] = nombre1;
+        nombres[1] = nombre2;
+        mascotas[0] = mascota1;
+        mascotas[1] = mascota2;
+        zona.removeAll();
+        int lado = tamanoCarta();
+        for (int p = 0; p < 2; p++) {
+            final int jugador = p;
+            tableros[p] = new TableroJugador(n, lado);
+            for (int i = 0; i < n * n; i++) {
+                final int carta = i;
+                tableros[p].getCarta(i).setCara(Sprites.icono(caras[p][i] + 1, 64));
+                tableros[p].getCarta(i).setAlClic(() -> alClicCarta.accept(jugador, carta));
+            }
+            lados[p] = crearLado(p, n * n / 2);
+            zona.add(lados[p]);
+            lados[p].setVisible(false);
         }
-        contenido.setBounds(0, 0, getWidth(), getHeight());
-        panelAviso.setBounds(0, 0, getWidth(), getHeight());
+        revalidate();
+        tableros[0].cascada(0);
+        tableros[1].cascada(140);
     }
 
-    // ---------- Sonido (archivos .wav de src/recursos/audio, sin la extensión) ----------
-
-    private static void efecto(String nombre) {
-        Sonido.efecto(nombre);
-    }
-
-    // ---------- Lo que el controlador le pide a la vista ----------
-
-    /** Muestra el tablero del jugador (1 o 2) y hace pasar el rectángulo de turno. */
-    public void mostrarTurno(int jugador) {
-        efecto("cambio_turno");
-
-        tablero1.setTurnoActivo(jugador == 1);
-        tablero2.setTurnoActivo(jugador == 2);
-
-        // Solo se ve el tablero del jugador que tiene el turno
-        tablero1.setVisible(jugador == 1);
-        tablero2.setVisible(jugador == 2);
-
-        String nombre = (jugador == 1) ? tablero1.getNombre() : tablero2.getNombre();
-
-        // La barra queda llena y quieta mientras pasa el rectángulo
-        barraTiempo.reiniciar();
-
-        lblAviso.setText("Turno de: " + nombre);
-
-        // Ajusta el tamaño del rectángulo al texto y lo deja fuera, a la izquierda
-        Dimension tamano = lblAviso.getPreferredSize();
-        lblAviso.setSize(tamano);
-        lblAviso.setLocation(-tamano.width, (panelAviso.getHeight() - tamano.height) / 2);
-
-        temporizadorAnimacion.stop(); // por si todavía se estaba moviendo el anterior
-        inicioAnimacion = System.currentTimeMillis();
-        panelAviso.setVisible(true);
-        temporizadorAnimacion.start();
-    }
-
-    /** Voltea una carta del tablero del jugador (con sonido). */
-    public void mostrarCarta(int jugador, int indice, int idImagen) {
-        efecto("voltear_carta");
-        tablero(jugador).mostrarCarta(indice, idImagen);
-    }
-
-    /** Vuelve a tapar una carta del tablero del jugador (con sonido). */
-    public void ocultarCarta(int jugador, int indice) {
-        efecto("voltear_carta");
-        tablero(jugador).ocultarCarta(indice);
-    }
-
-    /** Par encontrado: ilumina las dos cartas con borde amarillo (con sonido). */
-    public void marcarPareja(int jugador, int indiceA, int indiceB) {
-        efecto("par_encontrado");
-        tablero(jugador).marcarPareja(indiceA, indiceB);
-    }
-
-    public void quitarMarcaPareja(int jugador, int indiceA, int indiceB) {
-        tablero(jugador).quitarMarcaPareja(indiceA, indiceB);
-    }
-
-    /** Abre la ventana de victoria (ganador = 1 o 2). */
-    public void mostrarVictoria(int ganador, int intentos1, int intentos2) {
-        efecto("victoria");
-        Window ventana = SwingUtilities.getWindowAncestor(this);
-        new VentanaVictoria(ventana, ganador,
-                tablero1.getNombre(), intentos1,
-                tablero2.getNombre(), intentos2).setVisible(true);
-    }
-
-    private TableroJugador tablero(int jugador) {
-        return (jugador == 1) ? tablero1 : tablero2;
-    }
-
-    /** Se ejecuta en cada "cuadro" de la animación: entra, pausa en el centro y sale. */
-    private void animarAviso() {
-        long transcurrido = System.currentTimeMillis() - inicioAnimacion;
-
-        int anchoPantalla = panelAviso.getWidth();
-        int anchoAviso = lblAviso.getWidth();
-        int altoAviso = lblAviso.getHeight();
-        int centroX = (anchoPantalla - anchoAviso) / 2;
-
-        int x;
-        if (transcurrido < ENTRADA_MS) {
-            // Fase 1: entra desde la izquierda y va frenando al llegar al centro
-            double p = transcurrido / (double) ENTRADA_MS;
-            double suave = 1 - Math.pow(1 - p, 3);
-            x = (int) (-anchoAviso + (centroX + anchoAviso) * suave);
-        } else if (transcurrido < ENTRADA_MS + PAUSA_MS) {
-            // Fase 2: se queda quieto en el centro
-            x = centroX;
-        } else {
-            // Fase 3: arranca despacio y sale acelerando hacia la derecha
-            double p = Math.min(1.0, (transcurrido - ENTRADA_MS - PAUSA_MS) / (double) SALIDA_MS);
-            double suave = Math.pow(p, 3);
-            x = (int) (centroX + (anchoPantalla - centroX) * suave);
+    private PanelPixel crearLado(int p, int parejas) {
+        PanelPixel lado = new PanelPixel();
+        lado.setLayout(new BoxLayout(lado, BoxLayout.Y_AXIS));
+        lado.setPadding(6);
+        JPanel cab = new JPanel(new BorderLayout(10, 0));
+        cab.setOpaque(false);
+        JPanel nm = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        nm.setOpaque(false);
+        nm.add(new ImagenPixel(Sprites.mascota(mascotas[p], 30)));
+        nm.add(Etiqueta.titulo(recortar(nombres[p]), 10f, Etiqueta.Rol.TEXTO));
+        JPanel st = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        st.setOpaque(false);
+        chips[p][0] = new ChipPixel("Intentos 0", 8f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][1] = new ChipPixel("Parejas 0/" + parejas, 8f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][2] = new ChipPixel("30", 8f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][2].setIcono(Sprites.ui("coin", 16));
+        for (ChipPixel ch : chips[p]) {
+            st.add(ch);
         }
+        cab.add(nm, BorderLayout.WEST);
+        cab.add(st, BorderLayout.EAST);
+        ojos[p] = new BotonPoder("Ojo espía", precioOjo);
+        ojos[p].addActionListener(e -> new DialogoComprarOjo(precioOjo, () -> alComprarOjo.accept(p)).mostrar(this));
+        JPanel poderes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        poderes.setOpaque(false);
+        poderes.add(ojos[p]);
+        JComponent[] piezas = {cab, tableros[p], poderes};
+        for (JComponent pz : piezas) {
+            pz.setAlignmentX(Component.CENTER_ALIGNMENT);
+            lado.add(pz);
+            lado.add(Box.createVerticalStrut(8));
+        }
+        return lado;
+    }
 
-        int y = (panelAviso.getHeight() - altoAviso) / 2;
-        lblAviso.setLocation(x, y);
+    private static String recortar(String s) {
+        return s.length() > 12 ? s.substring(0, 11) + "…" : s;
+    }
 
-        if (transcurrido >= DURACION_ANIMACION_MS) {
-            temporizadorAnimacion.stop();
-            panelAviso.setVisible(false);
-            barraTiempo.iniciar(); // ahora sí empieza a gastarse el tiempo
+    // Tamaño de carta según el espacio de la ventana.
+    private int tamanoCarta() {
+        int w = getWidth() > 0 ? getWidth() : 1280;
+        int h = getHeight() > 0 ? getHeight() : 720;
+        int porAncho = (int) ((w - 96) / (n + 1.6));
+        int porAlto = (int) ((h - 330) / (n + 0.6));
+        return Math.max(36, Math.min(n == 4 ? 112 : 84, Math.min(porAncho, porAlto)));
+    }
+
+    // Muestra el tablero del jugador en turno (p = 0 o 1) y lo deja jugable.
+    public void setTurno(int p) {
+        for (int i = 0; i < 2; i++) {
+            if (lados[i] != null) {
+                lados[i].setVisible(i == p);
+                lados[i].setColorBorde(i == p ? ecos.app.Tema.bordeExterior() : null);
+                tableros[i].setActivo(i == p);
+            }
+        }
+        mascotaTurno.setImagen(Sprites.mascota(mascotas[p], 34));
+        textoTurno.setText("Turno de " + recortar(nombres[p]));
+        revalidate();
+        repaint();
+    }
+
+    // Congela los clics (por ejemplo mientras se esperan dos cartas distintas).
+    public void bloquear(boolean bloqueado) {
+        for (TableroJugador t : tableros) {
+            if (t != null && t.isVisible()) {
+                t.setActivo(!bloqueado && lados[0].isVisible() == (t == tableros[0]));
+            }
         }
     }
 
-    // ---------- Aviso de que la pantalla se abrió (lo usa el controlador) ----------
-
-    private Runnable alEntrarAccion;
-
-    public void setAlEntrar(Runnable accion) {
-        this.alEntrarAccion = accion;
+    public void setTiempo(double t, double max, boolean animar) {
+        barra.setTiempo(t, max, animar);
+        reloj.setText(String.format(java.util.Locale.US, "%.1fs", t));
     }
 
-    /** El Navegador llama esto cada vez que se muestra la pantalla. */
-    @Override
-    public void alEntrar() {
-        super.alEntrar();
-        if (alEntrarAccion != null) {
-            alEntrarAccion.run();
-        }
+    public void mostrarBonus(String texto) {
+        barra.mostrarBonus(texto);
     }
 
-    // ---------- Getters (para que el controlador conecte acciones) ----------
-
-    public TableroJugador getTablero1() {
-        return tablero1;
+    public void voltearCarta(int p, int i, boolean arriba) {
+        tableros[p].getCarta(i).voltear(arriba);
     }
 
-    public TableroJugador getTablero2() {
-        return tablero2;
+    public void marcarPareja(int p, int i, int j) {
+        tableros[p].getCarta(i).marcarHecha();
+        tableros[p].getCarta(j).marcarHecha();
     }
 
-    public BarraTiempo getBarraTiempo() {
-        return barraTiempo;
+    // Voltea todas las cartas del tablero un momento (el comodín).
+    public void ojoEspia(int p) {
+        tableros[p].voltearTodas(true);
+        javax.swing.Timer t = new javax.swing.Timer(1700, e -> tableros[p].voltearTodas(false));
+        t.setRepeats(false);
+        t.start();
     }
 
-    public JButton getBtnCambiarTurno() {
-        return btnCambiarTurno;
+    public void setIntentos(int p, int intentos) {
+        chips[p][0].setTexto("Intentos " + intentos);
     }
 
-    public JButton getBtnVictoria() {
-        return btnVictoria;
+    public void setParejas(int p, int hechas) {
+        chips[p][1].setTexto("Parejas " + hechas + "/" + n * n / 2);
     }
 
-    public JButton getBtnPar() {
-        return btnPar;
+    public void setMonedas(int p, int monedas) {
+        chips[p][2].setTexto("" + monedas);
+        ojos[p].setEnabled(monedas >= precioOjo);
+    }
+
+    public void mostrarBannerTurno(int p) {
+        AvisoDeslizante.mostrar(this, "TURNO DE " + nombres[p].toUpperCase(), p == 0 ? AvisoDeslizante.Estilo.JUGADOR1 : AvisoDeslizante.Estilo.JUGADOR2, Sprites.mascota(mascotas[p], 44));
+    }
+
+    public void mostrarVictoria(int ganador, int intentos1, int intentos2, String premio, Runnable verPremios, Runnable jugarOtra) {
+        Confeti.lanzar(this, 190, 5200);
+        ecos.app.modos.JuegoC.VentanaVictoria.mostrar(this, nombres[ganador], Sprites.mascota(mascotas[0], 32), nombres[0], intentos1,
+                Sprites.mascota(mascotas[1], 32), nombres[1], intentos2, ganador == 0, premio, verPremios, jugarOtra);
     }
 }

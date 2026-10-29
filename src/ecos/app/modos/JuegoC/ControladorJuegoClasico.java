@@ -1,70 +1,86 @@
 package ecos.app.modos.JuegoC;
 
+import ecos.app.Sesion;
 import ecos.pantallas.PantallaClasico;
+import ecos.recursos.Sonido;
+import java.util.function.Consumer;
 import javax.swing.Timer;
 
-/**
- * CONTROLADOR (temporal, solo para probar la vista).
- *
- * Aquí vive lo que NO es interfaz: de quién es el turno y qué pasa cuando el
- * usuario toca un botón. Cuando tengan el modelo real, esta clase es la que
- * hay que reemplazar: le pregunta cosas al modelo y le ordena cosas a la vista.
- *
- * La pantalla ya no es una ventana, así que el controlador NO la muestra:
- * eso lo hace el Navegador. Solo se crea con la pantalla y se llama a iniciar()
- * cuando el juego deba empezar:
- *   ControladorJuegoClasico controlador = new ControladorJuegoClasico(pantalla);
- *   controlador.iniciar();
- */
+// Solo interfaz: las cartas se voltean y la barra de tiempo corre.
+// NO detecta parejas: eso lo hace el modelo del equipo de lógica.
+// Cuando se acaba el tiempo solo alterna el turno en pantalla (temporal).
 public class ControladorJuegoClasico {
 
+    private static final double TIEMPO_MAX = 10.0; // segundos de la barra
+
     private final PantallaClasico vista;
-    private int turnoActual = 1;
+    private final Timer reloj = new Timer(100, e -> tick());
+    private double tiempo = TIEMPO_MAX;
+    private boolean urgente = false;
+    private int ultimoSegundo = 99;
+    private int turno = 0; // solo para alternar la vista cuando se acaba el tiempo
+    private final boolean[][] arriba = new boolean[2][36]; // solo para alternar la cara de cada carta
 
-    public ControladorJuegoClasico(PantallaClasico vista) {
+    public ControladorJuegoClasico(PantallaClasico vista, Consumer<String> irA) {
         this.vista = vista;
-        conectarVista();
+        vista.setAlClicCarta(this::clic);
+        vista.setAlComprarOjo(p -> vista.ojoEspia(p));
+        vista.setAlEntrar(this::iniciar);
+        vista.setAlSalir(reloj::stop);
     }
 
-    /** Empieza el jugador 1 (rectángulo de turno + barra de tiempo). */
-    public void iniciar() {
-        turnoActual = 1;
-        vista.mostrarTurno(turnoActual);
+    private void iniciar() {
+        int n = Sesion.getTamano();
+        int[][] caras = new int[2][n * n];
+        for (int p = 0; p < 2; p++) {
+            for (int i = 0; i < n * n; i++) {
+                caras[p][i] = (i / 2) % 18; // caras de ejemplo en orden fijo
+                arriba[p][i] = false;
+            }
+        }
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            vista.configurar(n, Sesion.getJugador1(), Sesion.getJugador2(), 2, 7, 20, caras);
+            vista.setTurno(0);
+            vista.setMonedas(0, 30);
+            vista.setMonedas(1, 30);
+            tiempo = TIEMPO_MAX;
+            turno = 0;
+            vista.setTiempo(tiempo, TIEMPO_MAX, false);
+            Sonido.efecto("cuenta_regresiva");
+            reloj.restart();
+        });
     }
 
-    private void conectarVista() {
-        // Click en una carta de cualquiera de los dos tableros
-        vista.getTablero1().setAlClickCarta(i -> alPulsarCarta(1, i));
-        vista.getTablero2().setAlClickCarta(i -> alPulsarCarta(2, i));
-
-        // Botones de prueba (BORRAR cuando esté el modelo)
-        vista.getBtnCambiarTurno().addActionListener(e -> cambiarTurno());
-        vista.getBtnVictoria().addActionListener(e -> vista.mostrarVictoria(turnoActual, 21, 27));
-        vista.getBtnPar().addActionListener(e -> probarParEncontrado());
+    // Voltea la carta (si estaba arriba la tapa).
+    private void clic(int p, int i) {
+        arriba[p][i] = !arriba[p][i];
+        Sonido.efecto("voltear_carta");
+        vista.voltearCarta(p, i, arriba[p][i]);
     }
 
-    private void cambiarTurno() {
-        turnoActual = (turnoActual == 1) ? 2 : 1;
-        vista.mostrarTurno(turnoActual);
-    }
-
-  
-    private void alPulsarCarta(int jugador, int indice) {
-        vista.mostrarCarta(jugador, indice, indice % TableroJugador.TOTAL_PAREJAS);
-    }
-
-    /** Prueba: voltea las cartas 0 y 1 del tablero actual y las ilumina 1.5 s. */
-    private void probarParEncontrado() {
-        int jugador = turnoActual;
-        vista.mostrarCarta(jugador, 0, 0);
-        vista.mostrarCarta(jugador, 1, 0);
-        vista.marcarPareja(jugador, 0, 1);
-        Timer quitar = new Timer(1500, ev -> vista.quitarMarcaPareja(jugador, 0, 1));
-        quitar.setRepeats(false);
-        quitar.start();
-    }
-
-    public int getTurnoActual() {
-        return turnoActual;
+    // Solo la barra: baja de 10 a 0 y vuelve a empezar.
+    private void tick() {
+        tiempo = Math.max(0, tiempo - 0.1);
+        vista.setTiempo(tiempo, TIEMPO_MAX, false);
+        int s = (int) Math.ceil(tiempo);
+        if (tiempo <= 3 && tiempo > 0 && s != ultimoSegundo) {
+            ultimoSegundo = s;
+            Sonido.efecto("tick");
+            if (!urgente) {
+                urgente = true;
+                Sonido.musica("clasico_urgente");
+            }
+        }
+        if (tiempo <= 0) {
+            tiempo = TIEMPO_MAX;
+            urgente = false;
+            ultimoSegundo = 99;
+            Sonido.musica("clasico");
+            turno = 1 - turno; // por ahora, al acabarse el tiempo solo se alterna la vista
+            Sonido.efecto("cambio_turno");
+            vista.setTurno(turno);
+            vista.mostrarBannerTurno(turno);
+            vista.setTiempo(tiempo, TIEMPO_MAX, true);
+        }
     }
 }

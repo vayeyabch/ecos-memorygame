@@ -1,85 +1,106 @@
 package ecos.app.modos.Patrones;
 
+import ecos.componentes.Capas;
+import ecos.recursos.Fuentes;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GradientPaint;
+import java.awt.Image;
+import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.Timer;
 
-/**
- * Capa transparente con un rectángulo que cruza la pantalla de izquierda a derecha
- * (entra, se queda 1 s en el centro y sale). SOLO VISUAL: mismo estilo del
- * "Turno de: ..." del modo clásico.
- *
- * Uso: se agrega a la pantalla, se le ponen los límites de toda la pantalla
- * (en doLayout) y se llama mostrar("Nivel 2").
- */
-public class AvisoDeslizante extends JPanel {
+public class AvisoDeslizante extends JComponent {
 
-    // Colores del juego (copiados de Paleta, así este archivo no depende de ella)
-    private static final Color GUINDA = new Color(91, 37, 56);
-    private static final Color DORADO = new Color(240, 204, 136);
+    public enum Estilo { JUGADOR1, JUGADOR2, NIVEL } // naranja, carmesí, azul
 
-    private static final int ENTRADA_MS = 600;  // llega al centro (frena al final)
-    private static final int PAUSA_MS = 1000;   // se queda quieto en el centro
-    private static final int SALIDA_MS = 600;   // se va por la derecha (acelera)
-    private static final int INTERVALO_MS = 15; // ~60 cuadros por segundo
+    private final String texto;
+    private final Estilo estilo;
+    private final Image icono;
+    private final long inicio = System.currentTimeMillis();
+    private final Timer reloj;
+    private static final int DURACION = 1300; // ms que dura todo el recorrido
 
-    private final JLabel lblAviso = new JLabel("", JLabel.CENTER);
-    private final Timer temporizador = new Timer(INTERVALO_MS, e -> animar());
-    private long inicio;
+    // Muestra la franja deslizando por la pantalla y se quita sola.
+    public static void mostrar(java.awt.Component origen, String texto, Estilo estilo, Image icono) {
+        AvisoDeslizante b = new AvisoDeslizante(texto, estilo, icono, origen);
+        Capas.agregar(origen, b, JLayeredPane.POPUP_LAYER);
+    }
 
-    public AvisoDeslizante() {
-        super(null); // sin layout: el rectángulo se mueve a mano
+    private AvisoDeslizante(String texto, Estilo estilo, Image icono, java.awt.Component origen) {
+        this.texto = texto;
+        this.estilo = estilo;
+        this.icono = icono;
         setOpaque(false);
-        setVisible(false);
-
-        lblAviso.setFont(new Font("Pixelify Sans", Font.BOLD, 48));
-        lblAviso.setForeground(GUINDA);
-        lblAviso.setOpaque(true);
-        lblAviso.setBackground(DORADO);
-        lblAviso.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(GUINDA, 6),
-                BorderFactory.createEmptyBorder(25, 70, 25, 70)));
-        add(lblAviso);
+        reloj = new Timer(30, e -> {
+            if (System.currentTimeMillis() - inicio > DURACION) {
+                ((Timer) e.getSource()).stop();
+                Capas.quitar(this);
+            } else {
+                repaint();
+            }
+        });
+        reloj.start();
     }
 
-    /** Hace pasar el rectángulo con este texto. */
-    public void mostrar(String texto) {
-        lblAviso.setText(texto);
-        Dimension tamano = lblAviso.getPreferredSize();
-        lblAviso.setSize(tamano);
-        lblAviso.setLocation(-tamano.width, (getHeight() - tamano.height) / 2);
-
-        temporizador.stop(); // por si todavía se estaba moviendo el anterior
-        inicio = System.currentTimeMillis();
-        setVisible(true);
-        temporizador.start();
+    @Override
+    public boolean contains(int x, int y) {
+        return false; // no tapa los clics
     }
 
-    /** Un cuadro de la animación: entra, pausa en el centro y sale. */
-    private void animar() {
-        long t = System.currentTimeMillis() - inicio;
-        int anchoAviso = lblAviso.getWidth();
-        int centroX = (getWidth() - anchoAviso) / 2;
+    private Color[] colores() {
+        return switch (estilo) {
+            case JUGADOR1 -> new Color[]{new Color(224, 100, 26), new Color(255, 122, 31)};
+            case JUGADOR2 -> new Color[]{new Color(168, 47, 68), new Color(194, 63, 82)};
+            default -> new Color[]{new Color(10, 58, 150), new Color(0, 71, 181)};
+        };
+    }
 
-        int x;
-        if (t < ENTRADA_MS) {
-            double p = t / (double) ENTRADA_MS;
-            x = (int) (-anchoAviso + (centroX + anchoAviso) * (1 - Math.pow(1 - p, 3)));
-        } else if (t < ENTRADA_MS + PAUSA_MS) {
-            x = centroX;
+    @Override
+    protected void paintComponent(Graphics g) {
+        double t = Math.min(1, (System.currentTimeMillis() - inicio) / (double) DURACION);
+        double paso = Math.floor(t * 14) / 14.0; // se mueve por pasos
+        double x; // posición, en anchos de pantalla
+        if (paso < 0.25) {
+            x = -1.05 * (1 - paso / 0.25);
+        } else if (paso < 0.75) {
+            x = 0;
         } else {
-            double p = Math.min(1.0, (t - ENTRADA_MS - PAUSA_MS) / (double) SALIDA_MS);
-            x = (int) (centroX + (getWidth() - centroX) * Math.pow(p, 3));
+            x = 1.05 * ((paso - 0.75) / 0.25);
         }
-        lblAviso.setLocation(x, (getHeight() - lblAviso.getHeight()) / 2);
-
-        if (t >= ENTRADA_MS + PAUSA_MS + SALIDA_MS) {
-            temporizador.stop();
-            setVisible(false);
+        Graphics2D g2 = (Graphics2D) g.create();
+        int w = getWidth();
+        int h = 92;
+        int y = (int) (getHeight() * 0.36);
+        g2.translate((int) (x * w), 0);
+        Color[] c = colores();
+        g2.setColor(new Color(0, 0, 0, 64));
+        g2.fillRect(0, y + 8, w, h);
+        g2.setPaint(new GradientPaint(0, 0, c[0], w / 2f, 0, c[1]));
+        g2.fillRect(0, y, w / 2, h);
+        g2.setPaint(new GradientPaint(w / 2f, 0, c[1], w, 0, c[0]));
+        g2.fillRect(w / 2, y, w - w / 2, h);
+        g2.setColor(ecos.app.Tema.borde());
+        g2.fillRect(0, y, w, 6);
+        g2.fillRect(0, y + h - 6, w, 6);
+        Font f = Fuentes.titulo(Math.max(14f, Math.min(26f, w / 40f)));
+        g2.setFont(f);
+        FontMetrics fm = g2.getFontMetrics();
+        int ic = icono != null ? 44 : 0;
+        int total = fm.stringWidth(texto) + (ic > 0 ? ic + 16 : 0);
+        int tx = (w - total) / 2;
+        if (icono != null) {
+            g2.drawImage(icono, tx, y + (h - ic) / 2, ic, ic, null); // el icono ya llega de 44 px
+            tx += ic + 16;
         }
+        int ty = y + h / 2 + fm.getAscent() / 2 - 2;
+        g2.setColor(new Color(0, 0, 0, 100));
+        g2.drawString(texto, tx + 3, ty + 3);
+        g2.setColor(Color.WHITE);
+        g2.drawString(texto, tx, ty);
+        g2.dispose();
     }
 }

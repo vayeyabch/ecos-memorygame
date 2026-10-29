@@ -1,95 +1,75 @@
 package ecos.app.modos.Patrones;
 
 import ecos.pantallas.PantallaPatron;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import ecos.recursos.Sonido;
+import java.util.function.Consumer;
 import javax.swing.Timer;
 
-/**
- * CONTROLADOR (temporal, NO funcional: solo para probar la vista).
- *
- * No revisa si el usuario acierta ni se equivoca, no hay mensajes de error ni
- * límites de tiempo. Solo muestra lo visual:
- *   - al iniciar / pulsar Empezar pasa el rectángulo "Nivel N"
- *   - luego enseña un patrón de casillas
- *   - las casillas que toca el usuario se iluminan un momento
- * Cuando tengan el modelo real, esta clase es la que hay que reemplazar.
- *
- *   ControladorPatron controlador = new ControladorPatron(pantalla);
- *   controlador.iniciar();
- */
+// Solo interfaz: las casillas se encienden al tocarlas y las barras de tiempo corren.
+// NO genera patrones ni revisa si está bien: eso lo hace el modelo del equipo de lógica.
+// Cuando se acaba el tiempo solo muestra la animación de subir de nivel (temporal).
 public class ControladorPatron {
 
-    private static final int CASILLAS_INICIALES = 3;
-    private static final int SEGUNDOS_TOTAL = 12;
-    private static final int ENCENDIDA_MS = 600;
-    private static final int PAUSA_MS = 250;
-    private static final int ANIMACION_NIVEL_MS = 2300; // lo que tarda en pasar el rectángulo
+    private static final double TIEMPO_TOTAL = 12.0; // segundos de la barra grande
+    private static final double TIEMPO_ENTRE = 2.0; // segundos de la barra delgada
 
     private final PantallaPatron vista;
-    private final Random azar = new Random();
-    private final List<Integer> patron = new ArrayList<>();
-    private int nivel = 1;
+    private final Timer reloj = new Timer(100, e -> tick());
+    private double total = TIEMPO_TOTAL;
+    private double entre = TIEMPO_ENTRE;
+    private int nivel = 1; // solo para mostrar el número en pantalla
 
-    public ControladorPatron(PantallaPatron vista) {
+    public ControladorPatron(PantallaPatron vista, Consumer<String> irA) {
         this.vista = vista;
-        vista.getBtnEmpezar().addActionListener(e -> mostrarRonda());
-        vista.setAlClickCasilla(this::iluminarUnMomento);
+        vista.setAlClicCasilla(this::clic);
+        vista.setAlEmpezar(this::empezar);
+        vista.setAlEntrar(() -> { nivel = 1; reiniciar(); });
+        vista.setAlSalir(reloj::stop);
     }
 
-    /** Deja la pantalla lista y hace pasar el rectángulo del nivel 1. */
-    public void iniciar() {
-        nivel = 1;
-        vista.setNivel(nivel, CASILLAS_INICIALES);
-        vista.setMensaje("Pulsa empezar");
-        vista.limpiarCasillas();
-        vista.setCasillasActivas(false);
-        vista.reiniciarTiempos(SEGUNDOS_TOTAL);
-        vista.mostrarNivel(nivel);
+    private void reiniciar() {
+        reloj.stop();
+        total = TIEMPO_TOTAL;
+        entre = TIEMPO_ENTRE;
+        vista.setNivel(nivel, nivel + 2);
+        vista.setInfo("Pulsá empezar");
+        vista.setTiempoTotal(total, TIEMPO_TOTAL);
+        vista.setTiempoEntre(entre, TIEMPO_ENTRE);
+        vista.setJugable(false);
+        vista.setBotonEmpezar(true);
     }
 
-    /** Pasa el rectángulo del nivel, enseña el patrón y deja las casillas libres. */
-    private void mostrarRonda() {
-        int cantidad = CASILLAS_INICIALES + nivel - 1;
-        vista.setNivel(nivel, cantidad);
-        vista.setMensaje("Memoriza el patrón");
-        vista.setEmpezarHabilitado(false);
-        vista.setCasillasActivas(false);
-        vista.limpiarCasillas();
-        vista.mostrarNivel(nivel);
+    // Arranca las barras para que se vean funcionando.
+    private void empezar() {
+        total = TIEMPO_TOTAL;
+        entre = TIEMPO_ENTRE;
+        vista.setInfo("¡Tu turno!");
+        vista.setJugable(true);
+        vista.setBotonEmpezar(false);
+        Sonido.efecto("empezar_patron");
+        reloj.restart();
+    }
 
-        patron.clear();
-        for (int i = 0; i < cantidad; i++) {
-            patron.add(azar.nextInt(PantallaPatron.TOTAL_CASILLAS));
+    // Al tocar una casilla se enciende un momento y suena su nota; la barra delgada se recarga.
+    private void clic(int casilla) {
+        Sonido.efecto(String.format("patron_casilla_%02d", casilla + 1));
+        vista.encender(casilla, true);
+        Timer apagar = new Timer(240, e -> vista.encender(casilla, false));
+        apagar.setRepeats(false);
+        apagar.start();
+        entre = TIEMPO_ENTRE;
+    }
+
+    private void tick() {
+        total = Math.max(0, total - 0.1);
+        entre = Math.max(0, entre - 0.1);
+        vista.setTiempoTotal(total, TIEMPO_TOTAL);
+        vista.setTiempoEntre(entre, TIEMPO_ENTRE);
+        if (total <= 0) {
+            nivel++; // por ahora, al acabarse el tiempo solo se muestra la animación de nivel
+            Sonido.efecto("nivel_superado");
+            vista.mostrarNivelSuperado(nivel, nivel + 2);
+            reiniciar();
         }
-        despues(ANIMACION_NIVEL_MS, () -> mostrarPaso(0));
-    }
-
-    private void mostrarPaso(int k) {
-        if (k >= patron.size()) {
-            vista.setMensaje("¡Tu turno!");
-            vista.setCasillasActivas(true);
-            vista.setEmpezarHabilitado(true);
-            nivel++; // el siguiente "Empezar" muestra el nivel siguiente
-            return;
-        }
-        int casilla = patron.get(k);
-        vista.iluminarCasilla(casilla);
-        despues(ENCENDIDA_MS, () -> {
-            vista.limpiarCasilla(casilla);
-            despues(PAUSA_MS, () -> mostrarPaso(k + 1));
-        });
-    }
-
-    private void iluminarUnMomento(int casilla) {
-        vista.iluminarCasilla(casilla);
-        despues(300, () -> vista.limpiarCasilla(casilla));
-    }
-
-    private void despues(int milisegundos, Runnable accion) {
-        Timer temporizador = new Timer(milisegundos, e -> accion.run());
-        temporizador.setRepeats(false);
-        temporizador.start();
     }
 }
