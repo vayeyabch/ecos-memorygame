@@ -1,7 +1,6 @@
 package ecos.componentes;
 
 import ecos.app.Tema; // Para usar los colores del tema actual.
-import java.awt.Color; // Clase de Java para representar un color.
 import java.awt.Cursor; // Forma del puntero del mouse.
 import java.awt.Dimension; // Representa un tamaño (ancho y alto).
 import java.awt.Graphics; // Herramienta básica para dibujar.

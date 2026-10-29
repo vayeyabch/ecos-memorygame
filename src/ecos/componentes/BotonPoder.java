@@ -4,7 +4,6 @@ import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sprites;
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;

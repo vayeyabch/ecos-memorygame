@@ -18,13 +18,11 @@ public class ChipPixel extends JComponent {
     private final Modo modo; // Modo de colores.
     private final int borde; // Grosor del borde, en píxeles.
     private final boolean tituloFuente; // true = usa la fuente de títulos; false = la de texto.
-    private final float tamano; // Tamaño de la letra.
     private Image icono = null; // Icono opcional a la izquierda del texto.
     private final Runnable alCambiarTema = this::repaint; // Acción que repinta cuando cambia el tema.
 
     public ChipPixel(String texto, float tamano, boolean tituloFuente, Modo modo, int borde) { // Recibe todo lo necesario para dibujar.
         this.texto = texto; // Guarda el texto.
-        this.tamano = tamano; // Guarda el tamaño de letra.
         this.tituloFuente = tituloFuente; // Guarda qué fuente usar.
         this.modo = modo; // Guarda el modo de colores.
         this.borde = borde; // Guarda el grosor del borde.

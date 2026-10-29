@@ -1,7 +1,6 @@
 package ecos.componentes;
 
 import ecos.app.Tema; // Para usar los colores del tema actual.
-import ecos.recursos.Fuentes; // Para usar la fuente pixel del juego.
 import java.awt.BorderLayout; // Layout que divide en norte, sur, este, oeste y centro.
 import java.awt.Component; // Tipo general de cualquier componente.
 import java.awt.Dimension; // Representa un tamaño (ancho y alto).
