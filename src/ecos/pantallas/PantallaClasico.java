@@ -4,11 +4,9 @@ import ecos.app.Pantalla;
 import ecos.app.modos.Patrones.AvisoDeslizante;
 import ecos.app.modos.JuegoC.BarraTiempo;
 import ecos.componentes.BotonPoder;
-import ecos.componentes.CartaPixel;
 import ecos.componentes.ChipPixel;
 import ecos.componentes.Confeti;
 import ecos.componentes.DialogoComprarOjo;
-import ecos.componentes.DialogoResultado;
 import ecos.componentes.Etiqueta;
 import ecos.componentes.ImagenPixel;
 import ecos.componentes.PanelPixel;
@@ -28,7 +26,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 // Vista del modo clásico. No guarda el estado del juego: muestra lo que el controlador pide.
 public class PantallaClasico extends Pantalla {

@@ -13,13 +13,11 @@ import javax.swing.JPanel;
 public class TableroJugador extends JPanel {
 
     private final int n; // cartas por lado
-    private final int lado; // tamaño de cada carta
     private final CartaPixel[] cartas;
     private final Runnable alCambiarTema = this::repaint;
 
     public TableroJugador(int n, int ladoCarta) {
         this.n = n;
-        this.lado = ladoCarta;
         this.cartas = new CartaPixel[n * n];
         int hueco = Math.round(ladoCarta * 0.08f);
         int pad = Math.round(ladoCarta * 0.12f) + 4 + 3;
@@ -58,7 +56,6 @@ public class TableroJugador extends JPanel {
 
     // Voltea varias cartas casi a la vez (efecto de ola de 10 ms entre cada una).
     public void voltearTodas(boolean arriba) {
-        long t0 = System.currentTimeMillis();
         for (int i = 0; i < cartas.length; i++) {
             if (cartas[i].estaHecha()) {
                 continue;

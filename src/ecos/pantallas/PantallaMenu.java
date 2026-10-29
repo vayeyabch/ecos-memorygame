@@ -18,7 +18,6 @@ import ecos.componentes.Etiqueta;
 import ecos.componentes.ImagenPixel;
 import ecos.componentes.PanelPixel;
 import ecos.componentes.TarjetaModo;
-import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
 import java.awt.Component;

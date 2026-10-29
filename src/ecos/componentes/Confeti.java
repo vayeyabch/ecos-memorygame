@@ -22,7 +22,6 @@ public class Confeti extends JComponent {
 
     private final List<Particula> particulas = new ArrayList<>();
     private final long inicio = System.currentTimeMillis();
-    private final int duracion;
 
     // Lanza confeti: n pedacitos durante duracion ms. Sale de los lados y cae desde arriba.
     public static void lanzar(java.awt.Component origen, int cantidad, int duracionMs) {
@@ -31,7 +30,6 @@ public class Confeti extends JComponent {
     }
 
     private Confeti(int cantidad, int duracion, java.awt.Component origen) {
-        this.duracion = duracion;
         setOpaque(false);
         java.awt.Container raiz = javax.swing.SwingUtilities.getRootPane(origen);
         int w = Math.max(1, raiz.getWidth() / ESCALA);
