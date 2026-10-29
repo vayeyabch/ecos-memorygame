@@ -1,84 +1,90 @@
 package ecos.componentes;
 
 import ecos.app.Tema;
-import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
-import ecos.recursos.Sprites;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Image;
-import java.awt.Insets;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
-/**
- * Tarjeta de un modo de juego para el menu: imagen, titulo, descripcion y
- * dos botones (Jugar y Reglas). Es un PanelPixel, asi que ya trae borde y sombra.
- *
- * Uso:
- *   TarjetaModo t = new TarjetaModo("Clasico", "Encuentra las parejas...", Sprites.mascota(1));
- *   t.setAlJugar(() -> irA("clasico"));
- *   t.setAlVerReglas(() -> irA("reglas_clasico"));
- */
 public class TarjetaModo extends PanelPixel {
 
-    private static final int TAM_IMAGEN = 120;
-    private static final int ANCHO_TEXTO = 260;
+    private final Runnable alElegir; // qué pasa al tocar la tarjeta
+    private boolean encima = false; // el mouse está sobre la tarjeta
 
-    private final JLabel imagen = new JLabel();
-    private final JLabel titulo = new JLabel("", JLabel.CENTER);
-    private final JLabel descripcion = new JLabel("", JLabel.CENTER);
-    private final BotonMenu btnJugar = new BotonMenu("Jugar", true);
-    private final BotonMenu btnReglas = new BotonMenu("Reglas", false);
+    public TarjetaModo(String titulo, String subtitulo, Image icono, Runnable alElegir) {
+        super();
+        this.alElegir = alElegir;
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setPadding(14);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setFocusable(true);
 
-    public TarjetaModo(String textoTitulo, String textoDescripcion, Image dibujo) {
-        super(new GridBagLayout());
-        setPadding(16);
+        ImagenPixel imagen = new ImagenPixel(icono);
+        Etiqueta lblTitulo = Etiqueta.titulo(titulo, 16f, Etiqueta.Rol.TEXTO);
+        Etiqueta lblSub = Etiqueta.texto(subtitulo, 18f, Etiqueta.Rol.SUAVE);
+        for (JComponent c : new JComponent[]{imagen, lblTitulo, lblSub}) {
+            c.setAlignmentX(Component.CENTER_ALIGNMENT);
+        }
+        add(Box.createVerticalGlue());
+        add(imagen);
+        add(Box.createVerticalStrut(10));
+        add(lblTitulo);
+        add(Box.createVerticalStrut(8));
+        add(lblSub);
+        add(Box.createVerticalGlue());
 
-        imagen.setIcon(new ImageIcon(Sprites.escalar(dibujo, TAM_IMAGEN, TAM_IMAGEN)));
-        titulo.setFont(Fuentes.titulo(20f));
-        descripcion.setFont(Fuentes.texto(20f));
-        titulo.setText(textoTitulo);
-        // el <html> con un ancho fijo hace que el texto se parta en varias lineas
-        descripcion.setText("<html><div style='text-align:center; width:" + ANCHO_TEXTO + "px'>"
-                + textoDescripcion + "</div></html>");
+        // clic con el mouse
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                elegir();
+            }
 
-        JPanel botones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 12, 0));
-        botones.setOpaque(false);
-        botones.add(btnJugar);
-        botones.add(btnReglas);
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                encima = true;
+                resaltar();
+            }
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.insets = new Insets(6, 6, 6, 6);
-        c.gridy = 0; add(imagen, c);
-        c.gridy = 1; add(titulo, c);
-        c.gridy = 2; add(descripcion, c);
-        c.gridy = 3; c.insets = new Insets(14, 6, 6, 6); add(botones, c);
-
-        Tema.alCambiar(this::colorear);
-        colorear();
-    }
-
-    /** Que pasa al tocar "Jugar". */
-    public void setAlJugar(Runnable accion) {
-        btnJugar.addActionListener(e -> {
-            Sonido.efecto("click");
-            accion.run();
+            @Override
+            public void mouseExited(MouseEvent e) {
+                encima = false;
+                resaltar();
+            }
         });
-    }
-
-    /** Que pasa al tocar "Reglas". */
-    public void setAlVerReglas(Runnable accion) {
-        btnReglas.addActionListener(e -> {
-            Sonido.efecto("click");
-            accion.run();
+        // Enter o Espacio cuando la tarjeta tiene el foco
+        getActionMap().put("elegir", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                elegir();
+            }
         });
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ENTER"), "elegir");
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("SPACE"), "elegir");
     }
 
-    private void colorear() {
-        titulo.setForeground(Tema.acento());
-        descripcion.setForeground(Tema.texto());
+    // Agrega algo más abajo (por ejemplo, el selector de tamaño del tablero).
+    public void agregarExtra(JComponent extra) {
+        extra.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(Box.createVerticalStrut(10));
+        add(extra);
     }
+
+    private void elegir() {
+        Sonido.efecto("click");
+        alElegir.run();
+    }
+
+    private void resaltar() {
+        setColorBorde(encima ? Tema.naranja() : null); // el borde se vuelve naranja al pasar el mouse
+    }
+
 }

@@ -22,19 +22,36 @@ public class Tema {
 
     // Registra algo que debe ejecutarse cuando cambie el tema.
     public static void alCambiar(Runnable accion) { // Recibe la acción que se quiere avisar.
-        ESCUCHAS.add(accion); // La guarda en la lista de escuchas.
+        if (!ESCUCHAS.contains(accion)) { // Solo la agrega si no estaba ya (evita repetidos).
+            ESCUCHAS.add(accion); // La guarda en la lista de escuchas.
+        }
     }
 
-    public static Color panel()      { return oscuro ? new Color(40, 31, 58)    : new Color(252, 243, 231); } // Color de fondo de los paneles.
-    public static Color texto()      { return oscuro ? new Color(246, 238, 255) : new Color(91, 37, 56); } // Color de las letras.
-    public static Color acento()     { return oscuro ? new Color(255, 170, 90)  : new Color(200, 96, 30); } // Color de resalte para detalles importantes.
-    public static Color borde()      { return oscuro ? new Color(18, 12, 30)    : new Color(91, 37, 56); } // Color del borde de paneles y botones.
-    public static Color bordeExterior() { return oscuro ? new Color(150, 110, 220) : new Color(229, 129, 47); } // Color del borde de afuera de los paneles.
-    public static Color caja()       { return oscuro ? new Color(66, 52, 92)    : new Color(238, 217, 196); } // Color de las cajas y zonas internas.
-    public static Color dorado()     { return new Color(240, 204, 136); } // Color dorado, igual en los dos modos.
-    public static Color boton()      { return oscuro ? new Color(150, 110, 220) : new Color(229, 129, 47); } // Color de fondo de los botones.
-    public static Color textoBoton() { return Color.WHITE; } // Color de las letras de los botones: siempre blanco.
-    public static Color acierto()    { return new Color(88, 190, 110); } // Verde para cuando se acierta.
-    public static Color alerta()     { return new Color(240, 190, 60); } // Amarillo para avisos.
-    public static Color peligro()    { return new Color(214, 70, 80); } // Rojo para errores o peligro.
+    // Deja de avisarle a una acción (se usa cuando un componente ya no está en pantalla).
+    public static void quitar(Runnable accion) { // Recibe la misma acción que se registró antes.
+        ESCUCHAS.remove(accion); // La saca de la lista de escuchas.
+    }
+
+    public static Color panel()      { return oscuro ? new Color(43, 31, 56)    : new Color(255, 243, 230); } // Color de fondo de los paneles.
+    public static Color panelAlto()  { return oscuro ? new Color(61, 45, 79)    : new Color(255, 255, 255); } // Línea clara que se ve dentro del borde de los paneles.
+    public static Color caja()       { return oscuro ? new Color(28, 19, 39)    : new Color(244, 217, 196); } // Color de las cajas y zonas internas (fondo de barras y campos).
+    public static Color texto()      { return oscuro ? new Color(255, 240, 228) : new Color(58, 27, 38); } // Color de las letras normales.
+    public static Color textoSuave() { return oscuro ? new Color(207, 174, 192) : new Color(138, 85, 102); } // Color de las letras secundarias (más apagadas).
+    public static Color acento()     { return oscuro ? new Color(255, 170, 90)  : new Color(194, 74, 0); } // Color de resalte para detalles importantes.
+    public static Color borde()      { return oscuro ? new Color(11, 7, 16)     : new Color(91, 35, 51); } // Color del borde de paneles y botones.
+    public static Color sombra()     { return oscuro ? new Color(7, 4, 12)      : new Color(91, 35, 51); } // Color de la sombra dura que se ve debajo de paneles y botones.
+    public static Color bordeExterior() { return new Color(255, 122, 31); } // Naranja que se usa para marcar al jugador con el turno.
+    public static Color dorado()     { return new Color(255, 204, 128); } // Durazno/dorado, igual en los dos modos.
+    public static Color boton()      { return new Color(255, 204, 128); } // Color de fondo de los botones principales.
+    public static Color textoBoton() { return new Color(194, 74, 0); } // Color de las letras de los botones principales.
+    public static Color boton2()     { return oscuro ? new Color(61, 45, 79)    : new Color(247, 247, 247); } // Color de fondo de los botones secundarios.
+    public static Color textoBoton2() { return oscuro ? new Color(252, 201, 205) : new Color(0, 71, 181); } // Color de las letras de los botones secundarios.
+    public static Color rosa()       { return new Color(252, 165, 171); } // Rosa de la paleta del juego.
+    public static Color carmesi()    { return new Color(194, 63, 82); } // Rojo carmesí de la paleta del juego.
+    public static Color naranja()    { return new Color(255, 122, 31); } // Naranja fuerte de la paleta del juego.
+    public static Color carta()      { return oscuro ? new Color(255, 241, 220) : new Color(255, 248, 234); } // Color de la cara de las cartas.
+    public static Color acierto()    { return oscuro ? new Color(95, 217, 138)  : new Color(63, 191, 111); } // Verde para cuando se acierta.
+    public static Color alerta()     { return oscuro ? new Color(255, 209, 92)  : new Color(255, 194, 51); } // Amarillo para avisos.
+    public static Color peligro()    { return oscuro ? new Color(255, 91, 114)  : new Color(229, 52, 76); } // Rojo para errores o peligro.
+    public static Color velo()       { return oscuro ? new Color(8, 5, 14, 184) : new Color(91, 35, 51, 148); } // Cortina semitransparente que oscurece la pantalla detrás de un diálogo.
 }

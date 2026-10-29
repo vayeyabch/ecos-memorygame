@@ -1,147 +1,123 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import ecos.recursos.Fuentes; // Fuentes pixel del juego.
-import ecos.recursos.Sonido; // Para los efectos de sonido.
-import ecos.recursos.Sprites; // Para las mascotas y el gif de confeti.
-import java.awt.Color; // Clase de Java para representar un color.
-import java.awt.FlowLayout; // Layout para poner piezas en fila.
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.GridBagConstraints; // Reglas de posición dentro del GridBagLayout.
-import java.awt.GridBagLayout; // Layout en cuadrícula para acomodar el contenido.
-import java.awt.Insets; // Márgenes entre componentes.
-import java.awt.Window; // Ventana dueña del diálogo.
-import javax.swing.ImageIcon; // Imagen lista para ponerse en un JLabel.
-import javax.swing.JDialog; // Ventana secundaria de Swing.
-import javax.swing.JLabel; // Etiqueta para texto o imágenes.
-import javax.swing.JPanel; // Panel simple para agrupar piezas.
+import ecos.app.Tema;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Image;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
-public class DialogoResultado extends JDialog {
+// Ventana de resultado (victoria del clásico o fin del modo patrones).
+public class DialogoResultado {
 
-    private static final Color TEXTO_OSCURO = new Color(91, 37, 56); // Color de texto sobre fondo dorado.
-    private static final int TAM_MASCOTA = 64; // Tamaño en píxeles de la mascota de cada jugador.
+    private final CapaModal capa;
 
-    private Runnable alVerPremios = () -> { }; // Acción del botón "Ver premios"; empieza sin hacer nada.
+    // textos y acciones van en pareja: el primero es el botón principal, los demás son secundarios.
+    public DialogoResultado(String titulo, String texto, JComponent cuerpo, String premio, String[] textos, Runnable[] acciones) {
+        PanelPixel panel = new PanelPixel() {
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(Math.max(480, super.getPreferredSize().width), super.getPreferredSize().height);
+            }
 
-    // ganador: 1 o 2 si ganó ese jugador, 0 si nadie ganó (derrota).
-    // nombre2 puede ser null cuando juega una sola persona.
-    public DialogoResultado(Window padre, int ganador, String titulo,
-            String nombre1, int intentos1, String nombre2, int intentos2, String premio) { // Recibe quién ganó, los textos y los intentos.
-        super(padre, ModalityType.APPLICATION_MODAL); // El diálogo bloquea la ventana de atrás hasta cerrarse.
-        setUndecorated(true); // Quita la barra de título del sistema.
-        activarTransparencia(); // Intenta dejar transparentes las esquinas.
-
-        boolean victoria = ganador != 0; // true si alguien ganó.
-        Sonido.efecto(victoria ? "victoria" : "derrota"); // Suena victoria o derrota según el resultado.
-
-        PanelPixel raiz = new PanelPixel(new GridBagLayout()); // Panel principal con borde y sombra pixelados.
-        raiz.setPadding(26); // Espacio interno de 26 píxeles.
-
-        JLabel lblTitulo = new JLabel(titulo, JLabel.CENTER); // Título del resultado.
-        lblTitulo.setFont(Fuentes.titulo(24f)); // El título usa la fuente de títulos.
-        lblTitulo.setForeground(Tema.acento()); // El título usa el color de acento.
-
-        JPanel tarjetas = new JPanel(new FlowLayout(FlowLayout.CENTER, 18, 0)); // Fila con las tarjetas de los jugadores.
-        tarjetas.setOpaque(false); // La hace transparente para que se vea el panel de atrás.
-        tarjetas.add(crearTarjeta(1, nombre1, intentos1, ganador == 1)); // Tarjeta del jugador 1.
-        if (nombre2 != null) { // Solo si hay un segundo jugador.
-            tarjetas.add(crearTarjeta(2, nombre2, intentos2, ganador == 2)); // Tarjeta del jugador 2.
+            @Override
+            public Dimension getMaximumSize() {
+                return getPreferredSize();
+            }
+        };
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setPadding(14);
+        panel.add(centrar(Etiqueta.titulo(titulo, 16f, Etiqueta.Rol.TEXTO)));
+        if (texto != null) {
+            panel.add(Box.createVerticalStrut(12));
+            panel.add(centrar(Etiqueta.texto(texto, 18f, Etiqueta.Rol.SUAVE)));
         }
-
-        BotonMenu btnPremios = new BotonMenu("Ver premios", true); // Botón principal para ir a la pantalla de premios.
-        BotonMenu btnCerrar = new BotonMenu("Cerrar", false); // Botón secundario para cerrar el diálogo.
-        btnPremios.addActionListener(e -> { Sonido.efecto("click"); dispose(); alVerPremios.run(); }); // Suena el click, cierra y avisa que se quiere ver los premios.
-        btnCerrar.addActionListener(e -> { Sonido.efecto("click"); dispose(); }); // Suena el click y cierra el diálogo.
-
-        JPanel botones = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 0)); // Fila con los dos botones separados 16 píxeles.
-        botones.setOpaque(false); // La hace transparente para que se vea el panel de atrás.
-        botones.add(btnPremios); // Agrega el botón Ver premios.
-        botones.add(btnCerrar); // Agrega el botón Cerrar.
-
-        GridBagConstraints c = new GridBagConstraints(); // Objeto que guarda la posición de cada pieza.
-        c.gridx = 0; // Todo va en una sola columna.
-        c.insets = new Insets(8, 8, 8, 8); // Margen alrededor de cada pieza.
-        c.gridy = 0; raiz.add(lblTitulo, c); // Primera fila: el título.
-        c.gridy = 1; raiz.add(tarjetas, c); // Segunda fila: las tarjetas.
-        if (victoria && premio != null) { // El premio solo se muestra cuando alguien ganó.
-            PanelPixel panelPremio = new PanelPixel(new FlowLayout(FlowLayout.CENTER, 0, 0)); // Panel que resalta el premio.
-            panelPremio.setPadding(10); // Espacio interno de 10 píxeles.
-            panelPremio.setColorFondo(Tema.dorado()); // Fondo dorado para destacarlo.
-            JLabel lblPremio = new JLabel("Premio: " + premio); // Texto del premio.
-            lblPremio.setFont(Fuentes.texto(26f)); // El premio usa la fuente de texto normal.
-            lblPremio.setForeground(TEXTO_OSCURO); // Texto oscuro para leerse sobre el dorado.
-            panelPremio.add(lblPremio); // Mete el texto dentro del panel.
-            c.gridy = 2; raiz.add(panelPremio, c); // Tercera fila: el premio.
+        if (cuerpo != null) {
+            panel.add(Box.createVerticalStrut(12));
+            panel.add(centrar(cuerpo));
         }
-        c.gridy = 3; c.insets = new Insets(18, 8, 8, 8); raiz.add(botones, c); // Cuarta fila: los botones, con más espacio arriba.
-
-        setContentPane(raiz); // Usa el panel principal como contenido del diálogo.
-        if (victoria) { // El confeti solo aparece cuando alguien ganó.
-            setGlassPane(new CapaConfeti()); // Pone el confeti como capa transparente encima de todo.
-            getGlassPane().setVisible(true); // Hace visible esa capa.
+        if (premio != null) {
+            panel.add(Box.createVerticalStrut(12));
+            panel.add(centrar(new ChipPixel(premio, 18f, false, ChipPixel.Modo.DURAZNO, 4)));
         }
-        pack(); // Ajusta el tamaño del diálogo a su contenido.
-        setLocationRelativeTo(padre); // Lo centra respecto a la ventana de atrás.
+        JPanel botones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
+        botones.setOpaque(false);
+        capa = new CapaModal(panel);
+        for (int i = 0; i < textos.length; i++) {
+            BotonMenu b = new BotonMenu(textos[i], i == 0 ? BotonMenu.Estilo.ROSA : BotonMenu.Estilo.SECUNDARIO);
+            Runnable accion = acciones[i];
+            b.addActionListener(e -> { capa.cerrar(); accion.run(); });
+            botones.add(b);
+        }
+        panel.add(Box.createVerticalStrut(14));
+        panel.add(centrar(botones));
     }
 
-    // Define qué hace el botón "Ver premios" (por ejemplo, ir a la pantalla de premios).
-    public void setAlVerPremios(Runnable accion) { // Recibe la acción que se quiere ejecutar.
-        this.alVerPremios = accion; // La guarda para usarla cuando se toque el botón.
+    private static JComponent centrar(JComponent c) {
+        c.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return c;
     }
 
-    private void activarTransparencia() { // Método interno: deja transparentes las esquinas del diálogo.
-        try {
-            setBackground(new Color(0, 0, 0, 0)); // Fondo totalmente transparente.
-        } catch (UnsupportedOperationException e) { // Si el sistema no lo permite
-            // se deja el fondo normal, no pasa nada.
-        }
+    public void mostrar(Component origen) {
+        capa.mostrar(origen);
     }
 
-    private PanelPixel crearTarjeta(int mascota, String nombre, int intentos, boolean destacada) { // Método interno: arma la tarjeta de un jugador.
-        PanelPixel tarjeta = new PanelPixel(new GridBagLayout()); // Tarjeta con borde y sombra.
-        tarjeta.setPadding(14); // Espacio interno de 14 píxeles.
-        Color texto = destacada ? TEXTO_OSCURO : Tema.texto(); // Color de texto según si es la tarjeta ganadora.
-        if (destacada) { // Si es la tarjeta del ganador
-            tarjeta.setColorFondo(Tema.dorado()); // la pinta de dorado.
-        }
-
-        JLabel imagen = new JLabel(new ImageIcon(Sprites.escalar(Sprites.mascota(mascota), TAM_MASCOTA, TAM_MASCOTA))); // Mascota del jugador, escalada sin borrosidad.
-        JLabel lblNombre = new JLabel(nombre, JLabel.CENTER); // Nombre del jugador.
-        lblNombre.setFont(Fuentes.texto(24f)); // El nombre usa la fuente de texto normal.
-        lblNombre.setForeground(texto); // Le pone el color calculado.
-        JLabel lblIntentos = new JLabel(String.valueOf(intentos), JLabel.CENTER); // Cantidad de intentos.
-        lblIntentos.setFont(Fuentes.titulo(30f)); // Los intentos se ven grandes con la fuente de títulos.
-        lblIntentos.setForeground(destacada ? TEXTO_OSCURO : Tema.acento()); // Le pone el color calculado.
-        JLabel lblTexto = new JLabel("intentos", JLabel.CENTER); // Etiqueta que acompaña al número.
-        lblTexto.setFont(Fuentes.texto(20f)); // Usa la fuente de texto normal.
-        lblTexto.setForeground(texto); // Le pone el color calculado.
-
-        GridBagConstraints c = new GridBagConstraints(); // Objeto que guarda la posición de cada pieza de la tarjeta.
-        c.gridx = 0; // Todo va en una sola columna.
-        c.insets = new Insets(4, 20, 4, 20); // Margen alrededor de cada pieza.
-        c.gridy = 0; tarjeta.add(imagen, c); // Primera fila: la mascota.
-        c.gridy = 1; tarjeta.add(lblNombre, c); // Segunda fila: el nombre.
-        c.gridy = 2; tarjeta.add(lblIntentos, c); // Tercera fila: el número de intentos.
-        c.gridy = 3; tarjeta.add(lblTexto, c); // Cuarta fila: la palabra intentos.
-        return tarjeta; // Devuelve la tarjeta ya armada.
+    // Dos cajitas lado a lado (jugador 1 y jugador 2) con mascota, nombre e intentos.
+    public static JComponent filaJugadores(Image m1, String n1, int a1, boolean gana1, Image m2, String n2, int a2) {
+        JPanel fila = new JPanel(new GridLayout(1, 2, 10, 0));
+        fila.setOpaque(false);
+        fila.add(new Celda(m1, n1, "" + a1, "intentos", gana1));
+        fila.add(new Celda(m2, n2, "" + a2, "intentos", !gana1));
+        fila.setPreferredSize(new Dimension(420, 130));
+        return fila;
     }
 
-    private static class CapaConfeti extends JPanel { // Capa transparente que dibuja el confeti animado encima del diálogo.
+    // Dos cajitas con un dato cada una (por ejemplo, niveles superados).
+    public static JComponent filaDatos(String et1, String v1, String et2, String v2) {
+        JPanel fila = new JPanel(new GridLayout(1, 2, 10, 0));
+        fila.setOpaque(false);
+        fila.add(new Celda(null, null, v1, et1, false));
+        fila.add(new Celda(null, null, v2, et2, false));
+        fila.setPreferredSize(new Dimension(420, 90));
+        return fila;
+    }
 
-        private final ImageIcon confeti = Sprites.gif("gifs/confeti.gif"); // El gif de confeti.
+    private static class Celda extends JPanel {
+        private final boolean ganador;
 
-        CapaConfeti() { // Constructor de la capa.
-            setOpaque(false); // La hace transparente para ver lo que hay debajo.
+        Celda(Image mascota, String nombre, String valor, String etiqueta, boolean ganador) {
+            this.ganador = ganador;
+            setOpaque(false);
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            add(Box.createVerticalGlue());
+            if (mascota != null) {
+                add(centrar(new ImagenPixel(mascota)));
+                add(centrar(Etiqueta.titulo(nombre, 9f, Etiqueta.Rol.TEXTO)));
+            }
+            add(centrar(Etiqueta.titulo(valor, 18f, Etiqueta.Rol.TEXTO)));
+            add(centrar(Etiqueta.texto(etiqueta, 15f, Etiqueta.Rol.SUAVE)));
+            add(Box.createVerticalGlue());
         }
 
-        @Override // Indica que se reemplaza un método de JPanel.
-        public boolean contains(int x, int y) { // Swing lo usa para saber si el mouse está sobre la capa.
-            return false; // Siempre responde que no, así los clics pasan a los botones de abajo.
-        }
-
-        @Override // Indica que se reemplaza el método de dibujo de JPanel.
-        protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar la capa.
-            g.drawImage(confeti.getImage(), 0, 0, getWidth(), getHeight(), this); // Dibuja el gif estirado sobre todo el diálogo; así se anima solo.
+        @Override
+        protected void paintComponent(Graphics g) {
+            Color fondo = Tema.caja();
+            Color borde = Tema.borde();
+            if (ganador) {
+                borde = Tema.alerta();
+                Color a = Tema.alerta();
+                fondo = new Color((a.getRed() * 30 + fondo.getRed() * 70) / 100, (a.getGreen() * 30 + fondo.getGreen() * 70) / 100, (a.getBlue() * 30 + fondo.getBlue() * 70) / 100);
+            }
+            g.setColor(borde);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(fondo);
+            g.fillRect(3, 3, getWidth() - 6, getHeight() - 6);
         }
     }
 }

@@ -3,14 +3,20 @@ package ecos.app;
 import ecos.recursos.Sonido; // Para poner la música de la pantalla al entrar.
 import ecos.recursos.Sprites; // Para obtener el fondo animado.
 import java.awt.Graphics; // Herramienta para dibujar en pantalla.
+import java.awt.Graphics2D; // Versión más completa de Graphics.
+import java.awt.RenderingHints; // Opciones de calidad al dibujar.
 import javax.swing.ImageIcon; // Imagen de Swing (aquí el gif del fondo).
 import javax.swing.JPanel; // Panel de Swing: el contenedor del que heredan las pantallas.
 
 public abstract class Pantalla extends JPanel { // Clase base abstracta: no se crea directamente, solo se hereda.
 
+    public static final int MARGEN_SUPERIOR = 72; // Espacio que dejan las pantallas arriba para que no las tape la barra superior.
+
     private final String id; // Nombre único de la pantalla; sirve para navegar hacia ella.
     private final String musica; // Nombre de la canción que suena en esta pantalla.
     private Navegador navegador; // El navegador que la controla; se asigna cuando se registra.
+    private Runnable accionEntrar = () -> { }; // Qué hacer al entrar (empieza sin hacer nada).
+    private Runnable accionSalir = () -> { }; // Qué hacer al salir (empieza sin hacer nada).
     private boolean conFondo = true; // true = dibuja el fondo animado; false = no lo dibuja.
 
     protected Pantalla(String id, String musica) { // Constructor: las hijas lo llaman con super("id", "musica").
@@ -50,10 +56,23 @@ public abstract class Pantalla extends JPanel { // Clase base abstracta: no se c
     public void alEntrar() { // Las hijas pueden sobrescribirlo para hacer cosas al entrar.
         Sonido.musica(musica); // Pone la música de esta pantalla.
         repaint(); // Repinta la pantalla.
+        accionEntrar.run(); // Avisa a quien quiera enterarse (por ejemplo, un controlador).
+    }
+
+    // El controlador usa esto para arrancar cuando la pantalla se muestra.
+    public void setAlEntrar(Runnable accion) { // Recibe lo que se quiere ejecutar al entrar.
+        this.accionEntrar = accion; // La guarda.
+    }
+
+    // El controlador usa esto para parar sus relojes cuando la pantalla se oculta.
+    public void setAlSalir(Runnable accion) { // Recibe lo que se quiere ejecutar al salir.
+        this.accionSalir = accion; // La guarda.
     }
 
     // Se ejecuta cuando la pantalla se oculta.
-    public void alSalir() { // Vacío a propósito: las hijas lo usan si necesitan limpiar algo.
+    public void alSalir() { // Las hijas lo usan si necesitan limpiar algo.
+        ecos.componentes.CapaModal.cerrarTodas(); // Cierra cualquier ventana abierta encima.
+        accionSalir.run(); // Avisa a quien quiera enterarse.
     }
 
     @Override // Indica que se reemplaza el método de dibujo de JPanel.
@@ -61,7 +80,18 @@ public abstract class Pantalla extends JPanel { // Clase base abstracta: no se c
         super.paintComponent(g); // Dibuja primero lo básico del panel.
         if (conFondo) { // Solo si la pantalla tiene fondo activado.
             ImageIcon fondo = Sprites.fondo(); // Pide el fondo del tema actual (montaña o noche).
-            g.drawImage(fondo.getImage(), 0, 0, getWidth(), getHeight(), this); // Lo dibuja estirado para cubrir todo el panel.
+            int ancho = fondo.getIconWidth(); // Ancho original del gif.
+            int alto = fondo.getIconHeight(); // Alto original del gif.
+            if (ancho <= 0 || alto <= 0) { // Si el gif todavía no cargó.
+                return; // No dibuja nada.
+            }
+            double escala = Math.max(getWidth() / (double) ancho, getHeight() / (double) alto); // Escala mínima para cubrir toda la pantalla sin deformar.
+            int w = (int) Math.ceil(ancho * escala); // Ancho final del fondo.
+            int h = (int) Math.ceil(alto * escala); // Alto final del fondo.
+            Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel para no afectar al original.
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR); // Sin suavizar: se mantiene el pixel art.
+            g2.drawImage(fondo.getImage(), (getWidth() - w) / 2, getHeight() - h, w, h, this); // Dibuja el fondo centrado y pegado abajo (lo que sobra se corta arriba).
+            g2.dispose(); // Libera el pincel.
         }
     }
 }
