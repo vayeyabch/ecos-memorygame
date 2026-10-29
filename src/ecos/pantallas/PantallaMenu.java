@@ -1,17 +1,6 @@
 package ecos.pantallas;
 
 import ecos.app.Pantalla;
-<<<<<<< HEAD
-<<<<<<< HEAD
-import ecos.app.modos.JuegoC.BotonPixel;
-import ecos.app.modos.JuegoC.Paleta;
-import ecos.componentes.TarjetaModo;
-=======
-import ecos.componentes.BotonMenu;
->>>>>>> origin/main
-import ecos.recursos.Sonido;
-import ecos.recursos.Sprites;
-=======
 import ecos.app.Sesion;
 import ecos.componentes.BotonMenu;
 import ecos.componentes.Etiqueta;
@@ -21,7 +10,6 @@ import ecos.componentes.TarjetaModo;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
 import java.awt.Component;
->>>>>>> origin/main
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import javax.swing.BorderFactory;
@@ -66,18 +54,9 @@ public class PantallaMenu extends Pantalla {
         tarjetas.add(patrones);
         tarjetas.add(premios);
 
-<<<<<<< HEAD
-        // ----- Boton de premios -----
-        BotonPixel premios = new BotonPixel("Premios", Paleta.DORADO, Paleta.TEXTO_NARANJA, 16f);
-        premios.addActionListener(e -> {
-            Sonido.efecto("click");
-            irA("premios");
-        });
-=======
         // botón Salir: vuelve a la pantalla de acceso
         BotonMenu salir = new BotonMenu("Salir", BotonMenu.Estilo.SECUNDARIO);
         salir.addActionListener(e -> { Sonido.efecto("click"); irA("acceso"); });
->>>>>>> origin/main
 
         JPanel columna = new JPanel();
         columna.setOpaque(false);
