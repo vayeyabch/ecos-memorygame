@@ -6,11 +6,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Carga las dos tipografias pixel art una sola vez.
- *   titulo(16f) -> Press Start 2P (titulos y botones; usar tamanos 8, 16, 24...)
- *   texto(18f)  -> Pixelify Sans (texto normal)
- */
+
 public class Fuentes {
 
     private static final Map<String, Font> BASE = new HashMap<>();

@@ -32,7 +32,8 @@ public class Tema {
         ESCUCHAS.remove(accion); // La saca de la lista de escuchas.
     }
 
-    public static Color panel()      { return oscuro ? new Color(43, 31, 56)    : new Color(255, 243, 230); } // Color de fondo de los paneles.
+    public static Color panel()     
+     { return oscuro ? new Color(43, 31, 56)    : new Color(255, 243, 230); } // Color de fondo de los paneles.
     public static Color panelAlto()  { return oscuro ? new Color(61, 45, 79)    : new Color(255, 255, 255); } // Línea clara que se ve dentro del borde de los paneles.
     public static Color caja()       { return oscuro ? new Color(28, 19, 39)    : new Color(244, 217, 196); } // Color de las cajas y zonas internas (fondo de barras y campos).
     public static Color texto()      { return oscuro ? new Color(255, 240, 228) : new Color(58, 27, 38); } // Color de las letras normales.
