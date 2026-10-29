@@ -6,13 +6,13 @@ import javax.swing.JDialog;
 /**
  * Dialogo para comprar el "ojo espia" con monedas.
  * Sonidos: "comprar" si alcanza, "sin_monedas" si no, "ojo_espia" al activarlo.
- * TODO: mostrar costo y monedas del jugador, botones "Comprar" / "Cancelar".
+ * td: mostrar costo y monedas del jugador, botones "Comprar" / "Cancelar".
  */
 public class DialogoComprarOjo extends JDialog {
 
     public DialogoComprarOjo(Window padre) {
         super(padre, ModalityType.APPLICATION_MODAL);
         setUndecorated(true);
-        // TODO: construir el contenido, pack() y setLocationRelativeTo(padre)
+        // Td: construir el contenido, pack() y setLocationRelativeTo(padre)
     }
 }
