@@ -24,7 +24,6 @@ import java.util.function.IntConsumer;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 // Vista del modo clásico. No guarda el estado del juego: muestra lo que el controlador pide.
@@ -41,6 +40,7 @@ public class PantallaClasico extends Pantalla {
     private final PanelPixel[] lados = new PanelPixel[2];
     private final TableroJugador[] tableros = new TableroJugador[2];
     private final ChipPixel[][] chips = new ChipPixel[2][3]; // intentos, parejas, monedas
+    private final int[] monedasAntes = {-1, -1}; // Últimas monedas de cada jugador (-1 = todavía no se mostró ninguna).
     private final BotonPoder[] ojos = new BotonPoder[2];
     private final int[] mascotas = {2, 7};
     private final String[] nombres = {"Jugador 1", "Invitado"};
@@ -110,6 +110,8 @@ public class PantallaClasico extends Pantalla {
 
     // Arma los dos tableros de n x n y las cartas caen en cascada.
     public void configurar(int n, String nombre1, String nombre2, int mascota1, int mascota2, int precioOjo, int[][] caras) {
+        monedasAntes[0] = -1; // Nueva partida: se olvidan las monedas anteriores.
+        monedasAntes[1] = -1; // Igual para el otro jugador.
         this.n = n;
         this.precioOjo = precioOjo;
         nombres[0] = nombre1;
@@ -123,7 +125,7 @@ public class PantallaClasico extends Pantalla {
             tableros[p] = new TableroJugador(n, lado);
             for (int i = 0; i < n * n; i++) {
                 final int carta = i;
-                tableros[p].getCarta(i).setCara(Sprites.icono(caras[p][i] + 1, 64));
+                tableros[p].getCarta(i).setCara(Sprites.icono(caras[p][i] + 1, 128));
                 tableros[p].getCarta(i).setAlClic(() -> alClicCarta.accept(jugador, carta));
             }
             lados[p] = crearLado(p, n * n / 2);
@@ -137,36 +139,49 @@ public class PantallaClasico extends Pantalla {
 
     private PanelPixel crearLado(int p, int parejas) {
         PanelPixel lado = new PanelPixel();
-        lado.setLayout(new BoxLayout(lado, BoxLayout.Y_AXIS));
-        lado.setPadding(6);
-        JPanel cab = new JPanel(new BorderLayout(10, 0));
-        cab.setOpaque(false);
-        JPanel nm = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        lado.setLayout(new BorderLayout(14, 0)); // Columna de datos a la izquierda y el tablero a la derecha (así el tablero puede ser más grande).
+        lado.setPadding(8);
+        JPanel nm = new JPanel(); // Mascota grande con el nombre debajo.
         nm.setOpaque(false);
-        nm.add(new ImagenPixel(Sprites.mascota(mascotas[p], 30)));
-        nm.add(Etiqueta.titulo(recortar(nombres[p]), 10f, Etiqueta.Rol.TEXTO));
-        JPanel st = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        st.setOpaque(false);
-        chips[p][0] = new ChipPixel("Intentos 0", 8f, true, ChipPixel.Modo.CAJA, 3);
-        chips[p][1] = new ChipPixel("Parejas 0/" + parejas, 8f, true, ChipPixel.Modo.CAJA, 3);
-        chips[p][2] = new ChipPixel("30", 8f, true, ChipPixel.Modo.CAJA, 3);
-        chips[p][2].setIcono(Sprites.ui("coin", 16));
-        for (ChipPixel ch : chips[p]) {
-            st.add(ch);
-        }
-        cab.add(nm, BorderLayout.WEST);
-        cab.add(st, BorderLayout.EAST);
+        nm.setLayout(new BoxLayout(nm, BoxLayout.Y_AXIS));
+        ImagenPixel foto = new ImagenPixel(Sprites.mascota(mascotas[p], 64)); // Mascota del jugador, bien visible.
+        foto.setAlignmentX(Component.LEFT_ALIGNMENT);
+        nm.add(foto);
+        nm.add(Box.createVerticalStrut(8));
+        Etiqueta nombre = Etiqueta.titulo(recortar(nombres[p]), 13f, Etiqueta.Rol.TEXTO);
+        nombre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        nm.add(nombre);
+        chips[p][0] = new ChipPixel("Intentos 0", 11f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][1] = new ChipPixel("Parejas 0/" + parejas, 11f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][2] = new ChipPixel("30", 11f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][2].setIcono(Sprites.ui("coin", 20));
         ojos[p] = new BotonPoder("Ojo espía", precioOjo);
         ojos[p].addActionListener(e -> new DialogoComprarOjo(precioOjo, () -> alComprarOjo.accept(p)).mostrar(this));
-        JPanel poderes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JPanel datos = new JPanel(); // Columna con todo lo que antes estaba arriba y abajo del tablero.
+        datos.setOpaque(false);
+        datos.setLayout(new BoxLayout(datos, BoxLayout.Y_AXIS));
+        nm.setAlignmentX(Component.LEFT_ALIGNMENT);
+        datos.add(nm);
+        datos.add(Box.createVerticalStrut(18));
+        for (ChipPixel ch : chips[p]) {
+            JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            fila.setOpaque(false);
+            fila.add(ch);
+            fila.setAlignmentX(Component.LEFT_ALIGNMENT);
+            datos.add(fila);
+            datos.add(Box.createVerticalStrut(12));
+        }
+        datos.add(Box.createVerticalStrut(10));
+        JPanel poderes = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         poderes.setOpaque(false);
         poderes.add(ojos[p]);
-        JComponent[] piezas = {cab, tableros[p], poderes};
-        for (JComponent pz : piezas) {
-            pz.setAlignmentX(Component.CENTER_ALIGNMENT);
-            lado.add(pz);
-            lado.add(Box.createVerticalStrut(8));
-        }
+        poderes.setAlignmentX(Component.LEFT_ALIGNMENT);
+        datos.add(poderes);
+        JPanel arriba = new JPanel(new BorderLayout()); // Pega la columna arriba (no la estira).
+        arriba.setOpaque(false);
+        arriba.add(datos, BorderLayout.NORTH);
+        lado.add(arriba, BorderLayout.WEST);
+        lado.add(tableros[p], BorderLayout.CENTER);
         return lado;
     }
 
@@ -178,9 +193,9 @@ public class PantallaClasico extends Pantalla {
     private int tamanoCarta() {
         int w = getWidth() > 0 ? getWidth() : 1280;
         int h = getHeight() > 0 ? getHeight() : 720;
-        int porAncho = (int) ((w - 96) / (n + 1.6));
-        int porAlto = (int) ((h - 330) / (n + 0.6));
-        return Math.max(36, Math.min(n == 4 ? 112 : 84, Math.min(porAncho, porAlto)));
+        int porAncho = (int) ((w - 96 - 290) / (n + 1.2)); // 290 = ancho de la columna de datos.
+        int porAlto = (int) ((h - 208) / (n + 0.6)); // 208 = lo que ocupan la barra de arriba y los márgenes.
+        return Math.max(36, Math.min(n == 4 ? 170 : 124, Math.min(porAncho, porAlto)));
     }
 
     // Muestra el tablero del jugador en turno (p = 0 o 1) y lo deja jugable.
@@ -221,12 +236,14 @@ public class PantallaClasico extends Pantalla {
     }
 
     public void marcarPareja(int p, int i, int j) {
+        ecos.recursos.Sonido.efecto("par_encontrado"); // Suena cuando se encuentra una pareja.
         tableros[p].getCarta(i).marcarHecha();
         tableros[p].getCarta(j).marcarHecha();
     }
 
     // Voltea todas las cartas del tablero un momento (el comodín).
     public void ojoEspia(int p) {
+        ecos.recursos.Sonido.efecto("ojo_espia"); // Suena cuando se usa el ojo espía.
         tableros[p].voltearTodas(true);
         javax.swing.Timer t = new javax.swing.Timer(1700, e -> tableros[p].voltearTodas(false));
         t.setRepeats(false);
@@ -242,6 +259,10 @@ public class PantallaClasico extends Pantalla {
     }
 
     public void setMonedas(int p, int monedas) {
+        if (monedasAntes[p] >= 0 && monedas > monedasAntes[p]) { // Solo si las monedas SUBIERON (no al empezar ni al gastar).
+            ecos.recursos.Sonido.efecto("moneda"); // Suena la moneda.
+        }
+        monedasAntes[p] = monedas; // Guarda el valor para comparar la próxima vez.
         chips[p][2].setTexto("" + monedas);
         ojos[p].setEnabled(monedas >= precioOjo);
     }
@@ -251,6 +272,7 @@ public class PantallaClasico extends Pantalla {
     }
 
     public void mostrarVictoria(int ganador, int intentos1, int intentos2, String premio, Runnable verPremios, Runnable jugarOtra) {
+        ecos.recursos.Sonido.efecto("victoria"); // Suena cuando termina la partida.
         Confeti.lanzar(this, 190, 5200);
         ecos.app.modos.JuegoC.VentanaVictoria.mostrar(this, nombres[ganador], Sprites.mascota(mascotas[0], 32), nombres[0], intentos1,
                 Sprites.mascota(mascotas[1], 32), nombres[1], intentos2, ganador == 0, premio, verPremios, jugarOtra);

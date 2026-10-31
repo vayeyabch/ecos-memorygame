@@ -83,7 +83,7 @@ public class CartaPixel extends JComponent {
 
     // Recibe el icono original y lo deja escalado una sola vez.
     public void setCara(Image original) {
-        int ic = (int) ((lado - 8 - 6) * 0.72);
+        int ic = (int) ((lado - 8 - 6) * 0.92); // Icono más grande dentro de la carta (antes 0.72).
         this.cara = original == null ? null : Sprites.escalar(original, ic, ic);
     }
 

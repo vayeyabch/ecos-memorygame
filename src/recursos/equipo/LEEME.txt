@@ -1,0 +1,5 @@
+Fotos para la ventana "Acerca de" (botón "i").
+Poné aquí una foto CUADRADA de cada integrante, con estos nombres exactos (png, jpg o jpeg):
+  fhellen    fisabella    fallison    fvaleria
+Ejemplo: fhellen.png
+Si falta alguna, el marco de esa persona queda vacío.

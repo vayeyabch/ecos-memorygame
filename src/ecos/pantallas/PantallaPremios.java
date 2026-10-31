@@ -11,6 +11,7 @@ import ecos.recursos.Sprites;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -85,7 +86,11 @@ public class PantallaPremios extends Pantalla {
             c.gridy = 0;
             c.weightx = pesos[col];
             c.insets = new Insets(0, 6, 4, 6);
-            tabla.add(Etiqueta.titulo(cab[col], 8f, Etiqueta.Rol.SUAVE), c);
+            Etiqueta titulo = Etiqueta.titulo(cab[col], 11f, Etiqueta.Rol.SUAVE);
+            if (col == 2) {
+                titulo.setHorizontalAlignment(Etiqueta.CENTER); // La columna de intentos va centrada.
+            }
+            tabla.add(titulo, c);
         }
         for (int i = 0; i < 5; i++) {
             int intentos = Sesion.PUNTAJES[i];
@@ -93,16 +98,16 @@ public class PantallaPremios extends Pantalla {
             c.insets = new Insets(0, 0, 0, 0);
             c.gridx = 0;
             c.weightx = 0;
-            tabla.add(new Celda(i == 1, new ImagenPixel(Sprites.ui(ICONOS[i], 26))), c);
+            tabla.add(new Celda(false, new ImagenPixel(Sprites.ui(ICONOS[i], 26))), c);
             c.gridx = 1;
             c.weightx = 1;
-            tabla.add(new Celda(i == 1, Etiqueta.texto(Sesion.NOMBRES[i], 20f, Etiqueta.Rol.TEXTO)), c);
+            tabla.add(new Celda(false, Etiqueta.texto(Sesion.NOMBRES[i], 20f, Etiqueta.Rol.TEXTO)), c);
             c.gridx = 2;
             c.weightx = 0.4;
-            tabla.add(new Celda(i == 1, Etiqueta.texto("" + intentos, 20f, Etiqueta.Rol.TEXTO)), c);
+            tabla.add(new Celda(false, Etiqueta.titulo("" + intentos, 15f, Etiqueta.Rol.TEXTO), true), c); // Número con la fuente de títulos (se lee mejor) y centrado.
             c.gridx = 3;
             c.weightx = 0.8;
-            tabla.add(new Celda(i == 1, crearPremio(intentos)), c);
+            tabla.add(new Celda(false, crearPremio(intentos)), c);
         }
         return tabla;
     }
@@ -112,13 +117,26 @@ public class PantallaPremios extends Pantalla {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new javax.swing.BoxLayout(p, javax.swing.BoxLayout.Y_AXIS));
-        ChipPixel chip = new ChipPixel(Sesion.colones(Sesion.premioColones(intentos)), 19f, false, ChipPixel.Modo.DURAZNO, 2);
-        Etiqueta usd = Etiqueta.texto("$" + String.format(java.util.Locale.US, "%.2f", Sesion.premioDolares(intentos)), 14f, Etiqueta.Rol.SUAVE);
+        ChipPixel chip = new ChipPixel(Sesion.colones(Sesion.premioColones(intentos)).substring(2), 14f, true, ChipPixel.Modo.DURAZNO, 2); // Los números con la fuente de títulos (más claros).
+        chip.setIcono(simboloColon()); // El símbolo ₡ va aparte porque esa fuente no lo tiene.
+        Etiqueta usd = Etiqueta.titulo("$" + String.format(java.util.Locale.US, "%.2f", Sesion.premioDolares(intentos)), 10f, Etiqueta.Rol.SUAVE);
         chip.setAlignmentX(LEFT_ALIGNMENT);
         usd.setAlignmentX(LEFT_ALIGNMENT);
         p.add(chip);
+        p.add(javax.swing.Box.createVerticalStrut(6)); // Espacio entre los colones y los dólares.
         p.add(usd);
         return p;
+    }
+
+    // Dibuja el símbolo ₡ en una imagen pequeña (la fuente de los números no lo trae).
+    private static java.awt.Image simboloColon() {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(18, 22, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.setFont(ecos.recursos.Fuentes.texto(24f).deriveFont(java.awt.Font.BOLD));
+        g.setColor(new Color(91, 35, 51));
+        g.drawString("₡", 0, 18);
+        g.dispose();
+        return img;
     }
 
     // Una celda de la tabla: línea gruesa arriba y, si se pide, fondo durazno suave.
@@ -126,12 +144,16 @@ public class PantallaPremios extends Pantalla {
         private final boolean resaltada;
 
         Celda(boolean resaltada, JComponent contenido) {
+            this(resaltada, contenido, false);
+        }
+
+        Celda(boolean resaltada, JComponent contenido, boolean centrada) {
             super(new GridBagLayout());
             this.resaltada = resaltada;
             setOpaque(false);
             setBorder(BorderFactory.createEmptyBorder(10, 6, 10, 6));
             GridBagConstraints g = new GridBagConstraints();
-            g.anchor = GridBagConstraints.WEST;
+            g.anchor = centrada ? GridBagConstraints.CENTER : GridBagConstraints.WEST; // Centrada o a la izquierda.
             g.weightx = 1;
             add(contenido, g);
         }

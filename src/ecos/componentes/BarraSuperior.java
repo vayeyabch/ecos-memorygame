@@ -17,6 +17,7 @@ import javax.swing.Timer; // Reloj que ejecuta una acción cada cierto tiempo.
 public class BarraSuperior extends JPanel {
 
     private final BotonMenu atras = new BotonMenu("< Atrás", BotonMenu.Estilo.PRINCIPAL); // Botón para volver a la pantalla anterior.
+    private final BotonIcono idioma = new BotonIcono(); // Botón del idioma (español/inglés). Todavía sin lógica.
     private final BotonIcono tema = new BotonIcono(); // Botón del sol/luna que cambia entre modo claro y oscuro.
     private final BotonIcono musica = new BotonIcono(); // Botón que silencia o activa la música.
     private final Navegador navegador; // El navegador, para saber si se puede volver atrás.
@@ -31,6 +32,7 @@ public class BarraSuperior extends JPanel {
 
         JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0)); // Panel para agrupar los botones de la derecha, alineados a la derecha.
         derecha.setOpaque(false); // Lo hace transparente.
+        derecha.add(idioma); // Agrega el botón de idioma.
         derecha.add(tema); // Agrega el botón de tema.
         derecha.add(musica); // Agrega el botón de música.
         JPanel izquierda = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)); // Panel para el botón de la izquierda.
@@ -39,10 +41,12 @@ public class BarraSuperior extends JPanel {
         add(izquierda, BorderLayout.WEST); // Pone el botón Atrás a la izquierda.
         add(derecha, BorderLayout.EAST); // Pone el grupo de botones a la derecha.
 
+        idioma.setDibujo(this::dibujarIdioma); // Le dice al botón de idioma cómo dibujar su icono.
         tema.setDibujo(this::dibujarTema); // Le dice al botón de tema cómo dibujar su icono.
         musica.setDibujo(this::dibujarMusica); // Le dice al botón de música cómo dibujar su icono.
 
         atras.addActionListener(e -> { Sonido.efecto("click"); navegador.atras(); }); // Al hacer clic suena el efecto y vuelve a la pantalla anterior.
+        idioma.addActionListener(e -> { Sonido.efecto("click"); VentanaIdiomas.mostrar(this); }); // Suena y abre la ventana de idiomas (todavía sin lógica).
         tema.addActionListener(e -> { Tema.alternar(); Sonido.efecto("cambio_tema"); }); // Al hacer clic cambia el tema y suena el efecto.
         musica.addActionListener(e -> { if (Sonido.alternar()) Sonido.efecto("musica_on_off"); musica.repaint(); }); // Al hacer clic silencia o activa; si queda activo suena un efecto.
 
@@ -56,6 +60,36 @@ public class BarraSuperior extends JPanel {
     private void actualizar(String idPantalla) { // Recibe el id de la pantalla nueva.
         setVisible(!"intro".equals(idPantalla)); // Oculta la barra en la intro y la muestra en las demás.
         atras.setVisible(navegador.puedeVolver()); // Muestra el botón Atrás solo si hay una pantalla anterior.
+    }
+
+    // Dibuja el icono de idioma: dos globos de diálogo, uno con una "A" y otro con un carácter ("文"), como el icono de traducción.
+    private void dibujarIdioma(Graphics2D g, Rectangle r) { // Recibe el pincel y el área disponible.
+        String[] filas = { // El icono dibujado con letras: # borde, a globo azul, b globo naranja, w letra oscura, . vacío.
+            "#########.....",
+            "#aaawaaa#.....",
+            "#aawawaa#.....",
+            "#awwwwwa#.....",
+            "#awaaawa#.....",
+            "#########.....",
+            ".##..#########",
+            ".....#bbbwbbb#",
+            ".....#bwwwwwb#",
+            ".....#bbwbwbb#",
+            ".....#bwbbbwb#",
+            ".....#########",
+            "...........##."
+        };
+        int celda = 3; // Cada celda mide 3 píxeles.
+        int x0 = r.x + (r.width - 14 * celda) / 2; // Posición horizontal inicial (centrado).
+        int y0 = r.y + (r.height - filas.length * celda) / 2; // Posición vertical inicial (centrado).
+        for (int y = 0; y < filas.length; y++) { // Recorre las filas.
+            for (int x = 0; x < 14; x++) { // Recorre las columnas.
+                char c = filas[y].charAt(x); // Qué hay en esta celda.
+                if (c == '.') continue; // Vacía: no se dibuja nada.
+                g.setColor(c == '#' ? Tema.borde() : c == 'a' ? new Color(0x7CC4F5) : c == 'b' ? new Color(0xFFB074) : new Color(0x5B2333)); // Color según la letra (globos claros, letras oscuras).
+                g.fillRect(x0 + x * celda, y0 + y * celda, celda, celda); // Dibuja la celda.
+            }
+        }
     }
 
     // Dibuja la luna (modo claro) o el sol (modo oscuro) dentro del botón de tema.

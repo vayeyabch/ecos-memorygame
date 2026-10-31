@@ -1,47 +1,88 @@
 package ecos;
 
 import ecos.app.Navegador; // Para registrar las pantallas.
-import ecos.app.Ventana; // La ventana principal del juego.
-import ecos.componentes.BarraSuperior; // Barra de arriba (Atrás, tema, música).
+import ecos.app.Ventana; // La ventana principal.
+import ecos.componentes.BarraSuperior; // La barra de arriba (atrás, idioma, tema, música).
+import ecos.componentes.BotonAcercaDe; // El botón "i" de la esquina inferior.
 import ecos.app.modos.JuegoC.ControladorJuegoClasico;
 import ecos.app.modos.Patrones.ControladorPatron;
+import ecos.controlador.ControladorAcceso;
+import ecos.controlador.ControladorInicio;
+import ecos.controlador.ControladorIntro;
+import ecos.controlador.ControladorLoginFacial;
+import ecos.controlador.ControladorMenu;
+import ecos.controlador.ControladorPremios;
+import ecos.controlador.ControladorRegistro;
+import ecos.controlador.ControladorRegistroFacial;
+import ecos.controlador.ControladorReglasClasico;
+import ecos.controlador.ControladorReglasPatrones;
 import ecos.pantallas.PantallaClasico;
+import ecos.pantallas.PantallaLoginFacial;
 import ecos.pantallas.PantallaMenu;
 import ecos.pantallas.PantallaPatron;
 import ecos.pantallas.PantallaPremios;
+import ecos.pantallas.PantallaRegistro;
+import ecos.pantallas.PantallaRegistroFacial;
 import ecos.pantallas.PantallaReglasClasico;
 import ecos.pantallas.PantallaReglasPatrones;
-import ecos.pantallas.pantallaAcceso; // Pantalla de acceso (nombre y escáner).
-import ecos.pantallas.pantallaInicio; // Pantalla de inicio (START).
-import ecos.pantallas.pantallaIntro; // Pantalla de introducción.
-import ecos.recursos.Sprites; // Para cargar las imágenes pesadas en segundo plano.
-import javax.swing.SwingUtilities; // Para crear la interfaz en el hilo correcto de Swing.
+import ecos.pantallas.pantallaAcceso;
+import ecos.pantallas.pantallaInicio;
+import ecos.pantallas.pantallaIntro;
+import ecos.recursos.Sprites;
+import javax.swing.SwingUtilities;
 
 public class Main {
 
-    // Arma la ventana con todas las pantallas registradas (sin mostrarla todavía).
     public static Ventana crear() {
-        Ventana ventana = new Ventana(); // Crea la ventana principal.
-        ventana.setBarraSuperior(new BarraSuperior(ventana.getNavegador())); // Pone la barra de arriba.
-        Navegador n = ventana.getNavegador(); // Guarda el navegador para registrar las pantallas.
-        n.registrar(new pantallaIntro()); // Pantalla "intro".
-        n.registrar(new pantallaInicio()); // Pantalla "inicio".
-        n.registrar(new pantallaAcceso()); // Pantalla "acceso".
-        n.registrar(new PantallaMenu()); // Pantalla "menu".
-        n.registrar(new PantallaReglasClasico()); // Pantalla "reglas_clasico".
-        n.registrar(new PantallaReglasPatrones()); // Pantalla "reglas_patrones".
-        n.registrar(new PantallaPremios()); // Pantalla "premios".
-        PantallaClasico clasico = new PantallaClasico(); // Vista del modo clásico.
-        PantallaPatron patrones = new PantallaPatron(); // Vista del modo patrones.
-        n.registrar(clasico); // Pantalla "clasico".
-        n.registrar(patrones); // Pantalla "patrones".
-        new ControladorJuegoClasico(clasico, n::ir); // Controlador temporal del clásico.
-        new ControladorPatron(patrones, n::ir); // Controlador temporal de patrones.
-        return ventana; // Entrega la ventana lista.
+        Ventana ventana = new Ventana(); // La ventana principal.
+        ventana.setBarraSuperior(new BarraSuperior(ventana.getNavegador())); // La barra de arriba.
+        ventana.setEsquinaInferior(new BotonAcercaDe(ventana.getNavegador())); // El botón "i" abajo a la derecha.
+        Navegador n = ventana.getNavegador(); // El navegador, para registrar las pantallas.
+
+        // Pantallas (la vista de cada una).
+        pantallaIntro intro = new pantallaIntro();
+        pantallaInicio inicio = new pantallaInicio();
+        pantallaAcceso acceso = new pantallaAcceso();
+        PantallaRegistro registro = new PantallaRegistro();
+        PantallaRegistroFacial registroFacial = new PantallaRegistroFacial();
+        PantallaLoginFacial loginFacial = new PantallaLoginFacial();
+        PantallaMenu menu = new PantallaMenu();
+        PantallaReglasClasico reglasClasico = new PantallaReglasClasico();
+        PantallaReglasPatrones reglasPatrones = new PantallaReglasPatrones();
+        PantallaPremios premios = new PantallaPremios();
+        PantallaClasico clasico = new PantallaClasico();
+        PantallaPatron patrones = new PantallaPatron();
+        n.registrar(intro);
+        n.registrar(inicio);
+        n.registrar(acceso);
+        n.registrar(registro);
+        n.registrar(registroFacial);
+        n.registrar(loginFacial);
+        n.registrar(menu);
+        n.registrar(reglasClasico);
+        n.registrar(reglasPatrones);
+        n.registrar(premios);
+        n.registrar(clasico);
+        n.registrar(patrones);
+
+        // Controladores (uno por pantalla). Los nuevos todavía no tienen lógica.
+        new ControladorIntro(intro);
+        new ControladorInicio(inicio);
+        new ControladorAcceso(acceso);
+        new ControladorRegistro(registro);
+        new ControladorRegistroFacial(registroFacial);
+        new ControladorLoginFacial(loginFacial);
+        new ControladorMenu(menu);
+        new ControladorReglasClasico(reglasClasico);
+        new ControladorReglasPatrones(reglasPatrones);
+        new ControladorPremios(premios);
+        new ControladorJuegoClasico(clasico, n::ir);
+        new ControladorPatron(patrones, n::ir);
+        return ventana;
     }
 
     public static void main(String[] args) {
-        Sprites.precargar(); // Mientras se ve la intro, carga las mascotas y los iconos en segundo plano.
-        SwingUtilities.invokeLater(() -> crear().iniciar("intro")); // Crea la interfaz y abre la intro.
+        Sprites.precargar(); // Carga las imágenes antes de abrir la ventana.
+        SwingUtilities.invokeLater(() -> crear().iniciar("intro")); // Abre la ventana en la intro.
     }
 }

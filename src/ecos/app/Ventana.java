@@ -42,6 +42,25 @@ public class Ventana extends JFrame {
         barra.setBounds(0, 0, getLayeredPane().getWidth(), barra.getPreferredSize().height); // Posición (0, 0), todo el ancho y su alto natural.
     }
 
+    // Pone un componente (por ejemplo el botón "i") pegado a la esquina inferior derecha de la ventana.
+    public void setEsquinaInferior(JComponent boton) { // Recibe el componente que se quiere poner.
+        JLayeredPane capas = getLayeredPane(); // Panel de capas de la ventana.
+        capas.add(boton, JLayeredPane.PALETTE_LAYER); // Lo pone encima de las pantallas.
+        ubicarEsquina(boton); // Lo acomoda.
+        capas.addComponentListener(new ComponentAdapter() { // Escucha cuando cambia el tamaño de la ventana.
+            @Override // Indica que se reemplaza un método de ComponentAdapter.
+            public void componentResized(ComponentEvent e) { // Se ejecuta cada vez que cambia el tamaño.
+                ubicarEsquina(boton); // Lo vuelve a acomodar.
+            }
+        });
+    }
+
+    private void ubicarEsquina(JComponent boton) { // Lo pega a la esquina inferior derecha, con 16 px de margen.
+        Dimension d = boton.getPreferredSize(); // Tamaño del componente.
+        boton.setBounds(getLayeredPane().getWidth() - d.width - 16, getLayeredPane().getHeight() - d.height - 16, d.width, d.height); // Posición.
+    }
+
+
     // Muestra la pantalla indicada y abre la ventana.
     public void iniciar(String idPrimeraPantalla) { // Recibe el id de la primera pantalla.
         setVisible(true); // Hace visible la ventana.

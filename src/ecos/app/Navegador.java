@@ -15,7 +15,7 @@ public class Navegador {
     private final Map<String, Pantalla> pantallas = new HashMap<>(); // Diccionario de pantallas registradas (id -> pantalla).
     private final Deque<String> historial = new ArrayDeque<>(); // Pila con los ids de las pantallas por donde se pasó, para volver atrás.
     private Pantalla actual = null; // La pantalla que se está mostrando ahora (null = ninguna).
-    private Consumer<String> alCambiarPantalla = id -> { }; // Acción que se ejecuta al cambiar de pantalla; empieza sin hacer nada.
+    private final java.util.List<Consumer<String>> alCambiarPantalla = new java.util.ArrayList<>(); // Acciones que se ejecutan al cambiar de pantalla (la barra de arriba, el botón "i", etc.).
 
     public JPanel getContenedor() { // Entrega el panel que guarda todas las pantallas.
         return contenedor; // La Ventana lo usa para ponerlo en el centro.
@@ -50,7 +50,7 @@ public class Navegador {
 
     // Avisa cada vez que cambia la pantalla (la barra superior lo usa para ocultarse en la intro).
     public void alCambiarPantalla(Consumer<String> accion) { // Recibe la acción que se quiere ejecutar en cada cambio.
-        this.alCambiarPantalla = accion; // La guarda para usarla después.
+        this.alCambiarPantalla.add(accion); // La agrega a la lista para usarla después.
     }
 
     private void mostrar(String id) { // Método interno que hace el cambio real de pantalla.
@@ -65,6 +65,8 @@ public class Navegador {
         actual = siguiente; // La nueva pantalla pasa a ser la actual.
         cartas.show(contenedor, id); // Le pide al CardLayout que muestre esa carta.
         actual.alEntrar(); // Le avisa a la pantalla que ya se está mostrando (pone su música).
-        alCambiarPantalla.accept(id); // Ejecuta la acción registrada, pasándole el id nuevo.
+        for (Consumer<String> accion : alCambiarPantalla) { // Recorre todas las acciones registradas.
+            accion.accept(id); // Ejecuta cada una, pasándole el id nuevo.
+        }
     }
 }
