@@ -1,7 +1,6 @@
 package ecos.pantallas;
 
 import ecos.app.Pantalla;
-import ecos.app.Sesion;
 import ecos.app.Tema;
 import ecos.componentes.ChipPixel;
 import ecos.componentes.Etiqueta;
@@ -23,12 +22,16 @@ public class PantallaPremios extends Pantalla {
 
     private static final String[] ICONOS = {"trophy", "star", "heart", "gem", "shield"}; // Un iconito por puesto.
 
+    private final PanelPixel tarjeta; // La tarjeta que contiene el título, el dólar y la tabla.
+    private final Etiqueta valorDolar; // El dólar del día (lo escribe el controlador).
+    private JPanel tabla = null; // La tabla actual (se reemplaza cada vez que llegan datos).
+
     public PantallaPremios() {
         super("premios", "premios");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 24, 16));
 
-        PanelPixel tarjeta = new PanelPixel() {
+        tarjeta = new PanelPixel() {
             @Override
             public Dimension getPreferredSize() {
                 return new Dimension(Math.max(640, super.getPreferredSize().width), super.getPreferredSize().height);
@@ -55,8 +58,8 @@ public class PantallaPremios extends Pantalla {
         JPanel dolar = new JPanel();
         dolar.setOpaque(false);
         dolar.setLayout(new javax.swing.BoxLayout(dolar, javax.swing.BoxLayout.Y_AXIS));
-        Etiqueta valor = Etiqueta.texto("₡ 487,20", 26f, Etiqueta.Rol.CARMESI);
-        for (JComponent e : new JComponent[]{valor}) {
+        valorDolar = Etiqueta.texto(" ", 26f, Etiqueta.Rol.CARMESI); // Se llena cuando el controlador manda los datos.
+        for (JComponent e : new JComponent[]{valorDolar}) {
             e.setAlignmentX(LEFT_ALIGNMENT);
             dolar.add(e);
             dolar.add(javax.swing.Box.createVerticalStrut(4));
@@ -64,16 +67,29 @@ public class PantallaPremios extends Pantalla {
         c.gridy = 1;
         tarjeta.add(dolar, c);
 
-        // tabla
-        c.gridy = 2;
-        c.insets = new Insets(0, 0, 0, 0);
-        tarjeta.add(crearTabla(), c);
-
         add(tarjeta);
     }
 
-    // Tabla de 5 filas: icono, jugador, intentos y premio.
-    private JPanel crearTabla() {
+    // El controlador llama esto con los datos listos: el dólar del día y, por puesto, jugador, intentos y premio.
+    public void mostrar(String dolar, String[] nombres, int[] intentos, String[] colones, String[] dolares) {
+        valorDolar.setText(dolar); // Escribe el dólar del día.
+        if (tabla != null) {
+            tarjeta.remove(tabla); // Quita la tabla vieja.
+        }
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 2;
+        c.weightx = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        tabla = crearTabla(nombres, intentos, colones, dolares);
+        tarjeta.add(tabla, c); // Pone la tabla nueva.
+        tarjeta.revalidate();
+        tarjeta.repaint();
+    }
+
+    // Tabla de filas: icono, jugador, intentos y premio.
+    private JPanel crearTabla(String[] nombres, int[] intentos, String[] colones, String[] dolares) {
         JPanel tabla = new JPanel(new GridBagLayout());
         tabla.setOpaque(false);
         GridBagConstraints c = new GridBagConstraints();
@@ -92,8 +108,7 @@ public class PantallaPremios extends Pantalla {
             }
             tabla.add(titulo, c);
         }
-        for (int i = 0; i < 5; i++) {
-            int intentos = Sesion.PUNTAJES[i];
+        for (int i = 0; i < nombres.length; i++) {
             c.gridy = i + 1;
             c.insets = new Insets(0, 0, 0, 0);
             c.gridx = 0;
@@ -101,25 +116,25 @@ public class PantallaPremios extends Pantalla {
             tabla.add(new Celda(false, new ImagenPixel(Sprites.ui(ICONOS[i], 26))), c);
             c.gridx = 1;
             c.weightx = 1;
-            tabla.add(new Celda(false, Etiqueta.texto(Sesion.NOMBRES[i], 20f, Etiqueta.Rol.TEXTO)), c);
+            tabla.add(new Celda(false, Etiqueta.texto(nombres[i], 20f, Etiqueta.Rol.TEXTO)), c);
             c.gridx = 2;
             c.weightx = 0.4;
-            tabla.add(new Celda(false, Etiqueta.titulo("" + intentos, 15f, Etiqueta.Rol.TEXTO), true), c); // Número con la fuente de títulos (se lee mejor) y centrado.
+            tabla.add(new Celda(false, Etiqueta.titulo("" + intentos[i], 15f, Etiqueta.Rol.TEXTO), true), c); // Número con la fuente de títulos (se lee mejor) y centrado.
             c.gridx = 3;
             c.weightx = 0.8;
-            tabla.add(new Celda(false, crearPremio(intentos)), c);
+            tabla.add(new Celda(false, crearPremio(colones[i], dolares[i])), c);
         }
         return tabla;
     }
 
     // Chip durazno con los colones y los dólares abajo.
-    private JPanel crearPremio(int intentos) {
+    private JPanel crearPremio(String colones, String dolares) {
         JPanel p = new JPanel();
         p.setOpaque(false);
         p.setLayout(new javax.swing.BoxLayout(p, javax.swing.BoxLayout.Y_AXIS));
-        ChipPixel chip = new ChipPixel(Sesion.colones(Sesion.premioColones(intentos)).substring(2), 14f, true, ChipPixel.Modo.DURAZNO, 2); // Los números con la fuente de títulos (más claros).
+        ChipPixel chip = new ChipPixel(colones, 14f, true, ChipPixel.Modo.DURAZNO, 2); // Los números con la fuente de títulos (más claros).
         chip.setIcono(simboloColon()); // El símbolo ₡ va aparte porque esa fuente no lo tiene.
-        Etiqueta usd = Etiqueta.titulo("$" + String.format(java.util.Locale.US, "%.2f", Sesion.premioDolares(intentos)), 10f, Etiqueta.Rol.SUAVE);
+        Etiqueta usd = Etiqueta.titulo(dolares, 10f, Etiqueta.Rol.SUAVE);
         chip.setAlignmentX(LEFT_ALIGNMENT);
         usd.setAlignmentX(LEFT_ALIGNMENT);
         p.add(chip);
