@@ -29,7 +29,7 @@ public class MezclaCartasClasico {
         }
         Collections.shuffle(cartas, azar);
 
-        int[][] matriz = new int[n][n];
+        int[][] matriz = new int[n][n]; // llena la matriz con las cartas mezcladas
         for (int fila = 0; fila < n; fila++) {
             for (int col = 0; col < n; col++) {
                 matriz[fila][col] = cartas.get(fila * n + col);
@@ -41,8 +41,8 @@ public class MezclaCartasClasico {
     // La pantalla recibe las caras en una sola fila: la matriz se recorre fila por fila.
     public static int[] aplanar(int[][] matriz) {
         int n = matriz.length;
-        int[] plano = new int[n * n];
-        for (int fila = 0; fila < n; fila++) {
+        int[] plano = new int[n * n]; // la pantalla recibe las caras en una sola fila
+        for (int fila = 0; fila < n; fila++) { // recorre la matriz fila por fila y copia cada fila en el plano
             System.arraycopy(matriz[fila], 0, plano, fila * n, n);
         }
         return plano;

@@ -6,12 +6,12 @@ package ecos.app.modos.JuegoC;
 public class ComparadorParejasClasico {
 
     public boolean sonIguales(int caraA, int caraB) {
-        return caraA == caraB;
+        return caraA == caraB; //si las cartas son iguales, devuelve true, si no, devuelve false
     }
 
     public boolean comparar(int caraA, int caraB) {
-        boolean iguales = sonIguales(caraA, caraB);
-        if (!iguales) {
+        boolean iguales = sonIguales(caraA, caraB); // verifica si las cartas son iguales
+        if (!iguales) { // si no son iguales, suena el fallo
             SonidosPartidaClasica.fallo();
         }
         return iguales;
