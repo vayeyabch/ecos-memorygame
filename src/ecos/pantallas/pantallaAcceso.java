@@ -2,6 +2,7 @@ package ecos.pantallas;
 
 import ecos.app.Pantalla; // Clase base de todas las pantallas.
 import ecos.app.Sesion; // Datos compartidos temporales (nombre del jugador).
+import ecos.app.Tema;
 import ecos.componentes.BotonMenu; // Botón grande con estilo pixel.
 import ecos.componentes.CampoClavePixel; // Campo de contraseña.
 import ecos.componentes.CampoTextoPixel; // Campo de texto.
@@ -9,15 +10,23 @@ import ecos.componentes.DesfileMascotas; // Mascotas que desfilan arriba.
 import ecos.componentes.Etiqueta; // Texto con estilo.
 import ecos.componentes.PanelPixel; // Caja con borde pixelado.
 import ecos.recursos.Sonido; // Para los efectos de sonido.
+import ecos.recursos.Sprites;
+
 import java.awt.Component; // Tipo general de componente.
 import java.awt.Dimension; // Ancho y alto.
 import java.awt.FlowLayout; // Layout que acomoda uno al lado del otro.
 import javax.swing.BorderFactory; // Fábrica de bordes.
 import javax.swing.Box; // Para dejar espacios vacíos.
 import javax.swing.BoxLayout; // Layout que apila en vertical.
+import javax.swing.JButton;
 import javax.swing.JComponent; // Componente básico de Swing.
 import javax.swing.JPanel; // Panel de Swing.
 import java.awt.GridBagLayout; // Layout para centrar.
+import java.awt.BorderLayout; // Layout para poner un componente al lado del otro.
+import java.awt.Graphics; // Para dibujar.
+import java.awt.Graphics2D; // Para dibujar con más opciones.
+import java.awt.BasicStroke; // Para dibujar líneas gruesas.
+import java.awt.Cursor; // Para cambiar el cursor del mouse.
 
 public class pantallaAcceso extends Pantalla {
 
@@ -54,7 +63,7 @@ public class pantallaAcceso extends Pantalla {
         tarjeta.add(alinear(campoUsuario)); // Campo del usuario.
         tarjeta.add(Box.createVerticalStrut(12)); // Espacio.
         tarjeta.add(alinear(Etiqueta.titulo("CONTRASEÑA", 10f, Etiqueta.Rol.SUAVE))); // Etiqueta de la contraseña.
-        tarjeta.add(alinear(campoClave)); // Campo de la contraseña.
+        tarjeta.add(alinear(conOjo(campoClave))); // Campo de la contraseña con su ojo.
         tarjeta.add(Box.createVerticalStrut(18)); // Espacio.
         tarjeta.add(alinear(entrar.anchoCompleto())); // Botón Entrar.
         tarjeta.add(Box.createVerticalStrut(10)); // Espacio.
@@ -94,8 +103,49 @@ public class pantallaAcceso extends Pantalla {
         irA("menu"); // Va al menú.
     }
 
+    private static JPanel conOjo(CampoClavePixel campo) { // Pone un botón de ojo al lado del campo de contraseña.
+    final char puntitos = campo.getEchoChar(); // Guarda el puntito normal.
+    JButton ojo = new JButton() { // Botón que dibuja el icono del ojo.
+        private boolean ver = false; // true = la clave se ve.
+        {
+            setPreferredSize(new Dimension(36, 10)); // Ancho del botón (el alto lo toma del campo).
+            setContentAreaFilled(false); // Sin fondo de botón.
+            setBorderPainted(false); // Sin borde.
+            setFocusPainted(false); // Sin marco de foco.
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Manito al pasar el mouse.
+            addActionListener(e -> { // Al hacer clic.
+                Sonido.efecto("click"); // Suena el clic.
+                ver = !ver; // Cambia entre ver y esconder.
+                campo.setEchoChar(ver ? (char) 0 : puntitos); // 0 = muestra el texto real.
+                repaint(); // Redibuja el ojo.
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) { // Dibuja el icono.
+            Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel.
+            int cx = getWidth() / 2; // Centro en x.
+            int cy = getHeight() / 2; // Centro en y.
+            g2.drawImage(Sprites.ui("eye", 24), cx - 12, cy - 12, null); // Icono eye.png del proyecto.
+            if (!ver) { // Si la clave está escondida.
+                g2.setColor(Tema.texto()); // Color de la raya.
+                g2.setStroke(new BasicStroke(3f)); // Línea gruesa.
+                g2.drawLine(cx - 12, cy + 12, cx + 12, cy - 12); // Tacha el ojo.
+            }
+            g2.dispose(); // Libera el pincel.
+        }
+    };
+    JPanel p = new JPanel(new BorderLayout(4, 0)); // Campo y ojo lado a lado.
+    p.setOpaque(false); // Transparente.
+    p.add(campo, BorderLayout.CENTER); // El campo ocupa casi todo.
+    p.add(ojo, BorderLayout.EAST); // El ojo a la derecha.
+    return p; // Lo entrega.
+}
+
     private static JComponent alinear(JComponent c) { // Alinea un componente a la izquierda de la tarjeta.
         c.setAlignmentX(Component.LEFT_ALIGNMENT); // Lo alinea.
         return c; // Lo entrega.
     }
+
+    
 }
