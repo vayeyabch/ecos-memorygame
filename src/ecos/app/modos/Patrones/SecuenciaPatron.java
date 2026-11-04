@@ -10,17 +10,17 @@ import java.util.Random;
 //  - El jugador tiene que tocar las mismas casillas, en el mismo orden.
 public class SecuenciaPatron {
 
-    public enum Resultado { CORRECTA, NIVEL_COMPLETO, INCORRECTA }
+    public enum Resultado { CORRECTA, NIVEL_COMPLETO, INCORRECTA }  // Qué pasó al tocar una casilla: acertó, completó el patrón o se equivocó.
 
     public static final int CASILLAS_TABLERO = 16; // el tablero es de 4x4
-    public static final int CASILLAS_INICIALES = 3;
+    public static final int CASILLAS_INICIALES = 3; // casillas del nivel 1
 
-    private final Random azar = new Random();
-    private final List<Integer> patron = new ArrayList<>();
-    private int nivel = 1;
+    private final Random azar = new Random(); // sortea casillas al azar
+    private final List<Integer> patron = new ArrayList<>();  // el patrón actual, en orden (números 0 a 15)
+    private int nivel = 1;  // nivel actual
     private int posicion = 0; // cuántas casillas del patrón ya acertó en esta ronda
 
-    public int getNivel() {
+    public int getNivel() {  // Devuelve el nivel actual.
         return nivel;
     }
 
@@ -31,33 +31,33 @@ public class SecuenciaPatron {
 
     // Crea un patrón nuevo para el nivel actual (nunca repite la misma casilla seguida).
     public void nuevaRonda() {
-        patron.clear();
-        posicion = 0;
-        int anterior = -1;
-        for (int i = 0; i < getCasillas(); i++) {
+        patron.clear(); // borra el patrón anterior
+        posicion = 0; // vuelve a empezar desde la primera casilla
+        int anterior = -1; // última casilla sorteada (-1 = todavía ninguna)
+        for (int i = 0; i < getCasillas(); i++) { // una vuelta por cada casilla del patrón
             int casilla;
-            do {
+            do { // sortea hasta que sea distinta de la anterior
                 casilla = azar.nextInt(CASILLAS_TABLERO);
             } while (casilla == anterior);
-            patron.add(casilla);
+            patron.add(casilla); // la agrega al patrón
             anterior = casilla;
         }
     }
 
-    public List<Integer> getPatron() {
+    public List<Integer> getPatron() {  // Devuelve el patrón (solo para leerlo, no se puede modificar desde afuera).
         return Collections.unmodifiableList(patron);
     }
 
     // El jugador toca una casilla: ¿es la que sigue en el patrón?
     public Resultado pulsar(int casilla) {
-        if (posicion >= patron.size() || casilla != patron.get(posicion)) {
+        if (posicion >= patron.size() || casilla != patron.get(posicion)) {  // Se equivocó si ya no quedan casillas o si no es la que toca
             return Resultado.INCORRECTA;
         }
-        posicion++;
-        return posicion == patron.size() ? Resultado.NIVEL_COMPLETO : Resultado.CORRECTA;
+        posicion++; // acertó: ahora espera la siguiente
+        return posicion == patron.size() ? Resultado.NIVEL_COMPLETO : Resultado.CORRECTA;  // Si ya tocó todas, el nivel está completo
     }
 
-    public void subirNivel() {
+    public void subirNivel() {  // Pasa al siguiente nivel (el patrón tendrá una casilla más).
         nivel++;
     }
 }
