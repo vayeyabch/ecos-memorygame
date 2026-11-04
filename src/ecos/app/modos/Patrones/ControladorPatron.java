@@ -1,6 +1,7 @@
 package ecos.app.modos.Patrones;
 
 import ecos.app.Sesion;
+import ecos.modelo.CalculoPremio;
 import ecos.pantallas.PantallaPatron;
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,7 +18,6 @@ public class ControladorPatron {
     private static final int ENCENDIDA_MS = 600; // cuánto se ve encendida cada casilla del patrón
     private static final int PAUSA_MS = 250; // pausa entre una casilla y otra
     private static final int ANIMACION_NIVEL_MS = 1800; // espera mientras pasa el aviso de nivel
-    private static final int MONEDAS_POR_NIVEL = 5; // premio: monedas por cada nivel superado
 
     private enum Fase { ESPERANDO, MOSTRANDO, JUGANDO, TERMINADO }
 
@@ -180,16 +180,18 @@ public class ControladorPatron {
         SonidosPartidaPatron.derrota();
         int nivel = secuencia.getNivel();
         int casillas = secuencia.getCasillas();
-        String premio = premioPorNivel(nivel - 1);
+        String premio = premioFinal(nivel);
         despues(700, () -> VentanaFinPatron.mostrar(vista, Sesion.getJugador1(), nivel, casillas, motivo, premio,
                 () -> irA.accept("premios"), this::iniciar));
     }
 
-    private static String premioPorNivel(int nivelesSuperados) {
-        if (nivelesSuperados <= 0) {
+    // Premio con la fórmula del equipo: 1 / intentos x 100 x dólar del día (CalculoPremio).
+    // Aquí cada nivel que el jugador intentó cuenta como un intento. Si no superó ni el nivel 1, no hay premio.
+    private static String premioFinal(int nivelAlcanzado) {
+        if (nivelAlcanzado <= 1) {
             return "ninguno (¡inténtalo otra vez!)";
         }
-        return nivelesSuperados * MONEDAS_POR_NIVEL + " monedas";
+        return CalculoPremio.textoPremio(nivelAlcanzado);
     }
 
     // Hace algo una sola vez después de unos milisegundos (si la partida sigue siendo la misma).
