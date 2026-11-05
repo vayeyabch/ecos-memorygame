@@ -47,6 +47,7 @@ public class ControladorJuegoClasico {
         partida++; // nueva partida: los temporizadores viejos dejan de valer
         int n = Sesion.getTamano(); // tamaño del tablero (6 = 6x6)
         modelo = new PartidaClasica(n); // crea las reglas y baraja las cartas
+        ImpresorParejasClasico.imprimir(modelo); // imprime las parejas
         int[][] caras = new int[2][]; // qué imagen tiene cada carta de cada jugador
         for (int p = 0; p < 2; p++) {
             // aplanar: convierte la matriz 6x6 en una lista de 36 que entiende la pantalla
