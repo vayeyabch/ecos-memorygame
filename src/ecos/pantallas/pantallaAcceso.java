@@ -103,7 +103,7 @@ public class pantallaAcceso extends Pantalla {
         irA("menu"); // Va al menú.
     }
 
-    private static JPanel conOjo(CampoClavePixel campo) { // Pone un botón de ojo al lado del campo de contraseña.
+    public static JPanel conOjo(CampoClavePixel campo) { // Pone un botón de ojo al lado del campo de contraseña.
     final char puntitos = campo.getEchoChar(); // Guarda el puntito normal.
     JButton ojo = new JButton() { // Botón que dibuja el icono del ojo.
         private boolean ver = false; // true = la clave se ve.

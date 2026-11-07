@@ -192,10 +192,26 @@ public class ControladorJuegoClasico {
         int puntaje = modelo.getIntentos(ganador); // puntaje = intentos del ganador (menos intentos, más premio)
         String premio = CalculoPremio.textoPremio(puntaje); // fórmula del equipo (Allison): 1 / intentos x 100 x dólar
         // Espera 0.9 s y abre VentanaVictoria con los datos y los dos botones
-        despues(900, () -> vista.mostrarVictoria(ganador, modelo.getIntentos(0), modelo.getIntentos(1),
-                premio,
+        int i0 = modelo.getIntentos(0);
+        int i1 = modelo.getIntentos(1);
+        if (ganador == 1) { // Ganó el jugador 2: primero inicia sesión para que se le sumen los puntos.
+            int puntos = (int) Math.max(1, Math.round(CalculoPremio.premioDolares(puntaje))); // Puntos = premio en dólares redondeado.
+            despues(900, () -> {
+                VentanaLoginGanador ventana = new VentanaLoginGanador(Sesion.getJugador2(), puntos);
+                new ControladorLoginGanador(ventana, puntos,
+                        extra -> mostrarVictoria(ganador, i0, i1, extra == null ? premio : premio + "  ·  " + extra));
+                ventana.mostrar(vista);
+            });
+            return;
+        }
+        despues(900, () -> mostrarVictoria(ganador, i0, i1, premio)); // Ganó el jugador 1: victoria directa.
+    }
+
+    // Abre la ventana de victoria con los dos botones.
+    private void mostrarVictoria(int ganador, int i0, int i1, String premio) {
+        vista.mostrarVictoria(ganador, i0, i1, premio,
                 () -> irA.accept("premios"), // botón "Ver premios"
-                this::iniciar));              // botón "Jugar otra vez"
+                this::iniciar);              // botón "Jugar otra vez"
     }
 
     // Ojo espía: solo se puede comprar si no hay una carta volteada.

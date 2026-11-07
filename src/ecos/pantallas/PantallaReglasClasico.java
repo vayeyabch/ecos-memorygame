@@ -47,7 +47,8 @@ public class PantallaReglasClasico extends Pantalla {
         JComponent[] piezas = {
             Etiqueta.titulo("Nueva partida clásica", 16f, Etiqueta.Rol.TEXTO),
             Etiqueta.titulo("JUGADOR 1", 10f, Etiqueta.Rol.SUAVE), campo1,
-            Etiqueta.titulo("JUGADOR 2", 10f, Etiqueta.Rol.SUAVE), campo2,
+            Etiqueta.titulo("JUGADOR 2 (APODO)", 10f, Etiqueta.Rol.SUAVE), campo2,
+            Etiqueta.texto("<html><div style='width:460px'>Es solo un apodo. Si ganás, te pediremos tu usuario y contraseña para sumar tus puntos.</div></html>", 20f, Etiqueta.Rol.ACENTO),
             reglas, comenzar.anchoCompleto()};
         for (JComponent c : piezas) {
             c.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -60,7 +61,7 @@ public class PantallaReglasClasico extends Pantalla {
     @Override
     public void alEntrar() {
         super.alEntrar();
-        campo1.setText(Sesion.getNombre());
+        campo1.setText(Sesion.getNombre()); // PENDIENTE (BD): cuando exista la base, aquí va el nombre de usuario de quien inició sesión, ya no "Jugador 1".
         campo2.setText("Invitado");
         reglas.setRegla(0, "Cada jugador tiene su propio tablero (<b>" + Sesion.getTamano() + "x" + Sesion.getTamano() + "</b>) con las parejas en otro orden.");
     }

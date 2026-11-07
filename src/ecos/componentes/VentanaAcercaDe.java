@@ -24,22 +24,23 @@ public class VentanaAcercaDe {
     // Integrantes: primer nombre, apellidos y nombre del archivo de la foto (sin extensión) dentro de src/recursos/equipo.
     private static final String[] NOMBRES = {"Valeria", "Hellen", "Isabella", "Allison"}; // Primer nombre.
     private static final String[] APELLIDOS = {"Bermúdez Chacón", "Herrera Cascante", "Guzmán Leiva", "Ortega Aguilar"}; // Apellidos.
+    private static final String[] CORREOS = {"vbermudezch@gmail.com", "hellenicoleherrerac@gmail.com", "isabellagl2008@hotmail.com", "aliortegaaguilar@gmail.com"}; // Correo de cada integrante (los pidió el profesor).
     private static final String[] FOTOS = {"fvaleria", "fhellen", "fisabella", "fallison"}; // Archivos de las fotos.
     private static final String[] EXTENSIONES = {".png", ".jpg", ".jpeg"}; // Formatos que acepta.
-    private static final int LADO = 96; // Tamaño del marco de cada foto, en píxeles.
+    private static final int LADO = 100; // Tamaño del marco de cada foto, en píxeles.
 
     // Abre la ventana encima de la pantalla actual. Recibe cualquier componente de la ventana.
     public static void mostrar(Component origen) { // "origen" sirve para saber en qué ventana se dibuja.
         PanelPixel panel = new PanelPixel(); // Caja con borde pixelado.
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // Apila todo en vertical.
         panel.setPadding(18); // Margen interno.
-        panel.add(centrar(Etiqueta.titulo(TITULO, 16f, Etiqueta.Rol.TEXTO))); // Título.
+        panel.add(centrar(Etiqueta.titulo(TITULO, 20f, Etiqueta.Rol.TEXTO))); // Título.
         panel.add(Box.createVerticalStrut(6)); // Espacio.
-        panel.add(centrar(Etiqueta.texto(SUBTITULO, 22f, Etiqueta.Rol.ACENTO))); // Subtítulo.
+        panel.add(centrar(Etiqueta.texto(SUBTITULO, 26f, Etiqueta.Rol.ACENTO))); // Subtítulo.
         panel.add(Box.createVerticalStrut(8)); // Espacio.
-        panel.add(centrar(Etiqueta.texto("<html><div style='width:430px;text-align:center'>" + DESCRIPCION + "</div></html>", 19f, Etiqueta.Rol.SUAVE))); // Descripción del proyecto.
-        panel.add(Box.createVerticalStrut(16)); // Espacio.
-        JPanel cuadricula = new JPanel(new GridLayout(2, 2, 24, 16)); // Las cuatro integrantes en 2 x 2.
+        panel.add(centrar(Etiqueta.texto("<html><div style='width:620px;text-align:center'>" + DESCRIPCION + "</div></html>", 22f, Etiqueta.Rol.SUAVE))); // Descripción del proyecto.
+        panel.add(Box.createVerticalStrut(14)); // Espacio.
+        JPanel cuadricula = new JPanel(new GridLayout(2, 2, 40, 14)); // Las cuatro integrantes en 2 x 2.
         cuadricula.setOpaque(false); // Transparente.
         for (int i = 0; i < NOMBRES.length; i++) { // Una celda por integrante.
             cuadricula.add(celda(i)); // Agrega la foto y el nombre.
@@ -48,7 +49,7 @@ public class VentanaAcercaDe {
         CapaModal capa = new CapaModal(panel); // Cortina oscura con el panel al centro.
         BotonMenu cerrar = new BotonMenu(CERRAR, BotonMenu.Estilo.ROSA); // Botón para cerrar la ventana.
         cerrar.addActionListener(e -> capa.cerrar()); // Al hacer clic se cierra.
-        panel.add(Box.createVerticalStrut(16)); // Espacio.
+        panel.add(Box.createVerticalStrut(14)); // Espacio.
         panel.add(centrar(cerrar)); // Agrega el botón.
         capa.mostrar(origen); // Muestra la ventana.
     }
@@ -60,8 +61,9 @@ public class VentanaAcercaDe {
         celda.setLayout(new BoxLayout(celda, BoxLayout.Y_AXIS)); // Apila en vertical.
         celda.add(centrar(new Foto(rutaFoto(FOTOS[i])))); // El marco de la foto.
         celda.add(Box.createVerticalStrut(6)); // Espacio.
-        celda.add(centrar(Etiqueta.titulo(NOMBRES[i], 13f, Etiqueta.Rol.TEXTO))); // Primer nombre.
-        celda.add(centrar(Etiqueta.texto(APELLIDOS[i], 20f, Etiqueta.Rol.SUAVE))); // Apellidos.
+        celda.add(centrar(Etiqueta.titulo(NOMBRES[i], 15f, Etiqueta.Rol.TEXTO))); // Primer nombre.
+        celda.add(centrar(Etiqueta.texto(APELLIDOS[i], 22f, Etiqueta.Rol.SUAVE))); // Apellidos.
+        celda.add(centrar(Etiqueta.texto(CORREOS[i], 19f, Etiqueta.Rol.ACENTO))); // Correo.
         return celda; // Entrega la celda.
     }
 

@@ -58,7 +58,7 @@ public class PantallaPremios extends Pantalla {
         JPanel dolar = new JPanel();
         dolar.setOpaque(false);
         dolar.setLayout(new javax.swing.BoxLayout(dolar, javax.swing.BoxLayout.Y_AXIS));
-        valorDolar = Etiqueta.texto(" ", 26f, Etiqueta.Rol.CARMESI); // Se llena cuando el controlador manda los datos.
+        valorDolar = Etiqueta.titulo(" ", 16f, Etiqueta.Rol.CARMESI); // Se llena cuando el controlador manda los datos.
         for (JComponent e : new JComponent[]{valorDolar}) {
             e.setAlignmentX(LEFT_ALIGNMENT);
             dolar.add(e);
@@ -72,7 +72,9 @@ public class PantallaPremios extends Pantalla {
 
     // El controlador llama esto con los datos listos: el dólar del día y, por puesto, jugador, intentos y premio.
     public void mostrar(String dolar, String[] nombres, int[] intentos, String[] colones, String[] dolares) {
-        valorDolar.setText(dolar); // Escribe el dólar del día.
+        valorDolar.setIcon(new javax.swing.ImageIcon(simboloColon(ecos.app.Tema.carmesi()))); // El ₡ va como imagen porque la fuente de los números no lo tiene.
+        valorDolar.setIconTextGap(8);
+        valorDolar.setText(dolar.replace("₡", "").trim()); // Escribe el dólar del día (solo el número).
         if (tabla != null) {
             tarjeta.remove(tabla); // Quita la tabla vieja.
         }
@@ -133,7 +135,7 @@ public class PantallaPremios extends Pantalla {
         p.setOpaque(false);
         p.setLayout(new javax.swing.BoxLayout(p, javax.swing.BoxLayout.Y_AXIS));
         ChipPixel chip = new ChipPixel(colones, 14f, true, ChipPixel.Modo.DURAZNO, 2); // Los números con la fuente de títulos (más claros).
-        chip.setIcono(simboloColon()); // El símbolo ₡ va aparte porque esa fuente no lo tiene.
+        chip.setIcono(simboloColon(new Color(91, 35, 51))); // El símbolo ₡ va aparte porque esa fuente no lo tiene.
         Etiqueta usd = Etiqueta.titulo(dolares, 10f, Etiqueta.Rol.SUAVE);
         chip.setAlignmentX(LEFT_ALIGNMENT);
         usd.setAlignmentX(LEFT_ALIGNMENT);
@@ -144,11 +146,11 @@ public class PantallaPremios extends Pantalla {
     }
 
     // Dibuja el símbolo ₡ en una imagen pequeña (la fuente de los números no lo trae).
-    private static java.awt.Image simboloColon() {
+    private static java.awt.Image simboloColon(Color color) {
         java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(18, 22, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         g.setFont(ecos.recursos.Fuentes.texto(24f).deriveFont(java.awt.Font.BOLD));
-        g.setColor(new Color(91, 35, 51));
+        g.setColor(color);
         g.drawString("₡", 0, 18);
         g.dispose();
         return img;

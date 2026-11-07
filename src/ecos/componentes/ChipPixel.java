@@ -4,6 +4,7 @@ import ecos.app.Tema; // Para usar los colores del tema actual.
 import ecos.recursos.Fuentes; // Para usar las fuentes pixel del juego.
 import java.awt.Color; // Clase de Java para representar un color.
 import java.awt.Dimension; // Representa un tamaño (ancho y alto).
+import java.awt.Font;
 import java.awt.FontMetrics; // Medidas de una fuente.
 import java.awt.Graphics; // Herramienta básica para dibujar.
 import java.awt.Graphics2D; // Versión más completa de Graphics.
@@ -61,7 +62,7 @@ public class ChipPixel extends JComponent {
     @Override // Indica que se reemplaza un método de JComponent.
     public Dimension getPreferredSize() { // Tamaño que necesita la cajita.
         FontMetrics fm = getFontMetrics(getFont()); // Medidas de la fuente.
-        int ancho = fm.stringWidth(texto) + borde * 2 + (tituloFuente ? 16 : 20); // Ancho del texto más borde y relleno.
+        int ancho = anchoTexto(fm) + borde * 2 + (tituloFuente ? 16 : 20); // Ancho del texto más borde y relleno.
         if (icono != null) { // Si hay icono.
             ancho += icono.getWidth(null) + 8; // Suma el icono y su separación.
         }
@@ -90,14 +91,38 @@ public class ChipPixel extends JComponent {
         g2.fillRect(borde, borde, w - borde * 2, h - borde * 2); // Dibuja el relleno.
         g2.setFont(getFont()); // Usa la fuente de la cajita.
         FontMetrics fm = g2.getFontMetrics(); // Medidas de la fuente.
-        int ancho = fm.stringWidth(texto) + (icono != null ? icono.getWidth(null) + 8 : 0); // Ancho del contenido (icono + texto).
+        int ancho = anchoTexto(fm) + (icono != null ? icono.getWidth(null) + 8 : 0); // Ancho del contenido (icono + texto).
         int x = (w - ancho) / 2; // Posición para centrar el contenido.
         if (icono != null) { // Si hay icono.
             g2.drawImage(icono, x, (h - icono.getHeight(null)) / 2, null); // Dibuja el icono.
             x += icono.getWidth(null) + 8; // Mueve la posición para escribir el texto después.
         }
         g2.setColor(modo == Modo.DURAZNO ? new Color(91, 35, 51) : Tema.texto()); // Color de las letras según el modo.
-        g2.drawString(texto, x, (h - fm.getHeight()) / 2 + fm.getAscent()); // Escribe el texto centrado verticalmente.
+        dibujarTexto(g2, x, (h - fm.getHeight()) / 2 + fm.getAscent()); // Escribe el texto centrado verticalmente.
         g2.dispose(); // Libera el pincel.
+    }
+
+    // La fuente de títulos no trae el símbolo ₡: se dibuja con la fuente de texto, que sí lo tiene.
+    private Font fuenteColon() { // Fuente solo para el ₡.
+        return Fuentes.texto(getFont().getSize2D() * 1.5f).deriveFont(Font.BOLD);
+    }
+
+    private int anchoTexto(FontMetrics fm) { // Ancho del texto sumando el ₡ con su fuente.
+        int ancho = 0;
+        for (String parte : texto.split("(?<=₡)|(?=₡)")) { // Separa el ₡ del resto.
+            ancho += parte.equals("₡") ? getFontMetrics(fuenteColon()).stringWidth(parte) : fm.stringWidth(parte);
+        }
+        return ancho;
+    }
+
+    private void dibujarTexto(Graphics2D g2, int x, int y) { // Escribe el texto pieza por pieza.
+        Font normal = g2.getFont();
+        for (String parte : texto.split("(?<=₡)|(?=₡)")) {
+            boolean colon = parte.equals("₡");
+            g2.setFont(colon ? fuenteColon() : normal);
+            g2.drawString(parte, x, y);
+            x += g2.getFontMetrics().stringWidth(parte);
+        }
+        g2.setFont(normal);
     }
 }

@@ -43,7 +43,7 @@ public class DialogoResultado {
         }
         if (premio != null) {
             panel.add(Box.createVerticalStrut(12));
-            panel.add(centrar(new ChipPixel(premio, 18f, false, ChipPixel.Modo.DURAZNO, 4)));
+            panel.add(centrar(new ChipPixel(premio, 11f, true, ChipPixel.Modo.DURAZNO, 4)));
         }
         JPanel botones = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
         botones.setOpaque(false);
