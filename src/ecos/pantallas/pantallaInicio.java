@@ -99,12 +99,16 @@ public class pantallaInicio extends Pantalla {
         parpadeo.stop();
     }
 
+    private Runnable alContinuar = () -> { }; // Qué hacer al tocar la pantalla (lo pone el controlador).
+
+    public void setAlContinuar(Runnable accion) { alContinuar = accion; } // Para el controlador.
+
     private void irAAcceso() {
         if (saliendo || !isShowing()) {
             return;
         }
         saliendo = true;
         Sonido.efecto("click");
-        irA("acceso");
+        alContinuar.run(); // Avisa al controlador, que lleva al acceso.
     }
 }

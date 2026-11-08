@@ -16,6 +16,8 @@ import javax.swing.JComponent;
 
 public class PantallaReglasPatrones extends Pantalla {
 
+    private Runnable alComenzar = () -> { }; // Qué hacer al tocar Comenzar (lo pone el controlador).
+
     public PantallaReglasPatrones() {
         super("reglas_patrones", "menu");
         setLayout(new GridBagLayout());
@@ -27,7 +29,7 @@ public class PantallaReglasPatrones extends Pantalla {
                 "Tenés 12 segundos en total para repetir el patrón y 2 segundos entre casilla y casilla.",
                 "Si te equivocás o se acaba el tiempo, termina la partida.");
         BotonMenu comenzar = new BotonMenu("¡Comenzar!", true);
-        comenzar.addActionListener(e -> { Sonido.efecto("click"); irA("patrones"); });
+        comenzar.addActionListener(e -> { Sonido.efecto("click"); alComenzar.run(); });
 
         PanelPixel tarjeta = new PanelPixel() {
             @Override
@@ -45,4 +47,6 @@ public class PantallaReglasPatrones extends Pantalla {
         }
         add(tarjeta);
     }
+
+    public void setAlComenzar(Runnable accion) { alComenzar = accion; } // Para el controlador: se ejecuta al tocar Comenzar.
 }

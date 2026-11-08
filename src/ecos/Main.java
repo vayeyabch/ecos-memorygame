@@ -66,15 +66,15 @@ public class Main {
         n.registrar(patrones);
 
         // Controladores (uno por pantalla). Los nuevos todavía no tienen lógica.
-        new ControladorIntro(intro);
-        new ControladorInicio(inicio);
+        new ControladorIntro(intro, n::ir);
+        new ControladorInicio(inicio, n::ir);
         new ControladorAcceso(acceso);
         new ControladorRegistro(registro);
         new ControladorRegistroFacial(registroFacial);
         new ControladorLoginFacial(loginFacial);
-        new ControladorMenu(menu);
-        new ControladorReglasClasico(reglasClasico);
-        new ControladorReglasPatrones(reglasPatrones);
+        new ControladorMenu(menu, n::ir);
+        new ControladorReglasClasico(reglasClasico, n::ir);
+        new ControladorReglasPatrones(reglasPatrones, n::ir);
         new ControladorPremios(premios);
         new ControladorJuegoClasico(clasico, n::ir);
         new ControladorPatron(patrones, n::ir);

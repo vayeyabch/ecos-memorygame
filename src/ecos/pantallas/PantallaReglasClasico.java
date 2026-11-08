@@ -1,7 +1,6 @@
 package ecos.pantallas;
 
 import ecos.app.Pantalla;
-import ecos.app.Sesion;
 import ecos.componentes.BotonMenu;
 import ecos.componentes.CampoTextoPixel;
 import ecos.componentes.Etiqueta;
@@ -26,6 +25,8 @@ public class PantallaReglasClasico extends Pantalla {
             "Gana quien use menos intentos para encontrar todas las parejas.",
             "El Ojo espía voltea todo tu tablero un momento. Lo comprás con monedas durante la partida.");
 
+    private Runnable alComenzar = () -> { }; // Qué hacer al tocar Comenzar (lo pone el controlador).
+
     public PantallaReglasClasico() {
         super("reglas_clasico", "menu");
         setLayout(new GridBagLayout());
@@ -34,7 +35,7 @@ public class PantallaReglasClasico extends Pantalla {
         campo1.setLimite(14);
         campo2.setLimite(14);
         BotonMenu comenzar = new BotonMenu("¡Comenzar!", true);
-        comenzar.addActionListener(e -> comenzar());
+        comenzar.addActionListener(e -> { Sonido.efecto("click"); alComenzar.run(); });
 
         PanelPixel tarjeta = new PanelPixel() {
             @Override
@@ -58,20 +59,18 @@ public class PantallaReglasClasico extends Pantalla {
         add(tarjeta);
     }
 
-    @Override
-    public void alEntrar() {
-        super.alEntrar();
-        campo1.setText(Sesion.getNombre()); // PENDIENTE (BD): cuando exista la base, aquí va el nombre de usuario de quien inició sesión, ya no "Jugador 1".
-        campo2.setText("Invitado");
-        reglas.setRegla(0, "Cada jugador tiene su propio tablero (<b>" + Sesion.getTamano() + "x" + Sesion.getTamano() + "</b>) con las parejas en otro orden.");
+    // ---- Para el controlador (ControladorReglasClasico) ----
+
+    public void setAlComenzar(Runnable accion) { alComenzar = accion; } // Se ejecuta al tocar Comenzar.
+
+    public String getNombre1() { return campo1.getText(); } // Nombre escrito del jugador 1.
+
+    public String getNombre2() { return campo2.getText(); } // Nombre escrito del jugador 2.
+
+    public void setNombres(String n1, String n2) { // Escribe los nombres en los campos.
+        campo1.setText(n1);
+        campo2.setText(n2);
     }
 
-    private void comenzar() {
-        String n1 = campo1.getText().trim();
-        String n2 = campo2.getText().trim();
-        Sesion.setJugador1(n1.isEmpty() ? "Jugador 1" : n1);
-        Sesion.setJugador2(n2.isEmpty() ? "Invitado" : n2);
-        Sonido.efecto("click");
-        irA("clasico");
-    }
+    public void setReglaTablero(String texto) { reglas.setRegla(0, texto); } // Cambia la primera regla.
 }

@@ -171,13 +171,17 @@ public class pantallaIntro extends Pantalla {
         relojFundido.start();
     }
 
+    private Runnable alTerminar = () -> { }; // Qué hacer al terminar la intro (lo pone el controlador).
+
+    public void setAlTerminar(Runnable accion) { alTerminar = accion; } // Para el controlador.
+
     private void terminar() {
         if (terminado) {
             return;
         }
         terminado = true;
         detener();
-        irA("inicio");
+        alTerminar.run(); // Avisa al controlador, que lleva al inicio.
     }
 
     private void despues(int ms, Runnable accion) {

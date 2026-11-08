@@ -1,7 +1,6 @@
 package ecos.pantallas;
 
 import ecos.app.Pantalla;
-import ecos.app.Sesion;
 import ecos.componentes.BotonMenu;
 import ecos.componentes.Etiqueta;
 import ecos.componentes.ImagenPixel;
@@ -15,6 +14,8 @@ import java.awt.GridBagLayout;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import javax.swing.JPanel;
 
 public class PantallaMenu extends Pantalla {
@@ -22,6 +23,10 @@ public class PantallaMenu extends Pantalla {
     private final Etiqueta saludo = Etiqueta.titulo("Hola, Jugador 1!", 14f, Etiqueta.Rol.TEXTO); // "Hola, nombre!"
     private final BotonMenu btn4 = new BotonMenu("4x4", BotonMenu.Estilo.PESTANA); // opción de tablero 4x4
     private final BotonMenu btn6 = new BotonMenu("6x6", BotonMenu.Estilo.PRINCIPAL); // opción de tablero 6x6
+
+    private Consumer<String> alElegirModo = id -> { }; // Qué hacer al tocar una tarjeta (lo pone el controlador).
+    private IntConsumer alElegirTamano = n -> { }; // Qué hacer al tocar 4x4 o 6x6.
+    private Runnable alSalirAlAcceso = () -> { }; // Qué hacer al tocar Salir.
 
     public PantallaMenu() {
         super("menu", "menu");
@@ -43,10 +48,10 @@ public class PantallaMenu extends Pantalla {
         caja.add(saludo);
 
         // tarjeta de Clásico con el selector de tablero
-        TarjetaModo clasico = new TarjetaModo("Clásico", "2 jugadores · parejas", Sprites.mascota(1, 80), () -> irA("reglas_clasico"));
+        TarjetaModo clasico = new TarjetaModo("Clásico", "2 jugadores · parejas", Sprites.mascota(1, 80), () -> alElegirModo.accept("reglas_clasico"));
         clasico.agregarExtra(crearSelector());
-        TarjetaModo patrones = new TarjetaModo("Patrones", "1 jugador · memoriza", Sprites.mascota(2, 80), () -> irA("reglas_patrones"));
-        TarjetaModo premios = new TarjetaModo("Premios", "Top 5", Sprites.ui("trophy", 72), () -> irA("premios"));
+        TarjetaModo patrones = new TarjetaModo("Patrones", "1 jugador · memoriza", Sprites.mascota(2, 80), () -> alElegirModo.accept("reglas_patrones"));
+        TarjetaModo premios = new TarjetaModo("Premios", "Top 5", Sprites.ui("trophy", 72), () -> alElegirModo.accept("premios"));
 
         JPanel tarjetas = new JPanel(new java.awt.GridLayout(1, 3, 18, 0)); // las 3 tarjetas con la misma altura
         tarjetas.setOpaque(false);
@@ -56,7 +61,7 @@ public class PantallaMenu extends Pantalla {
 
         // botón Salir: vuelve a la pantalla de acceso
         BotonMenu salir = new BotonMenu("Salir", BotonMenu.Estilo.SECUNDARIO);
-        salir.addActionListener(e -> { Sonido.efecto("click"); irA("acceso"); });
+        salir.addActionListener(e -> { Sonido.efecto("click"); alSalirAlAcceso.run(); });
 
         JPanel columna = new JPanel();
         columna.setOpaque(false);
@@ -75,29 +80,26 @@ public class PantallaMenu extends Pantalla {
         fila.setOpaque(false);
         btn4.setPequeno(true);
         btn6.setPequeno(true);
-        btn4.addActionListener(e -> elegirTamano(4));
-        btn6.addActionListener(e -> elegirTamano(6));
+        btn4.addActionListener(e -> { Sonido.efecto("click"); alElegirTamano.accept(4); });
+        btn6.addActionListener(e -> { Sonido.efecto("click"); alElegirTamano.accept(6); });
         fila.add(Etiqueta.titulo("Tablero", 10f, Etiqueta.Rol.SUAVE));
         fila.add(btn4);
         fila.add(btn6);
         return fila;
     }
 
-    private void elegirTamano(int n) {
-        Sonido.efecto("click");
-        Sesion.setTamano(n);
-        marcarTamano();
-    }
+    // ---- Para el controlador (ControladorMenu) ----
 
-    private void marcarTamano() {
-        btn4.setEstilo(Sesion.getTamano() == 4 ? BotonMenu.Estilo.PRINCIPAL : BotonMenu.Estilo.PESTANA);
-        btn6.setEstilo(Sesion.getTamano() == 6 ? BotonMenu.Estilo.PRINCIPAL : BotonMenu.Estilo.PESTANA);
-    }
+    public void setAlElegirModo(Consumer<String> accion) { alElegirModo = accion; } // Recibe el id de la pantalla a la que se va.
 
-    @Override
-    public void alEntrar() {
-        super.alEntrar();
-        saludo.setText("Hola, " + Sesion.getNombre() + "!");
-        marcarTamano();
+    public void setAlElegirTamano(IntConsumer accion) { alElegirTamano = accion; } // Recibe 4 o 6.
+
+    public void setAlSalirAlAcceso(Runnable accion) { alSalirAlAcceso = accion; } // Se ejecuta al tocar Salir.
+
+    public void setSaludo(String texto) { saludo.setText(texto); } // Cambia el saludo.
+
+    public void marcarTamano(int tamano) { // Resalta el botón del tablero elegido.
+        btn4.setEstilo(tamano == 4 ? BotonMenu.Estilo.PRINCIPAL : BotonMenu.Estilo.PESTANA);
+        btn6.setEstilo(tamano == 6 ? BotonMenu.Estilo.PRINCIPAL : BotonMenu.Estilo.PESTANA);
     }
 }
