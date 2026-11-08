@@ -6,6 +6,19 @@ import ecos.app.Sesion;
 // Modelo de VentanaLoginJugador2, revisa los datos que escribe el jugador 2 antes de jugar.
 // A cargo de Hellen.
 public class ModeloLoginJugador2 {
+    private final ModeloAcceso acceso;
+    private Usuario encontrado;
+
+    public ModeloLoginJugador2() {
+        this(new ModeloAcceso());
+    }
+
+    public ModeloLoginJugador2(ModeloAcceso acceso) {
+        this.acceso = acceso;
+    }
+
+
+
 
     // Devuelve el mensaje de error, o null si todo está bien.
     public String validar(String usuario, String clave) {
@@ -16,7 +29,15 @@ public class ModeloLoginJugador2 {
         if (usuario.equalsIgnoreCase(Sesion.getNombre())) {
             return "Esa cuenta ya es la del jugador 1. Usá otra.";
         }
-        // PENDIENTE (BD), aquí se revisa en la base que el usuario exista y la contraseña sea correcta.
+        try {
+            // La cuenta tiene que existir y la contraseña ser la correcta.
+            encontrado = acceso.iniciarSesion(usuario, clave);
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return "No se pudo conectar con la base de datos.";
+        }
         return null;
     }
 

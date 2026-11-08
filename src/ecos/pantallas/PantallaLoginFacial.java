@@ -37,6 +37,8 @@ public class PantallaLoginFacial extends Pantalla {
     // En qué parte del escaneo va. True mientras el escaneo está corriendo.
     private int paso = 0;
     private boolean ocupado = false;
+    // Lo que hace el botón cuando el controlador lo define (cámara real). Si no, se usa la simulación de abajo.
+    private Runnable accionEscanear = null;
 
     public PantallaLoginFacial() {
         // Id de la pantalla y música que usa.
@@ -48,7 +50,14 @@ public class PantallaLoginFacial extends Pantalla {
         setTextoEstado(TEXTO_INICIAL);
 
         // Al apretar, empieza el escaneo. Botón para volver al login normal. Regresa a la pantalla anterior (el acceso).
-        escanear.addActionListener(e -> { Sonido.efecto("click"); simularEscaneo(); });
+        escanear.addActionListener(e -> {
+            Sonido.efecto("click");
+            if (accionEscanear != null) {
+                accionEscanear.run();
+            } else {
+                simularEscaneo();
+            }
+        });
         BotonMenu conClave = new BotonMenu("Usar usuario y contraseña", BotonMenu.Estilo.SECUNDARIO);
         conClave.addActionListener(e -> { Sonido.efecto("click"); volver(); });
 
@@ -144,6 +153,12 @@ public class PantallaLoginFacial extends Pantalla {
     // Entrega el visor para que el controlador cambie su estado. Entrega el botón por si el controlador necesita su propio evento.
     public VisorEscaner getVisor() { return visor; }
     public BotonMenu getBotonEscanear() { return escanear; }
+
+    // El controlador define qué hace el botón "Escanear mi rostro".
+    public void setAccionEscanear(Runnable accion) { accionEscanear = accion; }
+
+    // El controlador la llama cuando reconoció el rostro, entra al menú.
+    public void irAMenu() { irA("menu"); }
 
     // Cambia el mensaje de debajo del visor (con salto de línea automático).
     public void setTextoEstado(String texto) {

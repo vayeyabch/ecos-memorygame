@@ -31,3 +31,5 @@ out/
 bin/
 
 bccr.properties
+config.properties
+target/

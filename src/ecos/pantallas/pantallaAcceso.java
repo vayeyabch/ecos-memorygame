@@ -43,6 +43,10 @@ public class pantallaAcceso extends Pantalla {
     private final DesfileMascotas desfile = new DesfileMascotas();
     private final CampoTextoPixel campoUsuario = new CampoTextoPixel("Tu usuario", 16);
     private final CampoClavePixel campoClave = new CampoClavePixel("Tu contraseña", 16);
+    // Aquí salen los avisos de error (vacío mientras no haya) y lo que hace el botón Entrar cuando el controlador lo define.
+    // Si no se define entra directo (temporal).
+    private final Etiqueta mensaje = Etiqueta.texto(" ", 18f, Etiqueta.Rol.SUAVE);
+    private Runnable accionEntrar = null;
 
     // Arma la pantalla.
     public pantallaAcceso() {
@@ -56,7 +60,14 @@ public class pantallaAcceso extends Pantalla {
         // Botón de entrar con usuario y contraseña, que por ahora entra directo porque la lógica real viene después, y botón
         // para entrar con la cara, que va a la pantalla del escaneo.
         BotonMenu entrar = new BotonMenu("Entrar", true);
-        entrar.addActionListener(e -> entrarTemporal());
+        entrar.addActionListener(e -> {
+            if (accionEntrar == null) {
+                entrarTemporal();
+            } else {
+                Sonido.efecto("click");
+                accionEntrar.run();
+            }
+        });
         BotonMenu faceId = new BotonMenu("Entrar con Face ID", BotonMenu.Estilo.SECUNDARIO);
         faceId.addActionListener(e -> { Sonido.efecto("click"); irA("login_facial"); });
         // Botón chico para crear una cuenta, que va a la pantalla de registro.
@@ -84,7 +95,9 @@ public class pantallaAcceso extends Pantalla {
         // Etiqueta de la contraseña. Campo de la contraseña con su ojo.
         tarjeta.add(alinear(Etiqueta.titulo("CONTRASEÑA", 10f, Etiqueta.Rol.SUAVE)));
         tarjeta.add(alinear(conOjo(campoClave)));
-        tarjeta.add(Box.createVerticalStrut(18));
+        tarjeta.add(Box.createVerticalStrut(8));
+        tarjeta.add(alinear(mensaje));
+        tarjeta.add(Box.createVerticalStrut(10));
         tarjeta.add(alinear(entrar.anchoCompleto()));
         // Botón Entrar con Face ID. "¿No tenés cuenta?" y Registrarse.
         tarjeta.add(Box.createVerticalStrut(10));
@@ -114,6 +127,7 @@ public class pantallaAcceso extends Pantalla {
         // Pone la música. Borra la contraseña anterior. Empieza el desfile de mascotas.
         super.alEntrar();
         campoClave.setText("");
+        limpiarMensaje();
         desfile.iniciar();
     }
 
@@ -122,6 +136,28 @@ public class pantallaAcceso extends Pantalla {
     public void alSalir() {
         // Detiene el desfile.
         desfile.detener();
+    }
+
+    // Usuario escrito (sin espacios sobrantes) y contraseña escrita.
+    public String getUsuario() { return campoUsuario.getText().trim(); }
+    public String getClave() { return new String(campoClave.getPassword()); }
+
+    // El controlador define qué hace el botón Entrar.
+    public void setAccionEntrar(Runnable accion) { accionEntrar = accion; }
+
+    // El controlador la llama cuando el login salió bien.
+    public void irAMenu() { irA("menu"); }
+
+    // Muestra un aviso de error en rojo.
+    public void mostrarError(String texto) {
+        mensaje.setText(texto);
+        mensaje.setRol(Etiqueta.Rol.PELIGRO);
+    }
+
+    // Borra el aviso (deja un espacio para que la tarjeta no cambie de alto).
+    public void limpiarMensaje() {
+        mensaje.setText(" ");
+        mensaje.setRol(Etiqueta.Rol.SUAVE);
     }
 
     // TEMPORAL, entra al menú con el usuario escrito. Se reemplaza cuando exista el login de verdad.

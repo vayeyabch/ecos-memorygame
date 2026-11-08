@@ -1,12 +1,156 @@
 package ecos.controlador;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.componentes.VisorEscaner;
+import ecos.modelo.CapturaFacial;
+import ecos.modelo.ModeloRegistroFacial;
+import ecos.modelo.ReconocedorFacial;
 import ecos.pantallas.PantallaRegistroFacial;
+import ecos.recursos.Sonido;
+// Utilidades de Java, List para las listas.
+import java.util.List;
+// Librería Swing, SwingUtilities para volver al hilo de la interfaz y Timer para esperar un momento.
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
-// Controlador de PantallaRegistroFacial. Pendiente, conectar la captura del rostro con ModeloRegistroFacial.
-// A cargo de Valeria. Todavía sin lógica.
+// Controlador de PantallaRegistroFacial (paso 2 de 2), usa la cámara para guiar los tres movimientos (frente, izquierda,
+// derecha) y, si salen bien, guarda la cuenta con su rostro. La mascota del visor se mueve igual que la persona.
+// A cargo de Valeria.
 public class ControladorRegistroFacial {
 
+    // Cuánto se corre la mascota en cada movimiento, al frente, izquierda, derecha.
+    private static final int[] POSES = {0, -22, 22};
+
+    private final PantallaRegistroFacial vista;
+    private final ModeloRegistroFacial modelo;
+    // La captura que está corriendo (null si ninguna).
+    private CapturaFacial captura = null;
+
     public ControladorRegistroFacial(PantallaRegistroFacial vista) {
+        this(vista, new ModeloRegistroFacial());
+    }
+
+    public ControladorRegistroFacial(PantallaRegistroFacial vista, ModeloRegistroFacial modelo) {
+        this.vista = vista;
+        this.modelo = modelo;
+        // Al tocar "Registrar mi rostro" se llama empezar(), al entrar a la pantalla alEntrar() y al salir cancelar().
+        vista.setAccionCapturar(this::empezar);
+        vista.setAlEntrar(this::alEntrar);
+        vista.setAlSalir(this::cancelar);
+    }
+
+    private void alEntrar() {
+        captura = null;
+        if (!modelo.hayDatos()) {
+            vista.setTextoEstado("Primero completá tus datos en el paso 1.");
+        }
+    }
+
+    // Si se sale de la pantalla se detiene la cámara.
+    private void cancelar() {
+        if (captura != null) {
+            captura.cancelar();
+            captura = null;
+        }
+    }
+
+    private void empezar() {
+        if (captura != null) {
+            return;
+        }
+        if (!modelo.hayDatos()) {
+            falla("Primero completá tus datos en el paso 1.");
+            return;
+        }
+        CapturaFacial nueva;
+        try {
+            nueva = new CapturaFacial(ReconocedorFacial.compartido());
+        } catch (Throwable t) {
+            // Falta un archivo del detector o las librerías de OpenCV no cargaron.
+            t.printStackTrace();
+            falla("No se pudo preparar el reconocimiento facial.");
+            return;
+        }
+        captura = nueva;
+        vista.getBotonCapturar().setEnabled(false);
+        vista.getVisor().setEstado(VisorEscaner.Estado.ESCANEANDO);
+        vista.getVisor().setDesplazamiento(POSES[0]);
+        Sonido.efecto("escaneo");
+        nueva.iniciar(new CapturaFacial.Escucha() {
+            @Override
+            public void alCambiarPaso(int paso, String instruccion) {
+                SwingUtilities.invokeLater(() -> {
+                    if (captura != nueva) {
+                        return;
+                    }
+                    // La mascota se corre al lado que se pide.
+                    vista.getVisor().setDesplazamiento(POSES[paso]);
+                    vista.setTextoEstado(instruccion);
+                    if (paso > 0) {
+                        Sonido.efecto("tick");
+                    }
+                });
+            }
+
+            @Override
+            public void alProgresar(String texto) {
+                SwingUtilities.invokeLater(() -> {
+                    if (captura == nueva) {
+                        vista.setTextoEstado(texto);
+                    }
+                });
+            }
+
+            @Override
+            public void alTerminar(List<byte[]> caras) {
+                SwingUtilities.invokeLater(() -> {
+                    if (captura == nueva) {
+                        guardar(caras);
+                    }
+                });
+            }
+
+            @Override
+            public void alFallar(String mensaje) {
+                SwingUtilities.invokeLater(() -> {
+                    if (captura == nueva) {
+                        falla(mensaje);
+                    }
+                });
+            }
+        });
+    }
+
+    // Guarda la cuenta en la base de datos (internet), en otro hilo para no congelar la pantalla.
+    private void guardar(List<byte[]> caras) {
+        vista.getVisor().setDesplazamiento(0);
+        vista.setTextoEstado("Guardando tu cuenta…");
+        new Thread(() -> {
+            String error = modelo.guardar(caras);
+            SwingUtilities.invokeLater(() -> {
+                if (error != null) {
+                    falla(error);
+                    return;
+                }
+                captura = null;
+                vista.getVisor().setEstado(VisorEscaner.Estado.OK);
+                vista.setTextoEstado("¡Rostro registrado! Ya podés iniciar sesión.");
+                Sonido.efecto("registro_ok");
+                // Un momento después de mostrar el OK vuelve al acceso para iniciar sesión.
+                Timer espera = new Timer(1500, e -> vista.irAAcceso());
+                espera.setRepeats(false);
+                espera.start();
+            });
+        }, "guardar-cuenta").start();
+    }
+
+    // Muestra el error y deja volver a intentar.
+    private void falla(String mensaje) {
+        captura = null;
+        vista.getVisor().setDesplazamiento(0);
+        vista.getVisor().setEstado(VisorEscaner.Estado.ERROR);
+        vista.setTextoEstado(mensaje);
+        vista.getBotonCapturar().setEnabled(true);
+        Sonido.efecto("error");
     }
 }

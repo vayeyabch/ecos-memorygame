@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>ecos</groupId>
+  <artifactId>ecos-memory-game</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <javacv.version>1.5.10</javacv.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <!-- Driver para conectarse a la base de datos (Supabase / PostgreSQL). -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.4</version>
+    </dependency>
+
+    <!-- Cámara y reconocimiento facial (JavaCV + OpenCV). Los de abajo son los programas nativos para WINDOWS 64 bits;
+         sin ellos OpenCV no carga. Para Mac o Linux hay que cambiar "windows-x86_64". -->
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>javacv</artifactId>
+      <version>${javacv.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>opencv</artifactId>
+      <version>4.9.0-${javacv.version}</version>
+      <classifier>windows-x86_64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>openblas</artifactId>
+      <version>0.3.26-${javacv.version}</version>
+      <classifier>windows-x86_64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>javacpp</artifactId>
+      <version>${javacv.version}</version>
+      <classifier>windows-x86_64</classifier>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- El código está en src (no en src/main/java). -->
+    <sourceDirectory>src</sourceDirectory>
+    <!-- Imágenes y sonidos están en src/recursos; se copian junto al programa. -->
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <!-- Arma un .jar que se puede abrir con: java -jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>ecos.Main</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

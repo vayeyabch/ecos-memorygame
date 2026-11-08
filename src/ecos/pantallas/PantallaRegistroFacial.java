@@ -47,6 +47,8 @@ public class PantallaRegistroFacial extends Pantalla {
     // En qué pose va la captura. True mientras la captura está corriendo.
     private int paso = 0;
     private boolean ocupado = false;
+    // Lo que hace el botón cuando el controlador lo define (cámara real). Si no, se usa la simulación de abajo.
+    private Runnable accionCapturar = null;
 
 
     public PantallaRegistroFacial() {
@@ -59,7 +61,14 @@ public class PantallaRegistroFacial extends Pantalla {
         setTextoEstado(TEXTO_INICIAL);
 
         // Al apretar, empieza la captura.
-        capturar.addActionListener(e -> { Sonido.efecto("click"); simularCaptura(); });
+        capturar.addActionListener(e -> {
+            Sonido.efecto("click");
+            if (accionCapturar != null) {
+                accionCapturar.run();
+            } else {
+                simularCaptura();
+            }
+        });
 
         // Visor al centro de su columna. Mensaje al centro de su columna. Columna izquierda, el visor y su mensaje.
         visor.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -188,6 +197,12 @@ public class PantallaRegistroFacial extends Pantalla {
     // Entrega el visor para que el controlador cambie su estado. Entrega el botón por si el controlador necesita su propio evento.
     public VisorEscaner getVisor() { return visor; }
     public BotonMenu getBotonCapturar() { return capturar; }
+
+    // El controlador define qué hace el botón "Registrar mi rostro".
+    public void setAccionCapturar(Runnable accion) { accionCapturar = accion; }
+
+    // El controlador la llama cuando el rostro quedó registrado, vuelve al acceso para iniciar sesión.
+    public void irAAcceso() { irA("acceso"); }
 
     // Cambia el mensaje de debajo del visor (con salto de línea automático).
     public void setTextoEstado(String texto) {
