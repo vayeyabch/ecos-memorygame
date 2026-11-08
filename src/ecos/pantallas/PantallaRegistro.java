@@ -29,7 +29,7 @@ import java.awt.BasicStroke;
 
 
 // Formulario de registro: nombre, apellidos, correo, usuario y contraseña. Después lleva al registro facial.
-// Responsable: Valeria. Esqueleto: solo muestra el título, falta armar la pantalla.
+// Responsable: Valeria. Pantalla lista; falta conectarla a su controlador y al modelo.
 public class PantallaRegistro extends Pantalla {
     private static final String AYUDA = "Completá todos los campos para continuar."; // Mensaje normal de la pantalla.
 
@@ -80,7 +80,7 @@ public class PantallaRegistro extends Pantalla {
 
         PanelPixel tarjeta = new PanelPixel(); // Tarjeta del formulario.
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS)); // Apila todo en vertical.
-        tarjeta.setPadding(22); // Margen interno (igual que en pantallaAcceso).
+        tarjeta.setPadding(22); // Margen interno (igual que en PantallaAcceso).
         tarjeta.add(alinear(titulo)); // Título.
         tarjeta.add(Box.createVerticalStrut(12)); // Espacio.
         formulario.setMaximumSize(new Dimension(Integer.MAX_VALUE, formulario.getPreferredSize().height)); // El formulario no se estira hacia abajo.
@@ -89,7 +89,7 @@ public class PantallaRegistro extends Pantalla {
         tarjeta.add(alinear(mensaje)); // Mensaje de avisos.
         tarjeta.add(Box.createVerticalStrut(10)); // Espacio.
         tarjeta.add(alinear(siguiente.anchoCompleto())); // Botón Siguiente.
-        tarjeta.setMaximumSize(new Dimension(480, Integer.MAX_VALUE)); // Ancho máximo de la tarjeta (igual que en pantallaAcceso).
+        tarjeta.setMaximumSize(new Dimension(480, Integer.MAX_VALUE)); // Ancho máximo de la tarjeta (igual que en PantallaAcceso).
 
         JPanel columna = new JPanel(); // Columna: mascotas arriba y tarjeta abajo.
         columna.setOpaque(false); // Transparente.

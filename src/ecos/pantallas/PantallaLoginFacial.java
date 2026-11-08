@@ -18,7 +18,7 @@ import javax.swing.Timer;
 import java.awt.Component;
 
 // Escaneo del rostro para iniciar sesión con Face ID.
-// Responsable: Valeria. Esqueleto: solo muestra el título, falta armar la pantalla.
+// Responsable: Valeria. Pantalla lista; falta conectarla a su controlador y al modelo.
 public class PantallaLoginFacial extends Pantalla {
     private static final String TEXTO_INICIAL = "Colocá tu rostro dentro del marco."; // Mensaje normal del visor.
 
@@ -47,7 +47,7 @@ public class PantallaLoginFacial extends Pantalla {
 
         PanelPixel tarjeta = new PanelPixel(); // Tarjeta de la pantalla.
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS)); // Apila todo en vertical.
-        tarjeta.setPadding(22); // Margen interno (igual que en pantallaAcceso).
+        tarjeta.setPadding(22); // Margen interno (igual que en PantallaAcceso).
         tarjeta.add(titulo); // Título.
         tarjeta.add(Box.createVerticalStrut(16)); // Espacio.
         tarjeta.add(visor); // Visor del escáner.

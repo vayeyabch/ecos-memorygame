@@ -45,7 +45,7 @@ public class PantallaClasico extends Pantalla {
     private final int[] mascotas = {2, 7};
     private final String[] nombres = {"Jugador 1", "Invitado"};
     private int n = 6; // cartas por lado
-    private int precioOjo = 20;
+    private int precioOjo = 30;
     private BiConsumer<Integer, Integer> alClicCarta = (p, i) -> { };
     private IntConsumer alClicOjo = p -> { }; // Qué hacer cuando tocan el botón del Ojo espía.
 

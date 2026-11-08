@@ -24,7 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
-public class pantallaInicio extends Pantalla {
+public class PantallaInicio extends Pantalla {
 
     private static final int PARPADEO_MS = 550; // cada cuánto cambia el parpadeo de START
 
@@ -34,7 +34,7 @@ public class pantallaInicio extends Pantalla {
     private boolean encendido;
     private boolean saliendo;
 
-    public pantallaInicio() {
+    public PantallaInicio() {
         super("inicio", "inicio");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 28, 16));

@@ -15,7 +15,7 @@ public class CalculoPremio {
 
     // Premio en colones: el premio en dólares x el dólar (venta) del día.
     public static double premioColones(int intentos) {
-        return premioDolares(intentos) * TipoCambio.getVenta();
+        return premioDolares(intentos) * TipoCambio.getCompra();
     }
 
     // Número de colones con separador de miles, sin el símbolo. Ejemplo: "2 320".
@@ -40,6 +40,6 @@ public class CalculoPremio {
 
     // El dólar del día escrito para la pantalla. Ejemplo: "₡ 487,20".
     public static String textoDolar() {
-        return "₡ " + String.format(Locale.forLanguageTag("es-CR"), "%.2f", TipoCambio.getVenta());
+        return "₡ " + String.format(Locale.forLanguageTag("es-CR"), "%.2f", TipoCambio.getCompra());
     }
 }

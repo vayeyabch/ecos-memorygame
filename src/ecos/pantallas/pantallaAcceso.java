@@ -28,13 +28,13 @@ import java.awt.Graphics2D; // Para dibujar con más opciones.
 import java.awt.BasicStroke; // Para dibujar líneas gruesas.
 import java.awt.Cursor; // Para cambiar el cursor del mouse.
 
-public class pantallaAcceso extends Pantalla {
+public class PantallaAcceso extends Pantalla {
 
     private final DesfileMascotas desfile = new DesfileMascotas(); // Mascotas que desfilan arriba de la tarjeta.
     private final CampoTextoPixel campoUsuario = new CampoTextoPixel("Tu usuario", 16); // Campo del usuario.
     private final CampoClavePixel campoClave = new CampoClavePixel("Tu contraseña", 16); // Campo de la contraseña.
 
-    public pantallaAcceso() { // Arma la pantalla.
+    public PantallaAcceso() { // Arma la pantalla.
         super("acceso", "acceso"); // Id de la pantalla y música que usa.
         setLayout(new GridBagLayout()); // Centra todo en la pantalla.
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 28, 16)); // Deja espacio para la barra de arriba.
@@ -104,43 +104,43 @@ public class pantallaAcceso extends Pantalla {
     }
 
     public static JPanel conOjo(CampoClavePixel campo) { // Pone un botón de ojo al lado del campo de contraseña.
-    final char puntitos = campo.getEchoChar(); // Guarda el puntito normal.
-    JButton ojo = new JButton() { // Botón que dibuja el icono del ojo.
-        private boolean ver = false; // true = la clave se ve.
-        {
-            setPreferredSize(new Dimension(36, 10)); // Ancho del botón (el alto lo toma del campo).
-            setContentAreaFilled(false); // Sin fondo de botón.
-            setBorderPainted(false); // Sin borde.
-            setFocusPainted(false); // Sin marco de foco.
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Manito al pasar el mouse.
-            addActionListener(e -> { // Al hacer clic.
-                Sonido.efecto("click"); // Suena el clic.
-                ver = !ver; // Cambia entre ver y esconder.
-                campo.setEchoChar(ver ? (char) 0 : puntitos); // 0 = muestra el texto real.
-                repaint(); // Redibuja el ojo.
-            });
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) { // Dibuja el icono.
-            Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel.
-            int cx = getWidth() / 2; // Centro en x.
-            int cy = getHeight() / 2; // Centro en y.
-            g2.drawImage(Sprites.ui("eye", 24), cx - 12, cy - 12, null); // Icono eye.png del proyecto.
-            if (!ver) { // Si la clave está escondida.
-                g2.setColor(Tema.texto()); // Color de la raya.
-                g2.setStroke(new BasicStroke(3f)); // Línea gruesa.
-                g2.drawLine(cx - 12, cy + 12, cx + 12, cy - 12); // Tacha el ojo.
+        final char puntitos = campo.getEchoChar(); // Guarda el puntito normal.
+        JButton ojo = new JButton() { // Botón que dibuja el icono del ojo.
+            private boolean ver = false; // true = la clave se ve.
+            {
+                setPreferredSize(new Dimension(36, 10)); // Ancho del botón (el alto lo toma del campo).
+                setContentAreaFilled(false); // Sin fondo de botón.
+                setBorderPainted(false); // Sin borde.
+                setFocusPainted(false); // Sin marco de foco.
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Manito al pasar el mouse.
+                addActionListener(e -> { // Al hacer clic.
+                    Sonido.efecto("click"); // Suena el clic.
+                    ver = !ver; // Cambia entre ver y esconder.
+                    campo.setEchoChar(ver ? (char) 0 : puntitos); // 0 = muestra el texto real.
+                    repaint(); // Redibuja el ojo.
+                });
             }
-            g2.dispose(); // Libera el pincel.
-        }
-    };
-    JPanel p = new JPanel(new BorderLayout(4, 0)); // Campo y ojo lado a lado.
-    p.setOpaque(false); // Transparente.
-    p.add(campo, BorderLayout.CENTER); // El campo ocupa casi todo.
-    p.add(ojo, BorderLayout.EAST); // El ojo a la derecha.
-    return p; // Lo entrega.
-}
+
+            @Override
+            protected void paintComponent(Graphics g) { // Dibuja el icono.
+                Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel.
+                int cx = getWidth() / 2; // Centro en x.
+                int cy = getHeight() / 2; // Centro en y.
+                g2.drawImage(Sprites.ui("eye", 24), cx - 12, cy - 12, null); // Icono eye.png del proyecto.
+                if (!ver) { // Si la clave está escondida.
+                    g2.setColor(Tema.texto()); // Color de la raya.
+                    g2.setStroke(new BasicStroke(3f)); // Línea gruesa.
+                    g2.drawLine(cx - 12, cy + 12, cx + 12, cy - 12); // Tacha el ojo.
+                }
+                g2.dispose(); // Libera el pincel.
+            }
+        };
+        JPanel p = new JPanel(new BorderLayout(4, 0)); // Campo y ojo lado a lado.
+        p.setOpaque(false); // Transparente.
+        p.add(campo, BorderLayout.CENTER); // El campo ocupa casi todo.
+        p.add(ojo, BorderLayout.EAST); // El ojo a la derecha.
+        return p; // Lo entrega.
+    }
 
     private static JComponent alinear(JComponent c) { // Alinea un componente a la izquierda de la tarjeta.
         c.setAlignmentX(Component.LEFT_ALIGNMENT); // Lo alinea.

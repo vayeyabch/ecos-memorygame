@@ -6,7 +6,7 @@ import ecos.componentes.CampoTextoPixel; // Campo de texto.
 import ecos.componentes.CapaModal; // Cortina oscura con el panel al centro.
 import ecos.componentes.Etiqueta; // Texto con estilo.
 import ecos.componentes.PanelPixel; // Caja con borde pixelado.
-import ecos.pantallas.pantallaAcceso; // Para reutilizar el ojito de la contraseña.
+import ecos.pantallas.PantallaAcceso; // Para reutilizar el ojito de la contraseña.
 import ecos.recursos.Sonido; // Efectos de sonido.
 import java.awt.Component; // Tipo general de componente.
 import java.awt.Dimension; // Ancho y alto.
@@ -39,7 +39,7 @@ public class VentanaLoginJugador2 {
         panel.add(centrar(campoUsuario));
         panel.add(Box.createVerticalStrut(10));
         panel.add(centrar(Etiqueta.titulo("CONTRASEÑA", 10f, Etiqueta.Rol.SUAVE)));
-        JComponent claveConOjo = pantallaAcceso.conOjo(campoClave); // Contraseña con su ojito.
+        JComponent claveConOjo = PantallaAcceso.conOjo(campoClave); // Contraseña con su ojito.
         claveConOjo.setMaximumSize(new Dimension(campoUsuario.getPreferredSize().width + 40, claveConOjo.getPreferredSize().height));
         panel.add(centrar(claveConOjo));
         panel.add(Box.createVerticalStrut(8));

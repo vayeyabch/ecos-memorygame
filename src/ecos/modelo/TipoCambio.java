@@ -20,7 +20,7 @@ import java.util.regex.Pattern; // Patrón de búsqueda.
 // Consulta el tipo de cambio del dólar al BCCR UNA VEZ AL DÍA y guarda el último valor con su fecha.
 // Si no hay internet (o falla el BCCR) usa el último valor guardado; si nunca se guardó nada, usa VALOR_INICIAL.
 // Así el dólar nunca queda vacío ni da error.
-// Indicadores del BCCR: 317 = compra, 318 = venta (cambiar INDICADOR si se quiere la venta).
+// Indicadores del BCCR: 317 = compra, 318 = venta (cambiar INDICADOR si se quiere la venta; el método getCompra usa el que diga INDICADOR).
 // El token NO va en el código: se lee de la variable de entorno BCCR_TOKEN o del archivo
 // bccr.properties (línea token=...), que está en .gitignore para no subirlo a Git.
 // Responsable: Allison.
@@ -40,7 +40,7 @@ public class TipoCambio {
     private static boolean cargado = false; // Para leer el archivo una sola vez.
 
     // Entrega el dólar que se debe usar ahora (el último guardado). Nunca falla ni tarda: no usa internet.
-    public static synchronized double getVenta() {
+    public static synchronized double getCompra() {
         cargar();
         return valor;
     }

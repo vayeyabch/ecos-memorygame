@@ -27,7 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class pantallaIntro extends Pantalla {
+public class PantallaIntro extends Pantalla {
 
     private static final String TEXTO_1 = "De los creadores de AvatarsVsRooks";
     private static final String TEXTO_2 = "Una colaboración entre Gravita y Eva Solutions";
@@ -46,7 +46,7 @@ public class pantallaIntro extends Pantalla {
     private int puntos;
     private boolean terminado;
 
-    public pantallaIntro() {
+    public PantallaIntro() {
         super("intro", "intro");
         setConFondo(false); // la intro dibuja su propio fondo oscuro
         setLayout(new BorderLayout());

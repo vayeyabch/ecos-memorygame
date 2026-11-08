@@ -25,7 +25,7 @@ import java.awt.Insets;
 
 
 // Captura del rostro para terminar el registro.
-// Responsable: Valeria. Esqueleto: solo muestra el título, falta armar la pantalla.
+// Responsable: Valeria. Pantalla lista; falta conectarla a su controlador y al modelo.
 public class PantallaRegistroFacial extends Pantalla {
      private static final int[] POSES = {0, -22, 22}; // Cuánto se corre la mascota en cada pose: al frente, izquierda, derecha.
     private static final String TEXTO_INICIAL = "Colocá tu rostro dentro del marco."; // Mensaje normal del visor.
