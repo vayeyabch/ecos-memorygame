@@ -26,9 +26,12 @@ import ecos.pantallas.PantallaRegistro;
 import ecos.pantallas.PantallaRegistroFacial;
 import ecos.pantallas.PantallaReglasClasico;
 import ecos.pantallas.PantallaReglasPatrones;
-import ecos.pantallas.PantallaAcceso;
-import ecos.pantallas.PantallaInicio;
-import ecos.pantallas.PantallaIntro;
+import ecos.pantallas.pantallaAcceso;
+import ecos.pantallas.pantallaInicio;
+import ecos.pantallas.pantallaIntro;
+import ecos.pantallas.pantallaAcceso;
+import ecos.pantallas.pantallaInicio;
+import ecos.pantallas.pantallaIntro;
 import ecos.recursos.Sprites;
 // Librería Swing, SwingUtilities para ejecutar cosas en el hilo de Swing.
 import javax.swing.SwingUtilities;
@@ -47,9 +50,9 @@ public class Main {
 
         // Pantallas (la vista de cada una).
         // Se crea la vista de cada pantalla.
-        PantallaIntro intro = new PantallaIntro();
-        PantallaInicio inicio = new PantallaInicio();
-        PantallaAcceso acceso = new PantallaAcceso();
+        pantallaIntro intro = new pantallaIntro();
+        pantallaInicio inicio = new pantallaInicio();
+        pantallaAcceso acceso = new pantallaAcceso();
         PantallaRegistro registro = new PantallaRegistro();
         PantallaRegistroFacial registroFacial = new PantallaRegistroFacial();
         PantallaLoginFacial loginFacial = new PantallaLoginFacial();

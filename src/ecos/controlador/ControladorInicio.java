@@ -1,7 +1,8 @@
 package ecos.controlador;
 
 // Clases del propio proyecto que se usan aquí.
-import ecos.pantallas.PantallaInicio;
+import ecos.pantallas.pantallaInicio;
+
 // Acciones de Java, Consumer para una acción que recibe un dato.
 import java.util.function.Consumer;
 
@@ -10,7 +11,7 @@ import java.util.function.Consumer;
 // A cargo de Hellen.
 public class ControladorInicio {
 
-    public ControladorInicio(PantallaInicio vista, Consumer<String> irA) {
+    public ControladorInicio(pantallaInicio vista, Consumer<String> irA) {
         // Al tocar la pantalla pasa al acceso.
         vista.setAlContinuar(() -> irA.accept("acceso"));
     }

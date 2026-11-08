@@ -39,7 +39,7 @@ import javax.swing.Timer;
 
 // Pantalla de carga del inicio, aparecen los logos y los textos de los estudios, y después una barra de carga.
 // Pantalla de carga con los logos y una barra.
-public class PantallaIntro extends Pantalla {
+public class pantallaIntro extends Pantalla {
 
     // Textos de la intro, uno por estudio, y el mensaje que se muestra mientras carga.
     private static final String TEXTO_1 = "De los creadores de AvatarsVsRooks";
@@ -67,7 +67,7 @@ public class PantallaIntro extends Pantalla {
 
     // Arma la pantalla, textos, caja de carga (escondida al inicio), logos al centro y botón Saltar abajo.
     // Arma la pantalla.
-    public PantallaIntro() {
+    public pantallaIntro() {
         // Le pone id y música a la pantalla. La intro dibuja su propio fondo oscuro. Usa BorderLayout.
         super("intro", "intro");
         setConFondo(false);

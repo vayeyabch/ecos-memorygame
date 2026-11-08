@@ -37,7 +37,7 @@ import java.awt.BasicStroke;
 import java.awt.Cursor;
 
 // Pantalla para iniciar sesión con usuario y contraseña o con Face ID; también tiene el botón para registrarse.
-public class PantallaAcceso extends Pantalla {
+public class pantallaAcceso extends Pantalla {
 
     // Mascotas que desfilan arriba de la tarjeta y campos del usuario y la contraseña.
     private final DesfileMascotas desfile = new DesfileMascotas();
@@ -45,7 +45,7 @@ public class PantallaAcceso extends Pantalla {
     private final CampoClavePixel campoClave = new CampoClavePixel("Tu contraseña", 16);
 
     // Arma la pantalla.
-    public PantallaAcceso() {
+    public pantallaAcceso() {
         // Id de la pantalla y música que usa. Centra todo en la pantalla. Deja espacio para la barra de arriba. Máximo 20
         // letras en el usuario.
         super("acceso", "acceso");
