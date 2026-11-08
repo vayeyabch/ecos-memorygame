@@ -40,7 +40,7 @@ public class DialogoComprarOjo {
         JComponent[] piezas = {
             new ImagenPixel(Sprites.ui("eye", 64)),
             Etiqueta.titulo("Ojo espía", 16f, Etiqueta.Rol.TEXTO),
-            Etiqueta.texto("Voltea todas las cartas de tu tablero durante 1.5 segundos.", 18f, Etiqueta.Rol.SUAVE),
+            Etiqueta.texto("<html>" + ecos.recursos.Fuentes.conNumeros("Voltea todas las cartas de tu tablero durante 1.5 segundos.") + "</html>", 18f, Etiqueta.Rol.SUAVE),
             chip, botones};
         for (JComponent c : piezas) {
             c.setAlignmentX(Component.CENTER_ALIGNMENT);

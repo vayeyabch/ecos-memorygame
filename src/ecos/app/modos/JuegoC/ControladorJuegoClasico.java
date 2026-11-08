@@ -2,6 +2,7 @@ package ecos.app.modos.JuegoC;
 
 import ecos.app.Sesion;
 import ecos.modelo.CalculoPremio;
+import ecos.modelo.ModeloMonedas;
 import ecos.pantallas.PantallaClasico;
 import java.util.function.Consumer;
 import javax.swing.Timer;
@@ -15,8 +16,7 @@ public class ControladorJuegoClasico {
 
     private static final double TIEMPO_MAX = 10.0; // segundos que tiene cada jugador por jugada
     private static final double BONUS = 7.0; // segundos extra que se suman al encontrar una pareja
-    private static final int MONEDAS_INICIO = 30; // monedas con las que empieza cada jugador
-    private static final int PRECIO_OJO = 20; // lo que cuesta comprar el ojo espía
+    private static final int PRECIO_OJO = ModeloMonedas.PRECIO_OJO; // lo que cuesta comprar el ojo espía (30 monedas)
     private static final int ESPERA_PAR_MS = 700; // para ver las dos cartas antes de resolver
     private static final int CUENTA_REGRESIVA_MS = 2000; // lo que dura el sonido 3, 2, 1 (1.9 s)
 
@@ -24,7 +24,7 @@ public class ControladorJuegoClasico {
     private final PantallaClasico vista; // la pantalla (lo que se ve)
     private final Consumer<String> irA; // sirve para cambiar de pantalla, por ejemplo irA.accept("premios")
     private final Timer reloj = new Timer(100, e -> tick()); // cada 100 ms (0.1 s) llama a tick()
-    private final int[] monedas = new int[2]; // monedas de cada jugador: [0] = jugador 1, [1] = jugador 2
+    private final ModeloMonedas monedas = new ModeloMonedas(); // monedas de cada cuenta (el jugador sin cuenta siempre tiene 0)
     private PartidaClasica modelo; // las reglas del juego (cartas, turnos, intentos)
     private double tiempo = TIEMPO_MAX; // segundos que le quedan al jugador del turno
     private boolean esperando = false; // congela clics y tiempo mientras se resuelve un intento
@@ -37,7 +37,7 @@ public class ControladorJuegoClasico {
         this.vista = vista;
         this.irA = irA;
         vista.setAlClicCarta(this::clic);           // al tocar una carta -> clic()
-        vista.setAlComprarOjo(this::comprarOjo);    // al comprar el ojo -> comprarOjo()
+        vista.setAlClicOjo(this::clicOjo);           // al tocar el ojo espía -> clicOjo()
         vista.setAlEntrar(this::iniciar);           // al entrar a la pantalla -> iniciar()
         vista.setAlSalir(this::salir);              // al salir de la pantalla -> salir()
     }
@@ -52,7 +52,6 @@ public class ControladorJuegoClasico {
         for (int p = 0; p < 2; p++) {
             // aplanar: convierte la matriz 6x6 en una lista de 36 que entiende la pantalla
             caras[p] = MezclaCartasClasico.aplanar(modelo.getCaras(p));
-            monedas[p] = MONEDAS_INICIO; // cada jugador empieza con 30 monedas
         }
         esperando = true; // congelado mientras suena el 3, 2, 1
         urgente = false;
@@ -63,7 +62,7 @@ public class ControladorJuegoClasico {
             vista.configurar(n, Sesion.getJugador1(), Sesion.getJugador2(), 2, 7, PRECIO_OJO, caras);
             vista.setTurno(0); // empieza el jugador 1
             for (int p = 0; p < 2; p++) {
-                vista.setMonedas(p, monedas[p]);
+                vista.setMonedas(p, monedas.monedas(cuenta(p))); // monedas acumuladas de su cuenta
                 vista.setIntentos(p, 0);
                 vista.setParejas(p, 0);
             }
@@ -183,44 +182,53 @@ public class ControladorJuegoClasico {
         ultimoSegundo = 99;
     }
 
-    // Alguien encontró todas las parejas: se calcula el premio y se abre la ventana de victoria.
+    // Alguien encontró todas las parejas: se calcula el premio, se suman las monedas y se abre la ventana de victoria.
     private void terminar() {
         reloj.stop();
         quitarUrgencia();
         esperando = true; // nadie puede tocar nada
         int ganador = modelo.ganador();
         int puntaje = modelo.getIntentos(ganador); // puntaje = intentos del ganador (menos intentos, más premio)
-        String premio = CalculoPremio.textoPremio(puntaje); // fórmula del equipo (Allison): 1 / intentos x 100 x dólar
-        // Espera 0.9 s y abre VentanaVictoria con los datos y los dos botones
+        String cuenta = cuenta(ganador); // null si el ganador juega sin cuenta
+        // Premio solo con cuenta (fórmula de Allison: 1 / intentos x 100 x dólar); sin cuenta no hay premio
+        String premio = cuenta == null ? null : CalculoPremio.textoPremio(puntaje);
+        monedas.sumarVictoria(cuenta); // +15 monedas (si no tiene cuenta, no se guarda nada)
+        String extra = cuenta == null ? "Sin cuenta no hay premio ni monedas." : "+" + ModeloMonedas.MONEDAS_POR_VICTORIA + " monedas para " + cuenta;
         int i0 = modelo.getIntentos(0);
         int i1 = modelo.getIntentos(1);
-        if (ganador == 1) { // Ganó el jugador 2: primero inicia sesión para que se le sumen los puntos.
-            int puntos = (int) Math.max(1, Math.round(CalculoPremio.premioDolares(puntaje))); // Puntos = premio en dólares redondeado.
-            despues(900, () -> {
-                VentanaLoginGanador ventana = new VentanaLoginGanador(Sesion.getJugador2(), puntos);
-                new ControladorLoginGanador(ventana, puntos,
-                        extra -> mostrarVictoria(ganador, i0, i1, extra == null ? premio : premio + "  ·  " + extra));
-                ventana.mostrar(vista);
-            });
-            return;
-        }
-        despues(900, () -> mostrarVictoria(ganador, i0, i1, premio)); // Ganó el jugador 1: victoria directa.
-    }
-
-    // Abre la ventana de victoria con los dos botones.
-    private void mostrarVictoria(int ganador, int i0, int i1, String premio) {
-        vista.mostrarVictoria(ganador, i0, i1, premio,
+        // Espera 0.9 s y abre VentanaVictoria con los datos y los dos botones
+        despues(900, () -> vista.mostrarVictoria(ganador, i0, i1, premio, extra,
                 () -> irA.accept("premios"), // botón "Ver premios"
-                this::iniciar);              // botón "Jugar otra vez"
+                this::iniciar));              // botón "Jugar otra vez"
     }
 
-    // Ojo espía: solo se puede comprar si no hay una carta volteada.
-    private void comprarOjo(int p) {
-        if (modelo == null || esperando || p != modelo.getTurno() || modelo.hayPrimera() || monedas[p] < PRECIO_OJO) {
+    // Cuenta de cada jugador: el jugador 1 es quien inició sesión; el 2 puede jugar sin cuenta (null).
+    private String cuenta(int p) {
+        if (p == 0) {
+            return Sesion.getNombre();
+        }
+        return Sesion.isInvitado2() ? null : Sesion.getJugador2();
+    }
+
+    // El jugador toca el Ojo espía: avisa si no se puede o no alcanzan las monedas; si todo está bien pide confirmar.
+    private void clicOjo(int p) {
+        if (modelo == null || esperando || p != modelo.getTurno() || modelo.hayPrimera()) {
+            vista.avisarOjoNoDisponible(); // no es su turno o ya volteó una carta
             return;
         }
-        monedas[p] -= PRECIO_OJO; // se cobra
-        vista.setMonedas(p, monedas[p]);
+        if (!monedas.alcanzaParaOjo(cuenta(p))) {
+            vista.avisarSinMonedas(monedas.monedas(cuenta(p)), PRECIO_OJO, cuenta(p) == null); // no alcanza
+            return;
+        }
+        vista.confirmarCompraOjo(PRECIO_OJO, () -> comprarOjo(p)); // pregunta y, si acepta, compra
+    }
+
+    // Ojo espía: se cobra y se muestran las cartas un momento.
+    private void comprarOjo(int p) {
+        if (modelo == null || esperando || p != modelo.getTurno() || modelo.hayPrimera() || !monedas.comprarOjo(cuenta(p))) {
+            return;
+        }
+        vista.setMonedas(p, monedas.monedas(cuenta(p))); // muestra las monedas que quedan
         vista.ojoEspia(p); // la pantalla muestra las cartas un momento
         esperando = true; // el tiempo se congela mientras se ven las cartas
         despues(2100, () -> { // después de 2.1 s se vuelve a jugar

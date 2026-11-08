@@ -49,6 +49,6 @@ public class ListaReglas extends JPanel {
 
     // Cambia el texto de una regla (por ejemplo, para mostrar el tamaño del tablero elegido).
     public void setRegla(int indice, String texto) { // Recibe cuál regla y el texto nuevo.
-        etiquetas[indice].setText("<html><div style='width:" + ancho + "px'>" + texto + "</div></html>"); // Usa HTML con ancho fijo para que el texto se parta en varias líneas.
+        etiquetas[indice].setText("<html><div style='width:" + ancho + "px'>" + ecos.recursos.Fuentes.conNumeros(texto) + "</div></html>"); // Usa HTML con ancho fijo para que el texto se parta en varias líneas.
     }
 }

@@ -17,6 +17,7 @@ public class BotonPoder extends JButton {
 
     private final String texto; // Nombre del comodín, por ejemplo "Ojo espía".
     private final int precio; // Cuántas monedas cuesta.
+    private boolean sinFondos = false; // true = no alcanzan las monedas: se ve apagado pero se puede tocar para ver el aviso.
     private boolean encima = false; // true mientras el mouse está sobre el botón.
     private final Runnable alCambiarTema = this::repaint; // Acción que repinta el botón cuando cambia el tema.
 
@@ -41,6 +42,11 @@ public class BotonPoder extends JButton {
                 repaint(); // Repinta para que vuelva a su lugar.
             }
         });
+    }
+
+    public void setSinFondos(boolean sinFondos) { // Apaga o enciende el botón según las monedas.
+        this.sinFondos = sinFondos; // Guarda el estado.
+        repaint(); // Repinta.
     }
 
     @Override // Indica que se reemplaza un método de JButton.
@@ -75,8 +81,8 @@ public class BotonPoder extends JButton {
         Graphics2D g2 = (Graphics2D) g.create(); // Crea una copia del pincel para dibujar sin afectar al original.
         int w = getWidth(); // Ancho total del botón.
         int h = getHeight() - 8; // Alto sin contar la sombra.
-        int dy = encima && isEnabled() ? -2 : 0; // Si el mouse está encima y está activo, el botón sube 2 píxeles.
-        if (!isEnabled()) { // Si el botón está desactivado (no alcanzan las monedas).
+        int dy = encima && isEnabled() && !sinFondos ? -2 : 0; // Si el mouse está encima y está activo, el botón sube 2 píxeles.
+        if (!isEnabled() || sinFondos) { // Si el botón está desactivado (no alcanzan las monedas).
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f)); // Lo dibuja medio transparente.
         }
         g2.translate(0, dy + 2); // Mueve el dibujo para dejar lugar a la sombra y al levantado.

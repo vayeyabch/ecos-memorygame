@@ -47,7 +47,7 @@ public class PantallaClasico extends Pantalla {
     private int n = 6; // cartas por lado
     private int precioOjo = 20;
     private BiConsumer<Integer, Integer> alClicCarta = (p, i) -> { };
-    private IntConsumer alComprarOjo = p -> { };
+    private IntConsumer alClicOjo = p -> { }; // Qué hacer cuando tocan el botón del Ojo espía.
 
     public PantallaClasico() {
         super("clasico", "clasico");
@@ -104,8 +104,28 @@ public class PantallaClasico extends Pantalla {
         this.alClicCarta = accion;
     }
 
-    public void setAlComprarOjo(IntConsumer accion) {
-        this.alComprarOjo = accion;
+    public void setAlClicOjo(IntConsumer accion) {
+        this.alClicOjo = accion;
+    }
+
+    // Pregunta si quiere comprar el Ojo espía; si acepta se ejecuta alComprar.
+    public void confirmarCompraOjo(int precio, Runnable alComprar) {
+        new DialogoComprarOjo(precio, alComprar).mostrar(this);
+    }
+
+    // Aviso cuando no alcanzan las monedas. sinCuenta = el jugador no tiene cuenta.
+    public void avisarSinMonedas(int tiene, int precio, boolean sinCuenta) {
+        ecos.recursos.Sonido.efecto("sin_monedas");
+        String mensaje = sinCuenta
+                ? "Estás jugando sin cuenta, así que no tenés monedas. Iniciá sesión en la próxima partida para ganarlas y comprar el Ojo espía."
+                : "Tenés <b>" + tiene + "</b> monedas y el Ojo espía cuesta <b>" + precio + "</b>. ¡Seguí jugando y ganá partidas para conseguir más!";
+        new ecos.componentes.DialogoAviso("¡Te faltan monedas!", mensaje, Sprites.ui("coin", 48)).mostrar(this);
+    }
+
+    // Aviso cuando el Ojo espía no se puede usar en este momento.
+    public void avisarOjoNoDisponible() {
+        ecos.recursos.Sonido.efecto("error");
+        new ecos.componentes.DialogoAviso("Ojo espía", "Solo se puede usar en tu turno y antes de voltear una carta.", Sprites.ui("eye", 48)).mostrar(this);
     }
 
     // Arma los dos tableros de n x n y las cartas caen en cascada.
@@ -153,10 +173,10 @@ public class PantallaClasico extends Pantalla {
         nm.add(nombre);
         chips[p][0] = new ChipPixel("Intentos 0", 11f, true, ChipPixel.Modo.CAJA, 3);
         chips[p][1] = new ChipPixel("Parejas 0/" + parejas, 11f, true, ChipPixel.Modo.CAJA, 3);
-        chips[p][2] = new ChipPixel("30", 11f, true, ChipPixel.Modo.CAJA, 3);
+        chips[p][2] = new ChipPixel("0", 11f, true, ChipPixel.Modo.CAJA, 3);
         chips[p][2].setIcono(Sprites.ui("coin", 20));
         ojos[p] = new BotonPoder("Ojo espía", precioOjo);
-        ojos[p].addActionListener(e -> new DialogoComprarOjo(precioOjo, () -> alComprarOjo.accept(p)).mostrar(this));
+        ojos[p].addActionListener(e -> alClicOjo.accept(p));
         JPanel datos = new JPanel(); // Columna con todo lo que antes estaba arriba y abajo del tablero.
         datos.setOpaque(false);
         datos.setLayout(new BoxLayout(datos, BoxLayout.Y_AXIS));
@@ -264,17 +284,17 @@ public class PantallaClasico extends Pantalla {
         }
         monedasAntes[p] = monedas; // Guarda el valor para comparar la próxima vez.
         chips[p][2].setTexto("" + monedas);
-        ojos[p].setEnabled(monedas >= precioOjo);
+        ojos[p].setSinFondos(monedas < precioOjo); // Apagado si no alcanza, pero se puede tocar para ver el aviso.
     }
 
     public void mostrarBannerTurno(int p) {
         AvisoDeslizante.mostrar(this, "TURNO DE " + nombres[p].toUpperCase(), p == 0 ? AvisoDeslizante.Estilo.JUGADOR1 : AvisoDeslizante.Estilo.JUGADOR2, Sprites.mascota(mascotas[p], 44));
     }
 
-    public void mostrarVictoria(int ganador, int intentos1, int intentos2, String premio, Runnable verPremios, Runnable jugarOtra) {
+    public void mostrarVictoria(int ganador, int intentos1, int intentos2, String premio, String extra, Runnable verPremios, Runnable jugarOtra) {
         ecos.recursos.Sonido.efecto("victoria"); // Suena cuando termina la partida.
         Confeti.lanzar(this, 190, 5200);
         ecos.app.modos.JuegoC.VentanaVictoria.mostrar(this, nombres[ganador], Sprites.mascota(mascotas[0], 32), nombres[0], intentos1,
-                Sprites.mascota(mascotas[1], 32), nombres[1], intentos2, ganador == 0, premio, verPremios, jugarOtra);
+                Sprites.mascota(mascotas[1], 32), nombres[1], intentos2, ganador == 0, premio, extra, verPremios, jugarOtra);
     }
 }

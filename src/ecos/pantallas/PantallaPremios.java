@@ -23,6 +23,7 @@ public class PantallaPremios extends Pantalla {
     private static final String[] ICONOS = {"trophy", "star", "heart", "gem", "shield"}; // Un iconito por puesto.
 
     private final PanelPixel tarjeta; // La tarjeta que contiene el título, el dólar y la tabla.
+    private final ChipPixel monedas = new ChipPixel("Monedas: 0", 11f, true, ChipPixel.Modo.CAJA, 3); // monedas acumuladas de quien juega
     private final Etiqueta valorDolar; // El dólar del día (lo escribe el controlador).
     private JPanel tabla = null; // La tabla actual (se reemplaza cada vez que llegan datos).
 
@@ -67,7 +68,22 @@ public class PantallaPremios extends Pantalla {
         c.gridy = 1;
         tarjeta.add(dolar, c);
 
+        monedas.setIcono(ecos.recursos.Sprites.ui("coin", 20)); // Moneda al lado del número.
+        c.gridy = 3;
+        c.fill = GridBagConstraints.NONE; // El chip no se estira.
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(14, 0, 4, 0);
+        tarjeta.add(monedas, c); // Las monedas acumuladas van abajo del top 5.
+        c.gridy = 4;
+        c.insets = new Insets(0, 0, 0, 0);
+        tarjeta.add(Etiqueta.texto("Las monedas no cambian el ranking: sirven para comprar el Ojo espía.", 18f, Etiqueta.Rol.SUAVE), c);
+
         add(tarjeta);
+    }
+
+    // El controlador llama esto con las monedas de quien juega.
+    public void setMonedas(String nombre, int cantidad) {
+        monedas.setTexto("Monedas de " + nombre + ": " + cantidad);
     }
 
     // El controlador llama esto con los datos listos: el dólar del día y, por puesto, jugador, intentos y premio.

@@ -1,5 +1,7 @@
 package ecos.controlador;
 
+import ecos.app.Sesion;
+import ecos.modelo.ModeloMonedas;
 import ecos.modelo.RankingPremios;
 import ecos.modelo.TipoCambio;
 import ecos.pantallas.PantallaPremios;
@@ -13,6 +15,7 @@ public class ControladorPremios {
 
     private final PantallaPremios vista;
     private final RankingPremios ranking = new RankingPremios();
+    private final ModeloMonedas monedas = new ModeloMonedas(); // monedas acumuladas (aparte del ranking)
 
     public ControladorPremios(PantallaPremios vista) {
         this.vista = vista;
@@ -44,5 +47,6 @@ public class ControladorPremios {
             dolares[i] = ranking.dolares(i);
         }
         vista.mostrar(ranking.dolarDelDia(), nombres, intentos, colones, dolares);
+        vista.setMonedas(Sesion.getNombre(), monedas.monedas(Sesion.getNombre())); // Monedas de quien inició sesión.
     }
 }

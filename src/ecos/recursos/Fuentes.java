@@ -5,6 +5,8 @@ import java.awt.GraphicsEnvironment; // Da acceso al sistema gráfico, donde se 
 import java.io.InputStream; // Flujo para leer los bytes de un archivo.
 import java.util.HashMap; // Diccionario concreto (clave -> valor).
 import java.util.Map; // Tipo general del diccionario.
+import java.util.regex.Matcher; // Para recorrer los números de un texto.
+import java.util.regex.Pattern; // Para buscar los números de un texto.
 
 public class Fuentes {
 
@@ -16,6 +18,21 @@ public class Fuentes {
 
     public static Font texto(float tamano) { // Fuente para el texto normal; recibe el tamaño.
         return obtener("fuentes/PixelifySans.ttf", tamano); // Pixelify Sans: una letra pixel art más fácil de leer.
+    }
+
+    private static final Pattern NUMEROS = Pattern.compile("<[^>]*>|\\d+(?:[.,]\\d+)?"); // Una etiqueta HTML o un número.
+
+    // En un texto con HTML pone los números con la fuente de títulos, porque con la de texto se confunden (el 5 parece S).
+    public static String conNumeros(String html) { // Recibe el texto con o sin etiquetas.
+        titulo(1f); // Se asegura de que la fuente de títulos ya esté registrada.
+        Matcher m = NUMEROS.matcher(html); // Busca etiquetas y números.
+        StringBuilder sb = new StringBuilder(); // Aquí se arma el texto nuevo.
+        while (m.find()) { // Por cada coincidencia.
+            String t = m.group(); // Lo que encontró.
+            m.appendReplacement(sb, Matcher.quoteReplacement(t.startsWith("<") ? t : "<span style=\"font-family:'Press Start 2P'; font-size:12px\">" + t + "</span>")); // Las etiquetas quedan igual; los números cambian de fuente.
+        }
+        m.appendTail(sb); // Copia el resto.
+        return sb.toString();
     }
 
     private static Font obtener(String ruta, float tamano) { // Entrega la fuente de ese archivo en el tamaño pedido.
