@@ -1,78 +1,108 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import java.awt.Color; // Clase de Java para representar un color.
-import java.awt.FlowLayout; // Layout que acomoda los componentes uno al lado del otro.
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.Graphics2D; // Versión más completa de Graphics para dibujar figuras.
-import java.awt.LayoutManager; // Tipo general de cualquier layout.
-import javax.swing.BorderFactory; // Fábrica para crear bordes de Swing.
-import javax.swing.JPanel; // Panel de Swing: el contenedor del que hereda esta clase.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Tema;
+// Librería gráfica AWT, Color para los colores, FlowLayout para acomodar en fila, Graphics para dibujar, Graphics2D para
+// dibujar con más opciones y LayoutManager para el tipo de acomodo.
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LayoutManager;
+// Librería Swing, BorderFactory para los bordes y JPanel para los paneles.
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
 
+// Caja con borde duro y sombra; es el "papel" de casi todas las ventanas y tarjetas.
 public class PanelPixel extends JPanel {
 
-    private static final int BORDE = 4; // Grosor del borde, en píxeles.
-    private static final int LINEA = 3; // Grosor de la línea clara que va dentro del borde.
-    private static final int SOMBRA = 6; // Tamaño de la sombra dura de abajo, en píxeles.
+    // Grosor del borde en píxeles, grosor de la línea clara que va dentro del borde y tamaño de la sombra dura de abajo.
+    private static final int BORDE = 4;
+    private static final int LINEA = 3;
+    private static final int SOMBRA = 6;
 
-    private Color colorFondo = null; // Color de fondo propio; null significa que usa el color del tema.
-    private Color colorBorde = null; // Color de borde propio; null significa que usa el color del tema.
-    private final Runnable alCambiarTema = this::repaint; // Acción que repinta el panel cuando cambia el tema.
+    // Color de fondo y de borde propios, que si son null usan el color del tema, y acción que repinta el panel cuando cambia
+    // el tema.
+    private Color colorFondo = null;
+    private Color colorBorde = null;
+    private final Runnable alCambiarTema = this::repaint;
 
-    public PanelPixel() { // Constructor sin parámetros.
-        this(new FlowLayout()); // Llama al otro constructor con un FlowLayout por defecto.
+    // Constructor sin parámetros.
+    public PanelPixel() {
+        // Llama al otro constructor con un FlowLayout por defecto.
+        this(new FlowLayout());
     }
 
-    public PanelPixel(LayoutManager layout) { // Constructor que permite elegir el layout.
-        super(layout); // Le pasa el layout al JPanel.
-        setOpaque(false); // Hace el panel transparente, porque el fondo se dibuja a mano.
-        setPadding(14); // Pone un espacio interno de 14 píxeles.
+    // Constructor que permite elegir el layout.
+    public PanelPixel(LayoutManager layout) {
+        // Le pasa el layout al JPanel. Hace el panel transparente, porque el fondo se dibuja a mano. Pone un espacio interno
+        // de 14 píxeles.
+        super(layout);
+        setOpaque(false);
+        setPadding(14);
     }
 
-    @Override // Indica que se reemplaza un método de JPanel.
-    public void addNotify() { // Swing lo llama cuando el panel entra a una ventana.
-        super.addNotify(); // Deja que Swing haga lo suyo primero.
-        Tema.alCambiar(alCambiarTema); // Empieza a escuchar los cambios de tema.
+    // Swing lo llama cuando el panel entra a una ventana.
+    @Override
+    public void addNotify() {
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
+        super.addNotify();
+        Tema.alCambiar(alCambiarTema);
     }
 
-    @Override // Indica que se reemplaza un método de JPanel.
-    public void removeNotify() { // Swing lo llama cuando el panel sale de la ventana.
-        Tema.quitar(alCambiarTema); // Deja de escuchar los cambios de tema (así no queda guardado de más).
-        super.removeNotify(); // Deja que Swing haga lo suyo.
+    // Swing lo llama cuando el panel sale de la ventana.
+    @Override
+    public void removeNotify() {
+        // Deja de escuchar los cambios de tema (así no queda guardado de más). Deja que Swing haga lo suyo.
+        Tema.quitar(alCambiarTema);
+        super.removeNotify();
     }
 
     // Espacio entre el borde y lo que va adentro.
-    public void setPadding(int px) { // Recibe el espacio deseado en píxeles.
-        int p = px + BORDE + LINEA; // Suma el borde y la línea clara para que el contenido no los toque.
-        setBorder(BorderFactory.createEmptyBorder(p, p, p + SOMBRA, p)); // Margen vacío; abajo suma la sombra.
+    // Recibe el espacio deseado en píxeles.
+    public void setPadding(int px) {
+        // Suma el borde y la línea clara para que el contenido no los toque. Margen vacío; abajo suma la sombra.
+        int p = px + BORDE + LINEA;
+        setBorder(BorderFactory.createEmptyBorder(p, p, p + SOMBRA, p));
     }
 
     // Cambia el color de fondo del panel. Con null vuelve al color del tema.
-    public void setColorFondo(Color color) { // Recibe el nuevo color.
-        this.colorFondo = color; // Lo guarda.
-        repaint(); // Repinta para que se vea el cambio.
+    // Recibe el nuevo color.
+    public void setColorFondo(Color color) {
+        // Repinta para que se vea el cambio.
+        this.colorFondo = color;
+        repaint();
     }
 
     // Cambia el color del borde del panel. Con null vuelve al color del tema.
-    public void setColorBorde(Color color) { // Recibe el nuevo color.
-        this.colorBorde = color; // Lo guarda.
-        repaint(); // Repinta para que se vea el cambio.
+    // Recibe el nuevo color.
+    public void setColorBorde(Color color) {
+        // Repinta para que se vea el cambio.
+        this.colorBorde = color;
+        repaint();
     }
 
-    @Override // Indica que se reemplaza el método de dibujo de JPanel.
-    protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar el panel.
-        Graphics2D g2 = (Graphics2D) g.create(); // Crea una copia del pincel para dibujar sin afectar al original.
-        int w = getWidth(); // Ancho total del panel.
-        int h = getHeight() - SOMBRA; // Alto del panel sin contar la sombra.
-        g2.setColor(Tema.sombra()); // Elige el color de la sombra dura.
-        g2.fillRect(0, SOMBRA, w, h); // Dibuja la sombra: el mismo rectángulo, corrido hacia abajo.
-        g2.setColor(colorBorde != null ? colorBorde : Tema.borde()); // Elige el color del borde (propio o del tema).
-        g2.fillRect(0, 0, w, h); // Dibuja el rectángulo del borde.
-        g2.setColor(Tema.panelAlto()); // Elige el color de la línea clara interior.
-        g2.fillRect(BORDE, BORDE, w - BORDE * 2, h - BORDE * 2); // Dibuja la línea clara.
-        g2.setColor(colorFondo != null ? colorFondo : Tema.panel()); // Elige el color de relleno (propio o del tema).
-        g2.fillRect(BORDE + LINEA, BORDE + LINEA, w - (BORDE + LINEA) * 2, h - (BORDE + LINEA) * 2); // Dibuja el relleno dejando visible la línea clara.
-        g2.dispose(); // Libera el pincel.
-        super.paintComponent(g); // Deja que JPanel termine su dibujo normal.
+    // Swing lo llama cada vez que hay que dibujar el panel.
+    @Override
+    protected void paintComponent(Graphics g) {
+        // Crea una copia del pincel, toma el ancho total y el alto sin sombra y elige el color de la sombra dura.
+        Graphics2D g2 = (Graphics2D) g.create();
+        int w = getWidth();
+        int h = getHeight() - SOMBRA;
+        g2.setColor(Tema.sombra());
+        // Dibuja la sombra, el mismo rectángulo, corrido hacia abajo. Elige el color del borde (propio o del tema). Dibuja el
+        // rectángulo del borde. Elige el color de la línea clara interior.
+        g2.fillRect(0, SOMBRA, w, h);
+        g2.setColor(colorBorde != null ? colorBorde : Tema.borde());
+        g2.fillRect(0, 0, w, h);
+        g2.setColor(Tema.panelAlto());
+        // Dibuja la línea clara. Elige el color de relleno (propio o del tema). Dibuja el relleno dejando visible la línea
+        // clara. Libera el pincel.
+        g2.fillRect(BORDE, BORDE, w - BORDE * 2, h - BORDE * 2);
+        g2.setColor(colorFondo != null ? colorFondo : Tema.panel());
+        g2.fillRect(BORDE + LINEA, BORDE + LINEA, w - (BORDE + LINEA) * 2, h - (BORDE + LINEA) * 2);
+        g2.dispose();
+        // Deja que JPanel termine su dibujo normal.
+        super.paintComponent(g);
     }
 }

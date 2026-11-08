@@ -1,72 +1,97 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import ecos.recursos.Fuentes; // Para usar las fuentes pixel del juego.
-import java.awt.Color; // Clase de Java para representar un color.
-import javax.swing.JLabel; // Etiqueta de Swing: la clase de la que hereda esta.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Tema;
+import ecos.recursos.Fuentes;
+// Librería gráfica AWT, Color para los colores.
+import java.awt.Color;
+// Librería Swing, JLabel para los textos.
+import javax.swing.JLabel;
 
+// Texto del juego, usa una de las dos fuentes pixel y un color del tema según su rol.
 public class Etiqueta extends JLabel {
 
-    public enum Rol { TEXTO, SUAVE, ACENTO, CARMESI, PELIGRO, ACIERTO, FIJO } // Qué color del tema usa la etiqueta (FIJO = un color propio que no cambia).
+    // Qué color del tema usa la etiqueta (FIJO = un color propio que no cambia).
+    public enum Rol { TEXTO, SUAVE, ACENTO, CARMESI, PELIGRO, ACIERTO, FIJO }
 
-    private Rol rol; // Rol actual de la etiqueta.
-    private Color colorFijo = Color.BLACK; // Color que se usa solo cuando el rol es FIJO.
-    private final Runnable alCambiarTema = this::colorear; // Acción que vuelve a colorear cuando cambia el tema.
+    // Rol actual de la etiqueta, color que se usa solo cuando el rol es FIJO y acción que vuelve a colorear cuando cambia el
+    // tema.
+    private Rol rol;
+    private Color colorFijo = Color.BLACK;
+    private final Runnable alCambiarTema = this::colorear;
 
-    public Etiqueta(String texto, Rol rol) { // Recibe el texto y el rol (de qué color es).
-        super(texto); // Le pasa el texto al JLabel.
-        this.rol = rol; // Guarda el rol.
-        colorear(); // Pone el color inicial.
+    // Recibe el texto y el rol (de qué color es).
+    public Etiqueta(String texto, Rol rol) {
+        // Le pasa el texto al JLabel. Guarda el rol. Pone el color inicial.
+        super(texto);
+        this.rol = rol;
+        colorear();
     }
 
     // Etiqueta con la fuente de títulos (Press Start 2P).
-    public static Etiqueta titulo(String texto, float tamano, Rol rol) { // Recibe el texto, el tamaño y el rol.
-        Etiqueta e = new Etiqueta(texto, rol); // Crea la etiqueta.
-        e.setFont(Fuentes.titulo(tamano)); // Le pone la fuente de títulos.
-        return e; // La entrega.
+    // Recibe el texto, el tamaño y el rol.
+    public static Etiqueta titulo(String texto, float tamano, Rol rol) {
+        // Crea la etiqueta. Le pone la fuente de títulos.
+        Etiqueta e = new Etiqueta(texto, rol);
+        e.setFont(Fuentes.titulo(tamano));
+        return e;
     }
 
     // Etiqueta con la fuente de texto normal (Pixelify Sans).
-    public static Etiqueta texto(String texto, float tamano, Rol rol) { // Recibe el texto, el tamaño y el rol.
-        Etiqueta e = new Etiqueta(texto, rol); // Crea la etiqueta.
-        e.setFont(Fuentes.texto(tamano)); // Le pone la fuente de texto.
-        return e; // La entrega.
+    // Recibe el texto, el tamaño y el rol.
+    public static Etiqueta texto(String texto, float tamano, Rol rol) {
+        // Crea la etiqueta. Le pone la fuente de texto.
+        Etiqueta e = new Etiqueta(texto, rol);
+        e.setFont(Fuentes.texto(tamano));
+        return e;
     }
 
-    public void setRol(Rol rol) { // Cambia el rol (el color) de la etiqueta.
-        this.rol = rol; // Guarda el rol nuevo.
-        colorear(); // Aplica el color.
+    // Cambia el rol (el color) de la etiqueta.
+    public void setRol(Rol rol) {
+        // Guarda el rol nuevo. Aplica el color.
+        this.rol = rol;
+        colorear();
     }
 
-    public void setColorFijo(Color color) { // Pone un color propio que no depende del tema.
-        this.colorFijo = color; // Guarda el color.
-        this.rol = Rol.FIJO; // Cambia el rol a FIJO.
-        colorear(); // Aplica el color.
+    // Pone un color propio que no depende del tema.
+    public void setColorFijo(Color color) {
+        // Guarda el color. Cambia el rol a FIJO. Aplica el color.
+        this.colorFijo = color;
+        this.rol = Rol.FIJO;
+        colorear();
     }
 
-    private void colorear() { // Pone el color que corresponde al rol y al tema.
-        Color c = switch (rol) { // Elige el color según el rol.
-            case TEXTO -> Tema.texto(); // Letras normales.
-            case SUAVE -> Tema.textoSuave(); // Letras apagadas.
-            case ACENTO -> Tema.acento(); // Letras de resalte.
-            case CARMESI -> Tema.carmesi(); // Rojo carmesí.
-            case PELIGRO -> Tema.peligro(); // Rojo de error.
-            case ACIERTO -> Tema.acierto(); // Verde de acierto.
-            case FIJO -> colorFijo; // Color propio.
+    // Pone el color que corresponde al rol y al tema.
+    private void colorear() {
+        // Elige el color según el rol, con letras normales, apagadas o de resalte.
+        Color c = switch (rol) {
+            case TEXTO -> Tema.texto();
+            case SUAVE -> Tema.textoSuave();
+            case ACENTO -> Tema.acento();
+            // Rojo de error. Verde de acierto.
+            case CARMESI -> Tema.carmesi();
+            case PELIGRO -> Tema.peligro();
+            case ACIERTO -> Tema.acierto();
+            case FIJO -> colorFijo;
         };
-        setForeground(c); // Aplica el color a las letras.
+        // Aplica el color a las letras.
+        setForeground(c);
     }
 
-    @Override // Indica que se reemplaza un método de JLabel.
-    public void addNotify() { // Swing lo llama cuando la etiqueta entra a una ventana.
-        super.addNotify(); // Deja que Swing haga lo suyo primero.
-        Tema.alCambiar(alCambiarTema); // Empieza a escuchar los cambios de tema.
-        colorear(); // Se pone al día con el tema actual.
+    // Swing lo llama cuando la etiqueta entra a una ventana.
+    @Override
+    public void addNotify() {
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema. Se pone al día con el tema actual.
+        super.addNotify();
+        Tema.alCambiar(alCambiarTema);
+        colorear();
     }
 
-    @Override // Indica que se reemplaza un método de JLabel.
-    public void removeNotify() { // Swing lo llama cuando la etiqueta sale de la ventana.
-        Tema.quitar(alCambiarTema); // Deja de escuchar los cambios de tema.
-        super.removeNotify(); // Deja que Swing haga lo suyo.
+    // Swing lo llama cuando la etiqueta sale de la ventana.
+    @Override
+    public void removeNotify() {
+        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        Tema.quitar(alCambiarTema);
+        super.removeNotify();
     }
 }

@@ -1,52 +1,75 @@
 package ecos.recursos;
 
-import java.awt.Font; // Clase de Java que representa una letra (tipo, estilo y tamaño).
-import java.awt.GraphicsEnvironment; // Da acceso al sistema gráfico, donde se registran las fuentes.
-import java.io.InputStream; // Flujo para leer los bytes de un archivo.
-import java.util.HashMap; // Diccionario concreto (clave -> valor).
-import java.util.Map; // Tipo general del diccionario.
-import java.util.regex.Matcher; // Para recorrer los números de un texto.
-import java.util.regex.Pattern; // Para buscar los números de un texto.
+// Librería gráfica AWT, Font para las fuentes y GraphicsEnvironment para registrar las fuentes en el sistema.
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+// Lectura de archivos, InputStream para leer archivos.
+import java.io.InputStream;
+// Utilidades de Java, HashMap para diccionarios rápidos y Map para los diccionarios.
+import java.util.HashMap;
+import java.util.Map;
+// Búsqueda de texto con patrones, Matcher para buscar con ese patrón y Pattern para definir el patrón de búsqueda.
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+// Carga las dos fuentes del juego, Press Start 2P para títulos y números, y Pixelify Sans para el texto normal.
 public class Fuentes {
 
-    private static final Map<String, Font> BASE = new HashMap<>(); // Fuentes ya cargadas (ruta -> fuente), para no leer el archivo dos veces.
+    // Fuentes ya cargadas (ruta y fuente), para no leer el archivo dos veces.
+    private static final Map<String, Font> BASE = new HashMap<>();
 
-    public static Font titulo(float tamano) { // Fuente para títulos y botones; recibe el tamaño.
-        return obtener("fuentes/PressStart2P-Regular.ttf", tamano); // Press Start 2P: la letra pixel art de los videojuegos.
+    // Fuente para títulos y botones; recibe el tamaño.
+    public static Font titulo(float tamano) {
+        // Press Start 2P, la letra pixel art de los videojuegos.
+        return obtener("fuentes/PressStart2P-Regular.ttf", tamano);
     }
 
-    public static Font texto(float tamano) { // Fuente para el texto normal; recibe el tamaño.
-        return obtener("fuentes/PixelifySans.ttf", tamano); // Pixelify Sans: una letra pixel art más fácil de leer.
+    // Fuente para el texto normal; recibe el tamaño.
+    public static Font texto(float tamano) {
+        // Pixelify Sans, una letra pixel art más fácil de leer.
+        return obtener("fuentes/PixelifySans.ttf", tamano);
     }
 
-    private static final Pattern NUMEROS = Pattern.compile("<[^>]*>|\\d+(?:[.,]\\d+)?"); // Una etiqueta HTML o un número.
+    // Una etiqueta HTML o un número.
+    private static final Pattern NUMEROS = Pattern.compile("<[^>]*>|\\d+(?:[.,]\\d+)?");
 
     // En un texto con HTML pone los números con la fuente de títulos, porque con la de texto se confunden (el 5 parece S).
-    public static String conNumeros(String html) { // Recibe el texto con o sin etiquetas.
-        titulo(1f); // Se asegura de que la fuente de títulos ya esté registrada.
-        Matcher m = NUMEROS.matcher(html); // Busca etiquetas y números.
-        StringBuilder sb = new StringBuilder(); // Aquí se arma el texto nuevo.
-        while (m.find()) { // Por cada coincidencia.
-            String t = m.group(); // Lo que encontró.
-            m.appendReplacement(sb, Matcher.quoteReplacement(t.startsWith("<") ? t : "<span style=\"font-family:'Press Start 2P'; font-size:12px\">" + t + "</span>")); // Las etiquetas quedan igual; los números cambian de fuente.
+    // Recibe el texto con o sin etiquetas.
+    public static String conNumeros(String html) {
+        // Se asegura de que la fuente de títulos ya esté registrada. Busca etiquetas y números. Aquí se arma el texto nuevo.
+        // Por cada coincidencia.
+        titulo(1f);
+        Matcher m = NUMEROS.matcher(html);
+        StringBuilder sb = new StringBuilder();
+        while (m.find()) {
+            // Lo que encontró. Las etiquetas quedan igual; los números cambian de fuente.
+            String t = m.group();
+            m.appendReplacement(sb, Matcher.quoteReplacement(t.startsWith("<") ? t : "<span style=\"font-family:'Press Start 2P'; font-size:12px\">" + t + "</span>"));
         }
-        m.appendTail(sb); // Copia el resto.
+        // Copia el resto.
+        m.appendTail(sb);
         return sb.toString();
     }
 
-    private static Font obtener(String ruta, float tamano) { // Entrega la fuente de ese archivo en el tamaño pedido.
-        Font base = BASE.get(ruta); // Busca si ya se cargó antes.
-        if (base == null) { // Si todavía no estaba en memoria.
-            try (InputStream in = Recursos.abrir(ruta)) { // Abre el archivo de la fuente (se cierra solo al terminar).
-                base = Font.createFont(Font.TRUETYPE_FONT, in); // Crea la fuente a partir del archivo .ttf.
-                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(base); // La registra para que Java la pueda usar.
-            } catch (Exception e) { // Si algo falla al leer o crear la fuente.
-                System.err.println("No se pudo cargar la fuente " + ruta + ": " + e.getMessage()); // Avisa en la consola cuál falló.
-                base = new Font(Font.MONOSPACED, Font.BOLD, 12); // Usa una letra normal para que el juego no se caiga.
+    // Entrega la fuente de ese archivo en el tamaño pedido.
+    private static Font obtener(String ruta, float tamano) {
+        // Busca si ya se cargó antes y, si todavía no estaba en memoria, abre el archivo de la fuente (se cierra solo al
+        // terminar) y crea la fuente a partir del .ttf.
+        Font base = BASE.get(ruta);
+        if (base == null) {
+            try (InputStream in = Recursos.abrir(ruta)) {
+                base = Font.createFont(Font.TRUETYPE_FONT, in);
+                // La registra para que Java la pueda usar. Si algo falla al leer o crear la fuente. Avisa en la consola cuál falló.
+                // Usa una letra normal para que el juego no se caiga.
+                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(base);
+            } catch (Exception e) {
+                System.err.println("No se pudo cargar la fuente " + ruta + ": " + e.getMessage());
+                base = new Font(Font.MONOSPACED, Font.BOLD, 12);
             }
-            BASE.put(ruta, base); // La guarda en el diccionario para la próxima vez.
+            // La guarda en el diccionario para la próxima vez.
+            BASE.put(ruta, base);
         }
-        return base.deriveFont(tamano); // Entrega una copia de la fuente con el tamaño pedido.
+        // Entrega una copia de la fuente con el tamaño pedido.
+        return base.deriveFont(tamano);
     }
 }

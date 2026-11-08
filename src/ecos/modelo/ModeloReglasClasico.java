@@ -1,62 +1,78 @@
 package ecos.modelo;
 
-import ecos.app.Sesion; // Aquí se guardan los jugadores de la partida.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Sesion;
 
-// Modelo de PantallaReglasClasico: prepara a los dos jugadores. El jugador 1 es quien inició sesión;
+// Modelo de PantallaReglasClasico, prepara a los dos jugadores. El jugador 1 es quien inició sesión;
 // el jugador 2 inicia sesión o juega sin cuenta (como invitado).
-// Responsable: Hellen.
+// A cargo de Hellen.
 public class ModeloReglasClasico {
 
-    private enum Jugador2 { SIN_ELEGIR, CUENTA, INVITADO } // Cómo va a jugar el jugador 2.
+    // Cómo va a jugar el jugador 2.
+    private enum Jugador2 { SIN_ELEGIR, CUENTA, INVITADO }
 
-    private static final String INVITADO = "Invitado"; // Nombre del jugador 2 sin cuenta.
+    // Nombre del jugador 2 sin cuenta.
+    private static final String INVITADO = "Invitado";
 
-    private Jugador2 estado = Jugador2.SIN_ELEGIR; // Al entrar a la pantalla todavía no eligió.
+    // Al entrar a la pantalla todavía no eligió.
+    private Jugador2 estado = Jugador2.SIN_ELEGIR;
 
-    public void reiniciar() { // Cada vez que se entra a la pantalla hay que elegir de nuevo.
+    // Cada vez que se entra a la pantalla hay que elegir de nuevo.
+    public void reiniciar() {
         estado = Jugador2.SIN_ELEGIR;
     }
 
-    public String nombreJugador1() { // El jugador 1 es quien inició sesión.
+    // El jugador 1 es quien inició sesión.
+    public String nombreJugador1() {
         return Sesion.getNombre();
     }
 
-    public String reglaTablero() { // Primera regla, con el tamaño que se eligió en el menú.
-        int n = Sesion.getTamano(); // 4 o 6.
+    // Primera regla, con el tamaño que se eligió en el menú.
+    public String reglaTablero() {
+        int n = Sesion.getTamano();
         return "Cada jugador tiene su tablero (<b>" + n + "x" + n + "</b>) con las parejas en otro orden.";
     }
 
-    public void elegirInvitado() { // El jugador 2 juega sin cuenta.
+    // El jugador 2 juega sin cuenta.
+    public void elegirInvitado() {
         Sesion.setJugador2(INVITADO);
         Sesion.setInvitado2(true);
         estado = Jugador2.INVITADO;
     }
 
-    public void elegirCuenta() { // El jugador 2 ya inició sesión (ModeloLoginJugador2 guardó su cuenta).
+    // El jugador 2 ya inició sesión (ModeloLoginJugador2 guardó su cuenta).
+    public void elegirCuenta() {
         estado = Jugador2.CUENTA;
     }
 
-    public boolean puedeComenzar() { // Solo se puede empezar cuando el jugador 2 ya eligió.
+    // Solo se puede empezar cuando el jugador 2 ya eligió.
+    public boolean puedeComenzar() {
         return estado != Jugador2.SIN_ELEGIR;
     }
 
-    public boolean esCuenta() { return estado == Jugador2.CUENTA; } // true si el jugador 2 inició sesión.
+    // True si el jugador 2 inició sesión.
+    public boolean esCuenta() { return estado == Jugador2.CUENTA; }
 
-    public boolean esInvitado() { return estado == Jugador2.INVITADO; } // true si juega sin cuenta.
+    // True si juega sin cuenta.
+    public boolean esInvitado() { return estado == Jugador2.INVITADO; }
 
-    public String textoCuenta() { // Mensaje cuando el jugador 2 inició sesión.
+    // Mensaje cuando el jugador 2 inició sesión.
+    public String textoCuenta() {
         return "Jugador 2: " + Sesion.getJugador2() + ". Suma monedas y entra al ranking.";
     }
 
-    public String textoInvitado() { // Mensaje cuando el jugador 2 juega sin cuenta.
+    // Mensaje cuando el jugador 2 juega sin cuenta.
+    public String textoInvitado() {
         return "Jugador 2: Invitado. Sin cuenta no hay monedas, ranking ni premio.";
     }
 
-    public String textoFaltaElegir() { // Mensaje cuando intenta comenzar sin elegir.
+    // Mensaje cuando intenta comenzar sin elegir.
+    public String textoFaltaElegir() {
         return "Primero elegí cómo juega el jugador 2: iniciar sesión o jugar sin cuenta.";
     }
 
-    public void prepararPartida() { // Guarda al jugador 1 antes de empezar.
+    // Guarda al jugador 1 antes de empezar.
+    public void prepararPartida() {
         Sesion.setJugador1(Sesion.getNombre());
     }
 }

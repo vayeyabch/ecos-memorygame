@@ -1,11 +1,13 @@
 package ecos.app.modos.JuegoC;
 
+// Clases del propio proyecto que se usan aquí.
 import ecos.recursos.Sonido;
 
 // Todos los sonidos del modo clásico en un solo lugar.
 // (El de "par_encontrado", "moneda", "ojo_espia" y "victoria" ya los pone PantallaClasico.)
 public class SonidosPartidaClasica {
 
+    // Sonidos de las cartas y del turno.
     public static void voltear() {
         Sonido.efecto("voltear_carta");
     }
@@ -22,10 +24,12 @@ public class SonidosPartidaClasica {
         Sonido.efecto("tick");
     }
 
+    // Sonidos del tiempo, la cuenta regresiva y el tick.
     public static void cuentaRegresiva() {
         Sonido.efecto("cuenta_regresiva");
     }
 
+    // La música cambia a una más rápida cuando quedan pocos segundos.
     // Música rápida cuando quedan 3 segundos.
     public static void musicaUrgente() {
         Sonido.musica("clasico_urgente");

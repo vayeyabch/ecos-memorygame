@@ -1,72 +1,105 @@
 package ecos.app;
 
-import java.awt.CardLayout; // Layout que apila paneles y muestra solo uno a la vez.
-import java.util.ArrayDeque; // Estructura que sirve como pila (último en entrar, primero en salir).
-import java.util.Deque; // Tipo general de la pila.
-import java.util.HashMap; // Diccionario concreto (clave -> valor).
-import java.util.Map; // Tipo general del diccionario.
-import java.util.function.Consumer; // Representa una acción que recibe un dato (aquí el id de la pantalla).
-import javax.swing.JPanel; // Panel de Swing que contiene las pantallas.
+// Librería gráfica AWT, CardLayout para cambiar entre pantallas apiladas.
+import java.awt.CardLayout;
+// Utilidades de Java, ArrayDeque para la pila del historial, Deque para las pilas, HashMap para diccionarios rápidos y
+// Map para los diccionarios.
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
+// Acciones de Java, Consumer para una acción que recibe un dato.
+import java.util.function.Consumer;
+// Librería Swing, JPanel para los paneles.
+import javax.swing.JPanel;
 
+// Maneja el cambio de pantallas, guarda todas las pantallas registradas, muestra una a la vez y recuerda el historial
+// para poder volver.
 public class Navegador {
 
-    private final CardLayout cartas = new CardLayout(); // El layout que cambia entre pantallas, como cartas apiladas.
-    private final JPanel contenedor = new JPanel(cartas); // Panel que guarda todas las pantallas y usa ese layout.
-    private final Map<String, Pantalla> pantallas = new HashMap<>(); // Diccionario de pantallas registradas (id -> pantalla).
-    private final Deque<String> historial = new ArrayDeque<>(); // Pila con los ids de las pantallas por donde se pasó, para volver atrás.
-    private Pantalla actual = null; // La pantalla que se está mostrando ahora (null = ninguna).
-    private final java.util.List<Consumer<String>> alCambiarPantalla = new java.util.ArrayList<>(); // Acciones que se ejecutan al cambiar de pantalla (la barra de arriba, el botón "i", etc.).
+    // Layout que cambia entre pantallas como cartas apiladas, panel que guarda todas las pantallas con ese layout,
+    // diccionario de pantallas registradas por id y pila de ids por donde se pasó, para poder volver atrás.
+    private final CardLayout cartas = new CardLayout();
+    private final JPanel contenedor = new JPanel(cartas);
+    private final Map<String, Pantalla> pantallas = new HashMap<>();
+    private final Deque<String> historial = new ArrayDeque<>();
+    // La pantalla que se está mostrando ahora (null = ninguna). Acciones que se ejecutan al cambiar de pantalla (la barra
+    // de arriba, el botón "i", etc.).
+    private Pantalla actual = null;
+    private final java.util.List<Consumer<String>> alCambiarPantalla = new java.util.ArrayList<>();
 
-    public JPanel getContenedor() { // Entrega el panel que guarda todas las pantallas.
-        return contenedor; // La Ventana lo usa para ponerlo en el centro.
+    // Entrega el panel que guarda todas las pantallas.
+    public JPanel getContenedor() {
+        // La Ventana lo usa para ponerlo en el centro.
+        return contenedor;
     }
 
-    public void registrar(Pantalla pantalla) { // Deja una pantalla disponible para navegar hacia ella.
-        pantalla.setNavegador(this); // Le avisa a la pantalla quién es su navegador.
-        pantallas.put(pantalla.getId(), pantalla); // La guarda en el diccionario usando su id como clave.
-        contenedor.add(pantalla, pantalla.getId()); // La agrega al contenedor con su id como nombre de la carta.
+    // Deja una pantalla disponible para navegar hacia ella.
+    public void registrar(Pantalla pantalla) {
+        // Le avisa a la pantalla quién es su navegador. La guarda en el diccionario usando su id como clave. La agrega al
+        // contenedor con su id como nombre de la carta.
+        pantalla.setNavegador(this);
+        pantallas.put(pantalla.getId(), pantalla);
+        contenedor.add(pantalla, pantalla.getId());
     }
 
-    public void ir(String id) { // Muestra una pantalla y guarda la actual en el historial.
-        if (actual != null) { // Si ya hay una pantalla mostrándose.
-            historial.push(actual.getId()); // guarda su id en la pila para poder volver.
+    // Muestra una pantalla y guarda la actual en el historial.
+    public void ir(String id) {
+        // Si ya hay una pantalla mostrándose. Guarda su id en la pila para poder volver.
+        if (actual != null) {
+            historial.push(actual.getId());
         }
-        mostrar(id); // Muestra la pantalla pedida.
+        // Muestra la pantalla pedida.
+        mostrar(id);
     }
 
-    public void atras() { // Vuelve a la pantalla anterior.
-        if (!historial.isEmpty()) { // Solo si hay alguna pantalla en el historial.
-            mostrar(historial.pop()); // Saca la última de la pila y la muestra.
+    // Vuelve a la pantalla anterior.
+    public void atras() {
+        // Solo si hay alguna pantalla en el historial. Saca la última de la pila y la muestra.
+        if (!historial.isEmpty()) {
+            mostrar(historial.pop());
         }
     }
 
-    public boolean puedeVolver() { // Pregunta si hay una pantalla anterior a la que volver.
-        return !historial.isEmpty(); // true si el historial tiene algo, false si está vacío.
+    // Pregunta si hay una pantalla anterior a la que volver.
+    public boolean puedeVolver() {
+        // True si el historial tiene algo, false si está vacío.
+        return !historial.isEmpty();
     }
 
-    public String getIdActual() { // Devuelve el id de la pantalla actual.
-        return actual == null ? null : actual.getId(); // Si no hay pantalla devuelve null; si hay, su id.
+    // Devuelve el id de la pantalla actual.
+    public String getIdActual() {
+        // Si no hay pantalla devuelve null; si hay, su id.
+        return actual == null ? null : actual.getId();
     }
 
     // Avisa cada vez que cambia la pantalla (la barra superior lo usa para ocultarse en la intro).
-    public void alCambiarPantalla(Consumer<String> accion) { // Recibe la acción que se quiere ejecutar en cada cambio.
-        this.alCambiarPantalla.add(accion); // La agrega a la lista para usarla después.
+    // Recibe la acción que se quiere ejecutar en cada cambio.
+    public void alCambiarPantalla(Consumer<String> accion) {
+        // La agrega a la lista para usarla después.
+        this.alCambiarPantalla.add(accion);
     }
 
-    private void mostrar(String id) { // Método interno que hace el cambio real de pantalla.
-        Pantalla siguiente = pantallas.get(id); // Busca la pantalla por su id.
-        if (siguiente == null) { // Si no existe ninguna con ese id.
-            System.err.println("No existe la pantalla: " + id); // avisa en la consola cuál id falló.
-            return; // Termina sin cambiar nada.
+    // Método interno que hace el cambio real de pantalla.
+    private void mostrar(String id) {
+        // Busca la pantalla por su id, y si no existe ninguna avisa en la consola cuál id falló y termina sin cambiar nada.
+        Pantalla siguiente = pantallas.get(id);
+        if (siguiente == null) {
+            System.err.println("No existe la pantalla: " + id);
+            return;
         }
-        if (actual != null) { // Si había una pantalla mostrándose.
-            actual.alSalir(); // le avisa que se va a ocultar.
+        // Si había una pantalla mostrándose. Le avisa que se va a ocultar.
+        if (actual != null) {
+            actual.alSalir();
         }
-        actual = siguiente; // La nueva pantalla pasa a ser la actual.
-        cartas.show(contenedor, id); // Le pide al CardLayout que muestre esa carta.
-        actual.alEntrar(); // Le avisa a la pantalla que ya se está mostrando (pone su música).
-        for (Consumer<String> accion : alCambiarPantalla) { // Recorre todas las acciones registradas.
-            accion.accept(id); // Ejecuta cada una, pasándole el id nuevo.
+        // La nueva pantalla pasa a ser la actual. Le pide al CardLayout que muestre esa carta. Le avisa a la pantalla que ya
+        // se está mostrando (pone su música). Recorre todas las acciones registradas.
+        actual = siguiente;
+        cartas.show(contenedor, id);
+        actual.alEntrar();
+        for (Consumer<String> accion : alCambiarPantalla) {
+            // Ejecuta cada una, pasándole el id nuevo.
+            accion.accept(id);
         }
     }
 }

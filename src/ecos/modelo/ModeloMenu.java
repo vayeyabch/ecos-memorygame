@@ -1,26 +1,35 @@
 package ecos.modelo;
 
-import ecos.app.Sesion; // Aquí viven por ahora el nombre y el tablero elegido.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Sesion;
 
-// Modelo de PantallaMenu: guarda el nombre de quien juega y el tamaño de tablero elegido (4 o 6).
-// Responsable: Hellen.
+// Modelo de PantallaMenu, guarda el nombre de quien juega y el tamaño de tablero elegido (4 o 6).
+// A cargo de Hellen.
 public class ModeloMenu {
 
-    public String getNombre() { // Nombre de quien inició sesión.
-        return Sesion.getNombre(); // Lo pide a Sesion.
+    // Nombre de quien inició sesión.
+    public String getNombre() {
+        // Lo pide a Sesion.
+        return Sesion.getNombre();
     }
 
-    public int getTamano() { // Tamaño del tablero elegido: 4 (4x4) o 6 (6x6).
-        return Sesion.getTamano(); // Lo pide a Sesion.
+    // Tamaño del tablero elegido, 4 (4x4) o 6 (6x6).
+    public int getTamano() {
+        // Lo pide a Sesion.
+        return Sesion.getTamano();
     }
 
-    public void elegirTamano(int n) { // Guarda el tamaño elegido; solo acepta 4 o 6.
-        if (n == 4 || n == 6) { // Ignora cualquier otro número.
-            Sesion.setTamano(n); // Lo guarda para que el modo clásico lo use.
+    // Guarda el tamaño elegido; solo acepta 4 o 6.
+    public void elegirTamano(int n) {
+        // Ignora cualquier otro número. Lo guarda para que el modo clásico lo use.
+        if (n == 4 || n == 6) {
+            Sesion.setTamano(n);
         }
     }
 
-    public String saludo() { // Texto del saludo de la pantalla.
-        return "Hola, " + getNombre() + "!"; // Une el saludo con el nombre.
+    // Texto del saludo de la pantalla.
+    public String saludo() {
+        // Une el saludo con el nombre.
+        return "Hola, " + getNombre() + "!";
     }
 }

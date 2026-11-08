@@ -1,90 +1,124 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import ecos.recursos.Fuentes; // Para usar la fuente pixel del juego.
-import ecos.recursos.Sonido; // Para reproducir el sonido al teclear.
-import java.awt.Color; // Clase de Java para representar un color.
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.Graphics2D; // Versión más completa de Graphics para dibujar figuras y texto.
-import java.awt.event.KeyAdapter; // Clase lista para escuchar el teclado sin implementar todos los métodos.
-import java.awt.event.KeyEvent; // Datos de la tecla que se presionó.
-import javax.swing.BorderFactory; // Fábrica para crear bordes de Swing.
-import javax.swing.JTextField; // Campo de texto de Swing: la clase de la que hereda esta.
-import javax.swing.text.AbstractDocument; // Documento del campo, donde se puede poner un límite de letras.
-import javax.swing.text.AttributeSet; // Atributos del texto que se inserta.
-import javax.swing.text.BadLocationException; // Error que puede dar el documento.
-import javax.swing.text.DocumentFilter; // Filtro que revisa el texto antes de que entre al campo.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Tema;
+import ecos.recursos.Fuentes;
+import ecos.recursos.Sonido;
+// Librería gráfica AWT, Color para los colores, Graphics para dibujar y Graphics2D para dibujar con más opciones.
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+// Eventos del mouse y el teclado de AWT, KeyAdapter para reaccionar al teclado y KeyEvent para las teclas.
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+// Librería Swing, BorderFactory para los bordes y JTextField para los campos de texto.
+import javax.swing.BorderFactory;
+import javax.swing.JTextField;
+// Texto de Swing, AbstractDocument para el contenido de un campo de texto, AttributeSet para el formato del texto,
+// BadLocationException para los errores al editar texto y DocumentFilter para filtrar lo que se escribe.
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
+// Campo de texto pixel con texto de ayuda y límite de letras.
 public class CampoTextoPixel extends JTextField {
 
-    private static final int BORDE = 4; // Grosor del borde, en píxeles.
-    private final String ayuda; // Texto gris que aparece cuando el campo está vacío (placeholder).
-    private final Runnable alCambiarTema = this::actualizarColores; // Acción que actualiza los colores cuando cambia el tema.
+    // Grosor del borde en píxeles, texto gris cuando el campo está vacío (placeholder) y acción que actualiza los colores al
+    // cambiar el tema.
+    private static final int BORDE = 4;
+    private final String ayuda;
+    private final Runnable alCambiarTema = this::actualizarColores;
 
-    public CampoTextoPixel(String ayuda, int columnas) { // Recibe el texto de ayuda y el ancho en columnas.
-        super(columnas); // Le pasa el ancho al JTextField.
-        this.ayuda = ayuda; // Guarda el texto de ayuda.
-        setOpaque(false); // Lo hace transparente, porque el fondo se dibuja a mano.
-        setFont(Fuentes.texto(22f)); // Usa la fuente de texto del juego en tamaño 22.
-        setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14)); // Margen interno para que el texto no toque el borde.
-        addKeyListener(new KeyAdapter() { // Escucha las teclas que se presionan.
-            @Override // Indica que se reemplaza un método de KeyAdapter.
-            public void keyTyped(KeyEvent e) { // Se ejecuta cada vez que se escribe un carácter.
-                if (!e.isControlDown() && e.getKeyChar() >= 32) { // Solo suena con letras, números y símbolos (no con Enter ni Ctrl).
-                    Sonido.efecto("teclear"); // Reproduce el sonido de teclear.
+    // Recibe el texto de ayuda y el ancho en columnas.
+    public CampoTextoPixel(String ayuda, int columnas) {
+        // Le pasa el ancho al JTextField. Guarda el texto de ayuda. Lo hace transparente, porque el fondo se dibuja a mano.
+        // Usa la fuente de texto del juego en tamaño 22.
+        super(columnas);
+        this.ayuda = ayuda;
+        setOpaque(false);
+        setFont(Fuentes.texto(22f));
+        // Margen interno para que el texto no toque el borde. Escucha las teclas que se presionan.
+        setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        addKeyListener(new KeyAdapter() {
+            // Se ejecuta cada vez que se escribe un carácter.
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // Solo suena con letras, números y símbolos (no con Enter ni Ctrl). Reproduce el sonido de teclear.
+                if (!e.isControlDown() && e.getKeyChar() >= 32) {
+                    Sonido.efecto("teclear");
                 }
             }
         });
-        actualizarColores(); // Pone los colores iniciales.
+        // Pone los colores iniciales.
+        actualizarColores();
     }
 
     // Pone un máximo de letras que se pueden escribir.
-    public void setLimite(int maximo) { // Recibe el máximo de letras.
-        ((AbstractDocument) getDocument()).setDocumentFilter(new DocumentFilter() { // Filtro que revisa lo que entra.
-            @Override // Indica que se reemplaza un método de DocumentFilter.
-            public void replace(FilterBypass fb, int desde, int largo, String texto, AttributeSet atributos) throws BadLocationException { // Se ejecuta cuando se escribe o pega algo.
-                String nuevo = texto == null ? "" : texto; // Texto que quiere entrar.
-                int cabe = maximo - (fb.getDocument().getLength() - largo); // Cuántas letras caben todavía.
-                if (cabe > 0) { // Si todavía cabe algo.
-                    super.replace(fb, desde, largo, nuevo.length() > cabe ? nuevo.substring(0, cabe) : nuevo, atributos); // Lo mete (cortado si es largo).
+    // Recibe el máximo de letras.
+    public void setLimite(int maximo) {
+        // Filtro que revisa lo que entra.
+        ((AbstractDocument) getDocument()).setDocumentFilter(new DocumentFilter() {
+            // Se ejecuta cuando se escribe o pega algo.
+            @Override
+            public void replace(FilterBypass fb, int desde, int largo, String texto, AttributeSet atributos) throws BadLocationException {
+                // Toma el texto que quiere entrar, calcula cuántas letras caben todavía y, si cabe algo, lo mete (cortado si
+                // es largo).
+                String nuevo = texto == null ? "" : texto;
+                int cabe = maximo - (fb.getDocument().getLength() - largo);
+                if (cabe > 0) {
+                    super.replace(fb, desde, largo, nuevo.length() > cabe ? nuevo.substring(0, cabe) : nuevo, atributos);
                 }
             }
         });
     }
 
-    @Override // Indica que se reemplaza un método de JTextField.
-    public void addNotify() { // Swing lo llama cuando el campo entra a una ventana.
-        super.addNotify(); // Deja que Swing haga lo suyo primero.
-        Tema.alCambiar(alCambiarTema); // Empieza a escuchar los cambios de tema.
-        actualizarColores(); // Se pone al día con el tema actual.
+    // Swing lo llama cuando el campo entra a una ventana.
+    @Override
+    public void addNotify() {
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema. Se pone al día con el tema actual.
+        super.addNotify();
+        Tema.alCambiar(alCambiarTema);
+        actualizarColores();
     }
 
-    @Override // Indica que se reemplaza un método de JTextField.
-    public void removeNotify() { // Swing lo llama cuando el campo sale de la ventana.
-        Tema.quitar(alCambiarTema); // Deja de escuchar los cambios de tema.
-        super.removeNotify(); // Deja que Swing haga lo suyo.
+    // Swing lo llama cuando el campo sale de la ventana.
+    @Override
+    public void removeNotify() {
+        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        Tema.quitar(alCambiarTema);
+        super.removeNotify();
     }
 
-    private void actualizarColores() { // Método interno: ajusta los colores según el tema.
-        setForeground(Tema.texto()); // Color de las letras que se escriben.
-        setCaretColor(Tema.texto()); // Color del cursor que parpadea.
-        repaint(); // Repinta para que se vea el cambio.
+    // Método interno, ajusta los colores según el tema.
+    private void actualizarColores() {
+        // Color de las letras que se escriben. Color del cursor que parpadea. Repinta para que se vea el cambio.
+        setForeground(Tema.texto());
+        setCaretColor(Tema.texto());
+        repaint();
     }
 
-    @Override // Indica que se reemplaza el método de dibujo de JTextField.
-    protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar el campo.
-        Graphics2D g2 = (Graphics2D) g.create(); // Crea una copia del pincel para dibujar sin afectar al original.
-        g2.setColor(hasFocus() ? Tema.acento() : Tema.borde()); // Si el campo está seleccionado el borde usa el color de acento; si no, el normal.
-        g2.fillRect(0, 0, getWidth(), getHeight()); // Dibuja el rectángulo del borde.
-        g2.setColor(Tema.caja()); // Elige el color del relleno (el color de caja del tema).
-        g2.fillRect(BORDE, BORDE, getWidth() - BORDE * 2, getHeight() - BORDE * 2); // Dibuja el relleno dejando visible el borde.
-        if (getText().isEmpty() && ayuda != null) { // Si el campo está vacío y hay texto de ayuda.
-            g2.setFont(getFont()); // Usa la misma fuente del campo.
-            Color c = Tema.textoSuave(); // Toma el color de texto suave del tema.
-            g2.setColor(c); // Lo usa para el texto de ayuda.
-            g2.drawString(ayuda, getInsets().left, (getHeight() + g2.getFontMetrics().getAscent()) / 2 - 2); // Dibuja el texto de ayuda a la izquierda y centrado vertical.
+    // Swing lo llama cada vez que hay que dibujar el campo.
+    @Override
+    protected void paintComponent(Graphics g) {
+        // Crea una copia del pincel y dibuja el borde con el color de acento si el campo está seleccionado, y si no con el
+        // normal. Luego elige el color de caja del tema para el relleno.
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setColor(hasFocus() ? Tema.acento() : Tema.borde());
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.setColor(Tema.caja());
+        // Dibuja el relleno dejando visible el borde. Si el campo está vacío y hay texto de ayuda, usa la misma fuente del
+        // campo y el color de texto suave del tema.
+        g2.fillRect(BORDE, BORDE, getWidth() - BORDE * 2, getHeight() - BORDE * 2);
+        if (getText().isEmpty() && ayuda != null) {
+            g2.setFont(getFont());
+            Color c = Tema.textoSuave();
+            // Lo usa para el texto de ayuda. Dibuja el texto de ayuda a la izquierda y centrado vertical.
+            g2.setColor(c);
+            g2.drawString(ayuda, getInsets().left, (getHeight() + g2.getFontMetrics().getAscent()) / 2 - 2);
         }
-        g2.dispose(); // Libera el pincel.
-        super.paintComponent(g); // Deja que JTextField dibuje el texto escrito y el cursor.
+        // Libera el pincel. Deja que JTextField dibuje el texto escrito y el cursor.
+        g2.dispose();
+        super.paintComponent(g);
     }
 }

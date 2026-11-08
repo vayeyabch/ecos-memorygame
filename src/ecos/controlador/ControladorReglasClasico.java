@@ -1,5 +1,6 @@
 package ecos.controlador;
 
+// Clases del propio proyecto que se usan aquí.
 import ecos.app.modos.JuegoC.ControladorLoginJugador2;
 import ecos.app.modos.JuegoC.VentanaLoginJugador2;
 import ecos.componentes.Etiqueta;
@@ -7,27 +8,32 @@ import ecos.modelo.ModeloLoginJugador2;
 import ecos.modelo.ModeloMonedas;
 import ecos.modelo.ModeloReglasClasico;
 import ecos.pantallas.PantallaReglasClasico;
+// Acciones de Java, Consumer para una acción que recibe un dato.
 import java.util.function.Consumer;
 
-// Controlador de PantallaReglasClasico: el jugador 2 inicia sesión o juega sin cuenta, y después se abre la partida.
-// Responsable: Hellen.
+// Controlador de PantallaReglasClasico, el jugador 2 inicia sesión o juega sin cuenta, y después se abre la partida.
+// A cargo de Hellen.
 public class ControladorReglasClasico {
 
-    private final PantallaReglasClasico vista; // La pantalla (lo que se ve).
-    private final ModeloReglasClasico modelo = new ModeloReglasClasico(); // Jugadores de la partida.
-    private final Consumer<String> irA; // Sirve para cambiar de pantalla.
+    // La pantalla (lo que se ve), los jugadores de la partida y el modo de cambiar de pantalla.
+    private final PantallaReglasClasico vista;
+    private final ModeloReglasClasico modelo = new ModeloReglasClasico();
+    private final Consumer<String> irA;
 
     public ControladorReglasClasico(PantallaReglasClasico vista, Consumer<String> irA) {
         this.vista = vista;
         this.irA = irA;
-        vista.setAlEntrar(this::alEntrar);               // al entrar -> alEntrar()
-        vista.setAlIniciarSesion(this::abrirLogin);      // al tocar Iniciar sesión -> abrirLogin()
-        vista.setAlInvitado(this::elegirInvitado);       // al tocar Jugar sin cuenta -> elegirInvitado()
-        vista.setAlComenzar(this::comenzar);             // al tocar Comenzar -> comenzar()
+        // Al entrar se llama alEntrar(), al tocar Iniciar sesión abrirLogin(), al tocar Jugar sin cuenta elegirInvitado() y al
+        // tocar Comenzar comenzar().
+        vista.setAlEntrar(this::alEntrar);
+        vista.setAlIniciarSesion(this::abrirLogin);
+        vista.setAlInvitado(this::elegirInvitado);
+        vista.setAlComenzar(this::comenzar);
     }
 
     private void alEntrar() {
-        modelo.reiniciar(); // El jugador 2 tiene que elegir otra vez.
+        // El jugador 2 tiene que elegir otra vez.
+        modelo.reiniciar();
         vista.setJugador1(modelo.nombreJugador1());
         vista.setReglaTablero(modelo.reglaTablero());
         vista.setReglaMonedas(new ModeloMonedas().reglaMonedas());
@@ -37,7 +43,8 @@ public class ControladorReglasClasico {
     private void abrirLogin() {
         VentanaLoginJugador2 ventana = new VentanaLoginJugador2();
         new ControladorLoginJugador2(ventana, new ModeloLoginJugador2(), usuario -> {
-            modelo.elegirCuenta(); // Ya inició sesión.
+            // Ya inició sesión.
+            modelo.elegirCuenta();
             vista.setEstadoJugador2(modelo.textoCuenta(), Etiqueta.Rol.ACIERTO);
         });
         ventana.mostrar(vista);
@@ -49,12 +56,14 @@ public class ControladorReglasClasico {
     }
 
     private void comenzar() {
-        if (!modelo.puedeComenzar()) { // El jugador 2 todavía no eligió.
+        // El jugador 2 todavía no eligió.
+        if (!modelo.puedeComenzar()) {
             vista.sonarError();
             vista.setEstadoJugador2(modelo.textoFaltaElegir(), Etiqueta.Rol.PELIGRO);
             return;
         }
         modelo.prepararPartida();
-        irA.accept("clasico"); // Empieza la partida.
+        // Empieza la partida.
+        irA.accept("clasico");
     }
 }

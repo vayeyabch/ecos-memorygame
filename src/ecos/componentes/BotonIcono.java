@@ -1,90 +1,124 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import java.awt.Cursor; // Forma del puntero del mouse.
-import java.awt.Dimension; // Representa un tamaño (ancho y alto).
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.Graphics2D; // Versión más completa de Graphics.
-import java.awt.Rectangle; // Rectángulo (x, y, ancho, alto).
-import java.awt.event.MouseAdapter; // Clase lista para escuchar el mouse sin implementar todos los métodos.
-import java.awt.event.MouseEvent; // Datos del evento del mouse.
-import java.util.function.BiConsumer; // Acción que recibe dos datos (aquí: el pincel y el área).
-import javax.swing.JButton; // Botón de Swing: la clase de la que hereda esta.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Tema;
+// Librería gráfica AWT, Cursor para el cursor del mouse, Dimension para los tamaños, Graphics para dibujar, Graphics2D
+// para dibujar con más opciones y Rectangle para los rectángulos.
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+// Eventos del mouse y el teclado de AWT, MouseAdapter para reaccionar al mouse y MouseEvent para los datos de un clic.
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+// Acciones de Java, BiConsumer para una acción que recibe dos datos.
+import java.util.function.BiConsumer;
+// Librería Swing, JButton para los botones.
+import javax.swing.JButton;
 
+// Botón cuadrado con un dibujo propio; baja al apretarlo y cambia de color con el tema.
 public class BotonIcono extends JButton {
 
-    private static final int LADO = 52; // Lado del cuadrado, en píxeles.
-    private static final int BORDE = 4; // Grosor del borde.
-    private static final int SOMBRA = 4; // Alto de la sombra dura de abajo.
+    // Lado del cuadrado en píxeles, grosor del borde y alto de la sombra dura de abajo.
+    private static final int LADO = 52;
+    private static final int BORDE = 4;
+    private static final int SOMBRA = 4;
 
-    private BiConsumer<Graphics2D, Rectangle> dibujo = (g, r) -> { }; // Lo que se dibuja adentro del cuadrado; empieza sin dibujar nada.
-    private boolean apretado = false; // true = el botón está siendo apretado.
-    private final Runnable alCambiarTema = this::repaint; // Acción que repinta el botón cuando cambia el tema.
+    // Lo que se dibuja adentro del cuadrado, que empieza vacío, si el botón está apretado y la acción que lo repinta cuando
+    // cambia el tema.
+    private BiConsumer<Graphics2D, Rectangle> dibujo = (g, r) -> { };
+    private boolean apretado = false;
+    private final Runnable alCambiarTema = this::repaint;
 
-    public BotonIcono() { // Constructor: no recibe nada.
-        setContentAreaFilled(false); // Quita el fondo normal de Swing.
-        setBorderPainted(false); // Quita el borde normal de Swing.
-        setFocusPainted(false); // Quita el recuadro de foco de Swing.
-        setOpaque(false); // Es transparente: el dibujo se hace a mano.
-        setRolloverEnabled(false); // Quita el cambio de color de Swing al pasar el mouse.
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Pone la manito al pasar el mouse.
-        addMouseListener(new MouseAdapter() { // Escucha el mouse para animar el botón.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mousePressed(MouseEvent e) { apretado = true; repaint(); } // Al apretar, el botón baja.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mouseReleased(MouseEvent e) { apretado = false; repaint(); } // Al soltar, vuelve a su lugar.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mouseExited(MouseEvent e) { apretado = false; repaint(); } // Al salir el mouse, vuelve a su lugar.
+    // Constructor sin parámetros.
+    public BotonIcono() {
+        // Quita el fondo normal de Swing. Quita el borde normal de Swing. Quita el recuadro de foco de Swing. Es
+        // transparente, el dibujo se hace a mano.
+        setContentAreaFilled(false);
+        setBorderPainted(false);
+        setFocusPainted(false);
+        setOpaque(false);
+        // Quita el cambio de color de Swing al pasar el mouse. Pone la manito al pasar el mouse. Escucha el mouse para animar el botón.
+        setRolloverEnabled(false);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addMouseListener(new MouseAdapter() {
+            @Override
+            // Al apretar, el botón baja.
+            public void mousePressed(MouseEvent e) { apretado = true; repaint(); }
+            @Override
+            // Al soltar, vuelve a su lugar.
+            public void mouseReleased(MouseEvent e) { apretado = false; repaint(); }
+            @Override
+            // Al salir el mouse, vuelve a su lugar.
+            public void mouseExited(MouseEvent e) { apretado = false; repaint(); }
         });
     }
 
     // Define qué se dibuja adentro del cuadrado.
-    public void setDibujo(BiConsumer<Graphics2D, Rectangle> dibujo) { // Recibe la acción que dibuja.
-        this.dibujo = dibujo; // La guarda.
-        repaint(); // Repinta.
+    // Recibe la acción que dibuja.
+    public void setDibujo(BiConsumer<Graphics2D, Rectangle> dibujo) {
+        this.dibujo = dibujo;
+        repaint();
     }
 
-    @Override // Indica que se reemplaza un método de JButton.
-    public void addNotify() { // Swing lo llama cuando el botón entra a una ventana.
-        super.addNotify(); // Deja que Swing haga lo suyo primero.
-        Tema.alCambiar(alCambiarTema); // Empieza a escuchar los cambios de tema.
+    // Swing lo llama cuando el botón entra a una ventana.
+    @Override
+    public void addNotify() {
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
+        super.addNotify();
+        Tema.alCambiar(alCambiarTema);
     }
 
-    @Override // Indica que se reemplaza un método de JButton.
-    public void removeNotify() { // Swing lo llama cuando el botón sale de la ventana.
-        Tema.quitar(alCambiarTema); // Deja de escuchar los cambios de tema.
-        super.removeNotify(); // Deja que Swing haga lo suyo.
+    // Swing lo llama cuando el botón sale de la ventana.
+    @Override
+    public void removeNotify() {
+        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        Tema.quitar(alCambiarTema);
+        super.removeNotify();
     }
 
-    @Override // Indica que se reemplaza un método de JButton.
-    public Dimension getPreferredSize() { // Tamaño que necesita el botón.
-        return new Dimension(LADO, LADO + SOMBRA); // Un cuadrado más el espacio de la sombra.
+    // Tamaño que necesita el botón.
+    @Override
+    public Dimension getPreferredSize() {
+        // Un cuadrado más el espacio de la sombra.
+        return new Dimension(LADO, LADO + SOMBRA);
     }
 
-    @Override // Indica que se reemplaza el método de dibujo de JButton.
-    protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar el botón.
-        Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel para no afectar al original.
-        int y = apretado ? 3 : 0; // Baja 3 píxeles al apretar.
-        int sombra = apretado ? 1 : SOMBRA; // La sombra se achica al apretar.
-        g2.setColor(Tema.sombra()); // Color de la sombra dura.
-        g2.fillRect(0, y + sombra, LADO, LADO); // Dibuja la sombra corrida hacia abajo.
-        g2.setColor(Tema.borde()); // Color del borde.
-        g2.fillRect(0, y, LADO, LADO); // Dibuja el cuadrado del borde.
-        g2.setColor(Tema.panelAlto()); // Color de la línea clara interior.
-        g2.fillRect(BORDE, y + BORDE, LADO - BORDE * 2, LADO - BORDE * 2); // Dibuja la línea clara.
-        g2.setColor(Tema.panel()); // Color de relleno.
-        g2.fillRect(BORDE + 2, y + BORDE + 2, LADO - (BORDE + 2) * 2, LADO - (BORDE + 2) * 2); // Dibuja el relleno.
-        dibujo.accept(g2, new Rectangle(BORDE, y + BORDE, LADO - BORDE * 2, LADO - BORDE * 2)); // Dibuja el icono adentro.
-        g2.dispose(); // Libera el pincel.
+    // Swing lo llama cada vez que hay que dibujar el botón.
+    @Override
+    protected void paintComponent(Graphics g) {
+        // Usa una copia del pincel para no afectar al original, baja 3 píxeles al apretar, achica la sombra y define su
+        // color.
+        Graphics2D g2 = (Graphics2D) g.create();
+        int y = apretado ? 3 : 0;
+        int sombra = apretado ? 1 : SOMBRA;
+        g2.setColor(Tema.sombra());
+        // Dibuja la sombra corrida hacia abajo. Color del borde. Dibuja el cuadrado del borde. Color de la línea clara interior.
+        g2.fillRect(0, y + sombra, LADO, LADO);
+        g2.setColor(Tema.borde());
+        g2.fillRect(0, y, LADO, LADO);
+        g2.setColor(Tema.panelAlto());
+        // Dibuja la línea clara. Color de relleno. Dibuja el relleno. Dibuja el icono adentro.
+        g2.fillRect(BORDE, y + BORDE, LADO - BORDE * 2, LADO - BORDE * 2);
+        g2.setColor(Tema.panel());
+        g2.fillRect(BORDE + 2, y + BORDE + 2, LADO - (BORDE + 2) * 2, LADO - (BORDE + 2) * 2);
+        dibujo.accept(g2, new Rectangle(BORDE, y + BORDE, LADO - BORDE * 2, LADO - BORDE * 2));
+        // Libera el pincel.
+        g2.dispose();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMinimumSize() { // Tamaño mínimo del componente.
-        return getPreferredSize(); // Nunca se achica más de lo que necesita.
+    // Tamaño mínimo del componente.
+    @Override
+    public Dimension getMinimumSize() {
+        // Nunca se achica más de lo que necesita.
+        return getPreferredSize();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMaximumSize() { // Tamaño máximo del componente.
-        return getPreferredSize(); // Nunca se estira más de lo que necesita.
+    // Tamaño máximo del componente.
+    @Override
+    public Dimension getMaximumSize() {
+        // Nunca se estira más de lo que necesita.
+        return getPreferredSize();
     }
 }

@@ -1,5 +1,6 @@
 package ecos.pantallas;
 
+// Clases del propio proyecto que se usan aquí.
 import ecos.app.Pantalla;
 import ecos.app.Tema;
 import ecos.componentes.BotonMenu;
@@ -11,13 +12,19 @@ import ecos.componentes.PanelPixel;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
 
+// Librería gráfica AWT, GridBagLayout para acomodar en una cuadrícula flexible.
 import java.awt.GridBagLayout;
+// Librería Swing, BorderFactory para los bordes, Box para los espacios entre componentes, BoxLayout para apilar en fila
+// o columna, JButton para los botones, JComponent para la base de los componentes y JPanel para los paneles.
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+// Librería gráfica AWT, BorderLayout para acomodar por zonas, Component para cualquier elemento de la pantalla,
+// Dimension para los tamaños, GridBagConstraints para las reglas de la cuadrícula flexible, Cursor para el cursor del
+// mouse, Graphics para dibujar, Graphics2D para dibujar con más opciones y BasicStroke para el grosor de las líneas.
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -28,33 +35,42 @@ import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 
 
-// Formulario de registro: nombre, apellidos, correo, usuario y contraseña. Después lleva al registro facial.
-// Responsable: Valeria. Pantalla lista; falta conectarla a su controlador y al modelo.
+// Formulario de registro, nombre, apellidos, correo, usuario y contraseña. Después lleva al registro facial.
+// A cargo de Valeria. Pantalla lista; falta conectarla a su controlador y al modelo.
 public class PantallaRegistro extends Pantalla {
-    private static final String AYUDA = "Completá todos los campos para continuar."; // Mensaje normal de la pantalla.
+    // Mensaje normal de la pantalla.
+    private static final String AYUDA = "Completá todos los campos para continuar.";
 
-    private final DesfileMascotas desfile = new DesfileMascotas(); // Mascotas que desfilan arriba de la tarjeta.
-    private final CampoTextoPixel campoNombre = new CampoTextoPixel("Tu nombre", 5); // Nombre (máx. 50, igual que la base de datos).
-    private final CampoTextoPixel campoApellidos = new CampoTextoPixel("Tus apellidos", 5); // Apellidos (máx. 50).
-    private final CampoTextoPixel campoCorreo = new CampoTextoPixel("tucorreo@ejemplo.com", 5); // Correo (máx. 100).
-    private final CampoTextoPixel campoUsuario = new CampoTextoPixel("Tu usuario", 5); // Usuario (máx. 20).
-    private final CampoClavePixel campoClave = new CampoClavePixel("6 o más", 5); // Contraseña.
-    private final CampoClavePixel campoClave2 = new CampoClavePixel("Otra vez", 5); // Repetir la contraseña.
-    private final Etiqueta mensaje = Etiqueta.texto(AYUDA, 18f, Etiqueta.Rol.SUAVE); // Aquí se muestran los avisos (por ejemplo "Ese usuario ya existe").
-    private Runnable accionSiguiente = null; // Qué hace el botón; null = ir directo al registro facial.
+    // Mascotas que desfilan arriba de la tarjeta y campos del nombre (máx. 50, igual que la base de datos), los apellidos
+    // (máx. 50) y el correo (máx. 100).
+    private final DesfileMascotas desfile = new DesfileMascotas();
+    private final CampoTextoPixel campoNombre = new CampoTextoPixel("Tu nombre", 5);
+    private final CampoTextoPixel campoApellidos = new CampoTextoPixel("Tus apellidos", 5);
+    private final CampoTextoPixel campoCorreo = new CampoTextoPixel("tucorreo@ejemplo.com", 5);
+    // Campos del usuario (máx. 20) y de repetir la contraseña, y el espacio de avisos, por ejemplo "Ese usuario ya existe".
+    private final CampoTextoPixel campoUsuario = new CampoTextoPixel("Tu usuario", 5);
+    private final CampoClavePixel campoClave = new CampoClavePixel("6 o más", 5);
+    private final CampoClavePixel campoClave2 = new CampoClavePixel("Otra vez", 5);
+    private final Etiqueta mensaje = Etiqueta.texto(AYUDA, 18f, Etiqueta.Rol.SUAVE);
+    // Qué hace el botón; null = ir directo al registro facial.
+    private Runnable accionSiguiente = null;
 
     public PantallaRegistro() {
-        super("registro", "acceso"); // Id de la pantalla y música que usa.
+        // Id de la pantalla y música que usa.
+        super("registro", "acceso");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 28, 16));
 
-        campoNombre.setLimite(50); // Máximo 50 letras en el nombre.
-        campoApellidos.setLimite(50); // Máximo 50 letras en los apellidos.
-        campoCorreo.setLimite(100); // Máximo 100 letras en el correo.
-        campoUsuario.setLimite(20); // Máximo 20 letras en el usuario.
+        // Máximo 50 letras en el nombre. Máximo 50 letras en los apellidos. Máximo 100 letras en el correo. Máximo 20 letras
+        // en el usuario.
+        campoNombre.setLimite(50);
+        campoApellidos.setLimite(50);
+        campoCorreo.setLimite(100);
+        campoUsuario.setLimite(20);
 
-        JPanel formulario = new JPanel(new GridBagLayout()); // Cuadrícula de dos columnas con los campos.
-        formulario.setOpaque(false); // Transparente.
+        // Cuadrícula de dos columnas con los campos.
+        JPanel formulario = new JPanel(new GridBagLayout());
+        formulario.setOpaque(false);
         agregar(formulario, bloque("NOMBRE", campoNombre), 0, 0, 1);
         agregar(formulario, bloque("APELLIDOS", campoApellidos), 0, 1, 1);
         agregar(formulario, bloque("CORREO ELECTRÓNICO", campoCorreo), 1, 0, 2);
@@ -62,159 +78,204 @@ public class PantallaRegistro extends Pantalla {
         agregar(formulario, bloque("CONTRASEÑA", conOjo(campoClave)), 3, 0, 1);
         agregar(formulario, bloque("REPETIR CONTRASEÑA", conOjo(campoClave2)), 3, 1, 1);
 
-        BotonMenu siguiente = new BotonMenu("Siguiente: mi rostro", true); // Botón que lleva al registro facial.
-        siguiente.addActionListener(e -> { // Cuando se aprieta.
-            Sonido.efecto("click"); // Suena el clic.
-            if (accionSiguiente != null) { // Si el controlador puso su propia acción.
-                accionSiguiente.run(); // La ejecuta.
-            } else { // Si no, solo navega.
-                irA("registro_facial"); // Va a la pantalla de captura del rostro.
+        // Botón que lleva al registro facial, que al apretarse suena el clic y, si el controlador puso su propia acción, la
+        // ejecuta.
+        BotonMenu siguiente = new BotonMenu("Siguiente: mi rostro", true);
+        siguiente.addActionListener(e -> {
+            Sonido.efecto("click");
+            if (accionSiguiente != null) {
+                // Si no, solo navega. Va a la pantalla de captura del rostro.
+                accionSiguiente.run();
+            } else {
+                irA("registro_facial");
             }
         });
 
           JPanel titulo = new JPanel(new BorderLayout());
-        titulo.setOpaque(false); // Transparente.
-        titulo.add(Etiqueta.texto("Crear cuenta", 32f, Etiqueta.Rol.TEXTO), BorderLayout.WEST); // Título.
-        titulo.add(Etiqueta.titulo("PASO 1 DE 2", 10f, Etiqueta.Rol.SUAVE), BorderLayout.EAST); // Indicador de paso.
-        titulo.setMaximumSize(new Dimension(Integer.MAX_VALUE, titulo.getPreferredSize().height)); // No se estira hacia abajo.
+        // Indicador de paso. No se estira hacia abajo.
+        titulo.setOpaque(false);
+        titulo.add(Etiqueta.texto("Crear cuenta", 32f, Etiqueta.Rol.TEXTO), BorderLayout.WEST);
+        titulo.add(Etiqueta.titulo("PASO 1 DE 2", 10f, Etiqueta.Rol.SUAVE), BorderLayout.EAST);
+        titulo.setMaximumSize(new Dimension(Integer.MAX_VALUE, titulo.getPreferredSize().height));
 
-        PanelPixel tarjeta = new PanelPixel(); // Tarjeta del formulario.
-        tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS)); // Apila todo en vertical.
-        tarjeta.setPadding(22); // Margen interno (igual que en PantallaAcceso).
-        tarjeta.add(alinear(titulo)); // Título.
-        tarjeta.add(Box.createVerticalStrut(12)); // Espacio.
-        formulario.setMaximumSize(new Dimension(Integer.MAX_VALUE, formulario.getPreferredSize().height)); // El formulario no se estira hacia abajo.
-        tarjeta.add(alinear(formulario)); // Campos.
-        tarjeta.add(Box.createVerticalStrut(2)); // Espacio.
-        tarjeta.add(alinear(mensaje)); // Mensaje de avisos.
-        tarjeta.add(Box.createVerticalStrut(10)); // Espacio.
-        tarjeta.add(alinear(siguiente.anchoCompleto())); // Botón Siguiente.
-        tarjeta.setMaximumSize(new Dimension(480, Integer.MAX_VALUE)); // Ancho máximo de la tarjeta (igual que en PantallaAcceso).
+        // Tarjeta del formulario que apila todo en vertical, con el mismo margen interno que PantallaAcceso.
+        PanelPixel tarjeta = new PanelPixel();
+        tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
+        tarjeta.setPadding(22);
+        tarjeta.add(alinear(titulo));
+        // El formulario no se estira hacia abajo.
+        tarjeta.add(Box.createVerticalStrut(12));
+        formulario.setMaximumSize(new Dimension(Integer.MAX_VALUE, formulario.getPreferredSize().height));
+        tarjeta.add(alinear(formulario));
+        tarjeta.add(Box.createVerticalStrut(2));
+        // Mensaje de avisos. Ancho máximo de la tarjeta (igual que en PantallaAcceso).
+        tarjeta.add(alinear(mensaje));
+        tarjeta.add(Box.createVerticalStrut(10));
+        tarjeta.add(alinear(siguiente.anchoCompleto()));
+        tarjeta.setMaximumSize(new Dimension(480, Integer.MAX_VALUE));
 
-        JPanel columna = new JPanel(); // Columna: mascotas arriba y tarjeta abajo.
-        columna.setOpaque(false); // Transparente.
-        columna.setLayout(new BoxLayout(columna, BoxLayout.Y_AXIS)); // Apila en vertical.
-        desfile.setAlignmentX(Component.CENTER_ALIGNMENT); // Mascotas al centro.
-        tarjeta.setAlignmentX(Component.CENTER_ALIGNMENT); // Tarjeta al centro.
-        columna.add(desfile); // Agrega las mascotas.
-        columna.add(Box.createVerticalStrut(18)); // Espacio.
-        columna.add(tarjeta); // Agrega la tarjeta.
-        add(columna); // Agrega todo a la pantalla.
+        // Columna con las mascotas arriba y la tarjeta abajo, apiladas en vertical y centradas.
+        JPanel columna = new JPanel();
+        columna.setOpaque(false);
+        columna.setLayout(new BoxLayout(columna, BoxLayout.Y_AXIS));
+        desfile.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Tarjeta al centro. Agrega las mascotas. Agrega la tarjeta.
+        tarjeta.setAlignmentX(Component.CENTER_ALIGNMENT);
+        columna.add(desfile);
+        columna.add(Box.createVerticalStrut(18));
+        columna.add(tarjeta);
+        // Agrega todo a la pantalla.
+        add(columna);
 
 
 
     }
 
-    // ---- Para el controlador (ControladorRegistro) ----
+    // Métodos que usa el controlador (ControladorRegistro).
 
-    public String getNombre() { return campoNombre.getText().trim(); } // Entrega el nombre escrito.
-    public String getApellidos() { return campoApellidos.getText().trim(); } // Entrega los apellidos escritos.
-    public String getCorreo() { return campoCorreo.getText().trim(); } // Entrega el correo escrito.
-    public String getUsuario() { return campoUsuario.getText().trim(); } // Entrega el usuario escrito.
-    public String getClave() { return new String(campoClave.getPassword()); } // Entrega la contraseña escrita.
-    public String getClave2() { return new String(campoClave2.getPassword()); } // Entrega la contraseña repetida.
+    // Entrega el nombre escrito. Entrega los apellidos escritos. Entrega el correo escrito. Entrega el usuario escrito.
+    public String getNombre() { return campoNombre.getText().trim(); }
+    public String getApellidos() { return campoApellidos.getText().trim(); }
+    public String getCorreo() { return campoCorreo.getText().trim(); }
+    public String getUsuario() { return campoUsuario.getText().trim(); }
+    // Entrega la contraseña escrita. Entrega la contraseña repetida.
+    public String getClave() { return new String(campoClave.getPassword()); }
+    public String getClave2() { return new String(campoClave2.getPassword()); }
 
-    public void setAccionSiguiente(Runnable accion) { // El controlador puede cambiar lo que hace el botón (por ejemplo, validar primero).
-        this.accionSiguiente = accion; // Guarda la acción.
+    // El controlador puede cambiar lo que hace el botón (por ejemplo, validar primero).
+    public void setAccionSiguiente(Runnable accion) {
+        // Guarda la acción.
+        this.accionSiguiente = accion;
     }
 
-    public void irARegistroFacial() { // El controlador la llama cuando los datos están bien.
-        irA("registro_facial"); // Va a la captura del rostro.
+    // El controlador la llama cuando los datos están bien.
+    public void irARegistroFacial() {
+        // Va a la captura del rostro.
+        irA("registro_facial");
     }
 
-    public void mostrarError(String texto) { // Muestra un aviso de error en rojo.
-        mensaje.setText(texto); // Pone el texto.
-        mensaje.setRol(Etiqueta.Rol.PELIGRO); // Lo pinta de rojo.
-        Sonido.efecto("error"); // Suena el error.
+    // Muestra un aviso de error en rojo.
+    public void mostrarError(String texto) {
+        // Pone el texto. Lo pinta de rojo. Suena el error.
+        mensaje.setText(texto);
+        mensaje.setRol(Etiqueta.Rol.PELIGRO);
+        Sonido.efecto("error");
     }
 
-    public void limpiarMensaje() { // Vuelve al mensaje normal.
-        mensaje.setText(AYUDA); // Pone el texto normal.
-        mensaje.setRol(Etiqueta.Rol.SUAVE); // Lo pinta apagado.
+    // Vuelve al mensaje normal.
+    public void limpiarMensaje() {
+        // Pone el texto normal. Lo pinta apagado.
+        mensaje.setText(AYUDA);
+        mensaje.setRol(Etiqueta.Rol.SUAVE);
     }
 
 
 
+    // Se ejecuta cada vez que se entra a esta pantalla.
     @Override
-    public void alEntrar() { // Se ejecuta cada vez que se entra a esta pantalla.
-        super.alEntrar(); // Pone la música.
-        campoClave.setText(""); // Borra la contraseña anterior.
-        campoClave2.setText(""); // Borra la contraseña repetida anterior.
-        limpiarMensaje(); // Quita avisos viejos.
-        desfile.iniciar(); // Empieza el desfile de mascotas.
+    public void alEntrar() {
+        // Pone la música. Borra la contraseña anterior. Borra la contraseña repetida anterior. Quita avisos viejos.
+        super.alEntrar();
+        campoClave.setText("");
+        campoClave2.setText("");
+        limpiarMensaje();
+        // Empieza el desfile de mascotas.
+        desfile.iniciar();
     }
 
+    // Se ejecuta cuando se sale de esta pantalla.
     @Override
-    public void alSalir() { // Se ejecuta cuando se sale de esta pantalla.
-        desfile.detener(); // Detiene el desfile.
-        super.alSalir(); // Cierra ventanas abiertas y avisa al controlador.
+    public void alSalir() {
+        // Detiene el desfile. Cierra ventanas abiertas y avisa al controlador.
+        desfile.detener();
+        super.alSalir();
     }
 
-    // --- Métodos auxiliares para armar la pantalla ---
+    // Métodos auxiliares para armar la pantalla.
 
-    private static JPanel bloque(String etiqueta, JComponent campo) { // Etiqueta chica arriba y el campo abajo.
-        JPanel p = new JPanel(new BorderLayout(0, 4)); // Panel con 4 px de espacio entre la etiqueta y el campo.
-        p.setOpaque(false); // Transparente.
-        p.add(Etiqueta.titulo(etiqueta, 10f, Etiqueta.Rol.SUAVE), BorderLayout.NORTH); // Etiqueta arriba.
-        p.add(campo, BorderLayout.CENTER); // Campo abajo (se estira a lo ancho).
-        return p; // Lo entrega.
+    // Etiqueta chica arriba y el campo abajo.
+    private static JPanel bloque(String etiqueta, JComponent campo) {
+        // Panel con 4 px de espacio entre la etiqueta de arriba y el campo de abajo, que se estira a lo ancho.
+        JPanel p = new JPanel(new BorderLayout(0, 4));
+        p.setOpaque(false);
+        p.add(Etiqueta.titulo(etiqueta, 10f, Etiqueta.Rol.SUAVE), BorderLayout.NORTH);
+        p.add(campo, BorderLayout.CENTER);
+        return p;
     }
 
-    private static void agregar(JPanel formulario, JComponent bloque, int fila, int columna, int columnas) { // Pone un bloque en la cuadrícula.
-        GridBagConstraints c = new GridBagConstraints(); // Reglas de posición.
-        c.gridx = columna; // Columna.
-        c.gridy = fila; // Fila.
-        c.gridwidth = columnas; // Cuántas columnas ocupa.
-        c.weightx = columnas; // Las dos columnas se reparten el ancho por igual.
-        c.fill = GridBagConstraints.HORIZONTAL; // Se estira a lo ancho.
-        int izq = (columnas == 1 && columna == 1) ? 7 : 0; // Espacio a la izquierda en la columna derecha.
-        int der = (columnas == 1 && columna == 0) ? 7 : 0; // Espacio a la derecha en la columna izquierda.
-        c.insets = new java.awt.Insets(0, izq, 10, der); // 10 px de espacio abajo entre filas.
-        formulario.add(bloque, c); // Lo agrega.
+    // Pone un bloque en la cuadrícula.
+    private static void agregar(JPanel formulario, JComponent bloque, int fila, int columna, int columnas) {
+        // Reglas de posición. Cuántas columnas ocupa.
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = columna;
+        c.gridy = fila;
+        c.gridwidth = columnas;
+        // Las dos columnas se reparten el ancho por igual. Se estira a lo ancho. Espacio a la izquierda en la columna
+        // derecha. Espacio a la derecha en la columna izquierda.
+        c.weightx = columnas;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        int izq = (columnas == 1 && columna == 1) ? 7 : 0;
+        int der = (columnas == 1 && columna == 0) ? 7 : 0;
+        // 10 px de espacio abajo entre filas.
+        c.insets = new java.awt.Insets(0, izq, 10, der);
+        formulario.add(bloque, c);
     }
 
-    private static JComponent alinear(JComponent c) { // Alinea un componente a la izquierda de la tarjeta.
-        c.setAlignmentX(Component.LEFT_ALIGNMENT); // Lo alinea.
-        return c; // Lo entrega.
+    // Alinea un componente a la izquierda de la tarjeta.
+    private static JComponent alinear(JComponent c) {
+        c.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return c;
     }
 
-    private static JPanel conOjo(CampoClavePixel campo) { // Pone un botón de ojo al lado del campo de contraseña.
-    final char puntitos = campo.getEchoChar(); // Guarda el puntito normal.
-    JButton ojo = new JButton() { // Botón que dibuja el icono del ojo.
-        private boolean ver = false; // true = la clave se ve.
+    // Pone un botón de ojo al lado del campo de contraseña.
+    private static JPanel conOjo(CampoClavePixel campo) {
+    // Guarda el puntito normal.
+    final char puntitos = campo.getEchoChar();
+    // Botón que dibuja el icono del ojo.
+    JButton ojo = new JButton() {
+        // True = la clave se ve.
+        private boolean ver = false;
         {
-            setPreferredSize(new Dimension(36, 10)); // Ancho del botón (el alto lo toma del campo).
-            setContentAreaFilled(false); // Sin fondo de botón.
-            setBorderPainted(false); // Sin borde.
-            setFocusPainted(false); // Sin marco de foco.
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Manito al pasar el mouse.
-            addActionListener(e -> { // Al hacer clic.
-                Sonido.efecto("click"); // Suena el clic.
-                ver = !ver; // Cambia entre ver y esconder.
-                campo.setEchoChar(ver ? (char) 0 : puntitos); // 0 = muestra el texto real.
-                repaint(); // Redibuja el ojo.
+            // Ancho del botón (el alto lo toma del campo). Sin fondo de botón. Sin marco de foco.
+            setPreferredSize(new Dimension(36, 10));
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            // Manito al pasar el mouse. Al hacer clic. Suena el clic. Cambia entre ver y esconder.
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            addActionListener(e -> {
+                Sonido.efecto("click");
+                ver = !ver;
+                // 0 = muestra el texto real. Redibuja el ojo.
+                campo.setEchoChar(ver ? (char) 0 : puntitos);
+                repaint();
             });
         }
 
+        // Dibuja el icono.
         @Override
-        protected void paintComponent(Graphics g) { // Dibuja el icono.
-            Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel.
-            int cx = getWidth() / 2; // Centro en x.
-            int cy = getHeight() / 2; // Centro en y.
-            g2.drawImage(Sprites.ui("eye", 24), cx - 12, cy - 12, null); // Icono eye.png del proyecto.
-            if (!ver) { // Si la clave está escondida.
-                g2.setColor(Tema.texto()); // Color de la raya.
-                g2.setStroke(new BasicStroke(3f)); // Línea gruesa.
-                g2.drawLine(cx - 12, cy + 12, cx + 12, cy - 12); // Tacha el ojo.
+        protected void paintComponent(Graphics g) {
+            // Copia del pincel. Icono eye.png del proyecto.
+            Graphics2D g2 = (Graphics2D) g.create();
+            int cx = getWidth() / 2;
+            int cy = getHeight() / 2;
+            g2.drawImage(Sprites.ui("eye", 24), cx - 12, cy - 12, null);
+            // Si la clave está escondida. Color de la raya.
+            if (!ver) {
+                g2.setColor(Tema.texto());
+                g2.setStroke(new BasicStroke(3f));
+                g2.drawLine(cx - 12, cy + 12, cx + 12, cy - 12);
             }
-            g2.dispose(); // Libera el pincel.
+            // Libera el pincel.
+            g2.dispose();
         }
     };
-    JPanel p = new JPanel(new BorderLayout(4, 0)); // Campo y ojo lado a lado.
-    p.setOpaque(false); // Transparente.
-    p.add(campo, BorderLayout.CENTER); // El campo ocupa casi todo.
-    p.add(ojo, BorderLayout.EAST); // El ojo a la derecha.
-    return p; // Lo entrega.
+    // Campo y ojo lado a lado, el campo ocupa casi todo y el ojo va a la derecha.
+    JPanel p = new JPanel(new BorderLayout(4, 0));
+    p.setOpaque(false);
+    p.add(campo, BorderLayout.CENTER);
+    p.add(ojo, BorderLayout.EAST);
+    return p;
 }
 
 

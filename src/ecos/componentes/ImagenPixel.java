@@ -1,77 +1,104 @@
 package ecos.componentes;
 
-import java.awt.AlphaComposite; // Permite dibujar con transparencia.
-import java.awt.Dimension; // Representa un tamaño (ancho y alto).
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.Graphics2D; // Versión más completa de Graphics.
-import java.awt.Image; // Tipo general de imagen.
-import java.awt.RenderingHints; // Opciones de calidad al dibujar.
-import javax.swing.JComponent; // Componente básico de Swing: la clase de la que hereda esta.
+// Librería gráfica AWT, AlphaComposite para la transparencia, Dimension para los tamaños, Graphics para el pincel para
+// dibujar, Graphics2D para el pincel con más opciones, Image para las imágenes y RenderingHints para la calidad del
+// Librería gráfica AWT, AlphaComposite para la transparencia, Dimension para los tamaños, Graphics para dibujar,
+// Graphics2D para dibujar con más opciones, Image para las imágenes y RenderingHints para la calidad del dibujo.
+import java.awt.AlphaComposite;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+// Librería Swing, JComponent para la base de los componentes.
+import javax.swing.JComponent;
 
+// Imagen que se dibuja sin suavizar para que conserve el estilo pixel art; se puede cambiar su tamaño y su opacidad.
 public class ImagenPixel extends JComponent {
 
-    private Image imagen; // Imagen que se dibuja.
-    private int ancho; // Ancho con el que se dibuja.
-    private int alto; // Alto con el que se dibuja.
-    private float opacidad = 1f; // 1 = se ve completa; 0 = invisible.
+    // Imagen que se dibuja, el ancho y el alto con que se dibuja y su opacidad, donde 1 es completa y 0 invisible.
+    private Image imagen;
+    private int ancho;
+    private int alto;
+    private float opacidad = 1f;
 
-    public ImagenPixel(Image imagen) { // Recibe la imagen a mostrar.
-        setOpaque(false); // Es transparente: solo se ve la imagen.
-        setImagen(imagen); // Guarda la imagen y calcula su tamaño.
+    // Recibe la imagen a mostrar.
+    public ImagenPixel(Image imagen) {
+        // Es transparente, solo se ve la imagen. Guarda la imagen y calcula su tamaño.
+        setOpaque(false);
+        setImagen(imagen);
     }
 
-    public void setImagen(Image imagen) { // Cambia la imagen mostrada.
-        this.imagen = imagen; // La guarda.
-        if (ancho == 0) { // Si todavía no tiene un tamaño elegido.
-            ancho = imagen.getWidth(null); // Usa el ancho original.
-            alto = imagen.getHeight(null); // Usa el alto original.
+    // Cambia la imagen mostrada.
+    public void setImagen(Image imagen) {
+        // Si todavía no tiene un tamaño elegido. Usa el ancho original. Usa el alto original.
+        this.imagen = imagen;
+        if (ancho == 0) {
+            ancho = imagen.getWidth(null);
+            alto = imagen.getHeight(null);
         }
-        revalidate(); // Avisa que el tamaño pudo cambiar.
-        repaint(); // Repinta.
+        // Avisa que el tamaño pudo cambiar.
+        revalidate();
+        repaint();
     }
 
     // Dibuja la imagen con este ancho, manteniendo la proporción.
-    public void setAncho(int nuevoAncho) { // Recibe el ancho deseado.
-        ancho = Math.max(1, nuevoAncho); // Guarda el ancho.
-        alto = Math.max(1, Math.round(ancho * imagen.getHeight(null) / (float) imagen.getWidth(null))); // Calcula el alto para que no se deforme.
-        revalidate(); // Avisa que el tamaño cambió.
-        repaint(); // Repinta.
+    // Recibe el ancho deseado.
+    public void setAncho(int nuevoAncho) {
+        // Guarda el ancho. Calcula el alto para que no se deforme. Avisa que el tamaño cambió.
+        ancho = Math.max(1, nuevoAncho);
+        alto = Math.max(1, Math.round(ancho * imagen.getHeight(null) / (float) imagen.getWidth(null)));
+        revalidate();
+        repaint();
     }
 
     // Dibuja la imagen con este alto, manteniendo la proporción.
-    public void setAlto(int nuevoAlto) { // Recibe el alto deseado.
-        alto = Math.max(1, nuevoAlto); // Guarda el alto.
-        ancho = Math.max(1, Math.round(alto * imagen.getWidth(null) / (float) imagen.getHeight(null))); // Calcula el ancho para que no se deforme.
-        revalidate(); // Avisa que el tamaño cambió.
-        repaint(); // Repinta.
+    // Recibe el alto deseado.
+    public void setAlto(int nuevoAlto) {
+        // Guarda el alto. Calcula el ancho para que no se deforme. Avisa que el tamaño cambió.
+        alto = Math.max(1, nuevoAlto);
+        ancho = Math.max(1, Math.round(alto * imagen.getWidth(null) / (float) imagen.getHeight(null)));
+        revalidate();
+        repaint();
     }
 
-    public void setOpacidad(float opacidad) { // Cambia qué tan visible es la imagen (para aparecer de a poco).
-        this.opacidad = opacidad; // La guarda.
-        repaint(); // Repinta.
+    // Cambia qué tan visible es la imagen (para aparecer de a poco).
+    public void setOpacidad(float opacidad) {
+        this.opacidad = opacidad;
+        repaint();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getPreferredSize() { // Tamaño que necesita el componente.
-        return new Dimension(ancho, alto); // El tamaño con el que se dibuja la imagen.
+    // Tamaño que necesita el componente.
+    @Override
+    public Dimension getPreferredSize() {
+        // El tamaño con el que se dibuja la imagen.
+        return new Dimension(ancho, alto);
     }
 
-    @Override // Indica que se reemplaza el método de dibujo de JComponent.
-    protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar.
-        Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel para no afectar al original.
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacidad)); // Aplica la opacidad.
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR); // Sin suavizar: se mantiene el pixel art.
-        g2.drawImage(imagen, 0, 0, getWidth(), getHeight(), null); // Dibuja la imagen ocupando todo el componente.
-        g2.dispose(); // Libera el pincel.
+    // Swing lo llama cada vez que hay que dibujar.
+    @Override
+    protected void paintComponent(Graphics g) {
+        // Usa una copia del pincel, aplica la opacidad y dibuja la imagen ocupando todo el componente, sin suavizar, para
+        // mantener el pixel art.
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacidad));
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.drawImage(imagen, 0, 0, getWidth(), getHeight(), null);
+        // Libera el pincel.
+        g2.dispose();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMinimumSize() { // Tamaño mínimo del componente.
-        return getPreferredSize(); // Nunca se achica más de lo que necesita.
+    // Tamaño mínimo del componente.
+    @Override
+    public Dimension getMinimumSize() {
+        // Nunca se achica más de lo que necesita.
+        return getPreferredSize();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMaximumSize() { // Tamaño máximo del componente.
-        return getPreferredSize(); // Nunca se estira más de lo que necesita.
+    // Tamaño máximo del componente.
+    @Override
+    public Dimension getMaximumSize() {
+        // Nunca se estira más de lo que necesita.
+        return getPreferredSize();
     }
 }

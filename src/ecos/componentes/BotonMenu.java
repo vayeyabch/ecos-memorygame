@@ -1,158 +1,219 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import ecos.recursos.Fuentes; // Para usar la fuente pixel del juego.
-import java.awt.AlphaComposite; // Permite dibujar con transparencia.
-import java.awt.Color; // Clase de Java para representar un color.
-import java.awt.Cursor; // Forma del puntero del mouse.
-import java.awt.Dimension; // Representa un tamaño (ancho y alto).
-import java.awt.FontMetrics; // Medidas de una fuente.
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.Graphics2D; // Versión más completa de Graphics.
-import java.awt.event.MouseAdapter; // Clase lista para escuchar el mouse sin implementar todos los métodos.
-import java.awt.event.MouseEvent; // Datos del evento del mouse.
-import javax.swing.JButton; // Botón de Swing: la clase de la que hereda esta.
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Tema;
+import ecos.recursos.Fuentes;
+// Librería gráfica AWT, AlphaComposite para la transparencia, Color para los colores, Cursor para el cursor del mouse,
+// Dimension para los tamaños, FontMetrics para medir el texto, Graphics para dibujar y Graphics2D para dibujar con más
+// opciones.
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+// Eventos del mouse y el teclado de AWT, MouseAdapter para reaccionar al mouse y MouseEvent para los datos de un clic.
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+// Librería Swing, JButton para los botones.
+import javax.swing.JButton;
 
+// Botón pixel del juego con varios estilos (principal, secundario, rosa, pestaña); sube al pasar el mouse y baja al apretarlo.
 public class BotonMenu extends JButton {
 
-    public enum Estilo { PRINCIPAL, SECUNDARIO, ROSA, PESTANA } // Los colores posibles del botón.
+    // Los colores posibles del botón.
+    public enum Estilo { PRINCIPAL, SECUNDARIO, ROSA, PESTANA }
 
-    private static final int BORDE = 4; // Grosor del borde, en píxeles.
-    private static final int SOMBRA = 5; // Alto de la sombra dura de abajo.
-    private static final int SUBIDA = 2; // Cuánto sube el botón al pasar el mouse.
-    private static final int BAJADA = 4; // Cuánto baja el botón al apretarlo.
+    // Grosor del borde en píxeles, alto de la sombra dura de abajo, y cuánto sube el botón al pasar el mouse y baja al
+    // apretarlo.
+    private static final int BORDE = 4;
+    private static final int SOMBRA = 5;
+    private static final int SUBIDA = 2;
+    private static final int BAJADA = 4;
 
-    private Estilo estilo; // Estilo actual del botón.
-    private boolean pequeno = false; // true = versión chica del botón (letra más chica).
-    private boolean encima = false; // true = el mouse está encima del botón.
-    private boolean apretado = false; // true = el botón está siendo apretado.
-    private final Runnable alCambiarTema = this::repaint; // Acción que repinta el botón cuando cambia el tema.
+    // Estilo actual del botón. True = versión chica del botón (letra más chica). true = el mouse está encima del botón.
+    // true = el botón está siendo apretado.
+    private Estilo estilo;
+    private boolean pequeno = false;
+    private boolean encima = false;
+    private boolean apretado = false;
+    // Acción que repinta el botón cuando cambia el tema.
+    private final Runnable alCambiarTema = this::repaint;
 
-    public BotonMenu(String texto, boolean principal) { // Constructor simple: principal = color durazno; si no, el secundario.
-        this(texto, principal ? Estilo.PRINCIPAL : Estilo.SECUNDARIO); // Llama al otro constructor con el estilo que corresponde.
+    // Constructor simple, si es principal usa el color durazno y si no el secundario.
+    public BotonMenu(String texto, boolean principal) {
+        // Llama al otro constructor con el estilo que corresponde.
+        this(texto, principal ? Estilo.PRINCIPAL : Estilo.SECUNDARIO);
     }
 
-    public BotonMenu(String texto, Estilo estilo) { // Constructor completo.
-        super(texto); // Le pasa el texto al JButton.
-        this.estilo = estilo; // Guarda el estilo.
-        setFont(Fuentes.titulo(14f)); // Letra de títulos, tamaño 14.
-        setContentAreaFilled(false); // Quita el fondo normal de Swing.
-        setBorderPainted(false); // Quita el borde normal de Swing.
-        setFocusPainted(false); // Quita el recuadro de foco de Swing.
-        setOpaque(false); // Es transparente: el dibujo se hace a mano.
-        setRolloverEnabled(false); // Quita el cambio de color de Swing al pasar el mouse.
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Pone la manito al pasar el mouse.
-        addMouseListener(new MouseAdapter() { // Escucha el mouse para animar el botón.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mouseEntered(MouseEvent e) { encima = true; repaint(); } // Al entrar el mouse, el botón sube.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mouseExited(MouseEvent e) { encima = false; apretado = false; repaint(); } // Al salir el mouse, vuelve a su lugar.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mousePressed(MouseEvent e) { apretado = true; repaint(); } // Al apretar, el botón baja.
-            @Override // Indica que se reemplaza un método de MouseAdapter.
-            public void mouseReleased(MouseEvent e) { apretado = false; repaint(); } // Al soltar, vuelve a su lugar.
+    // Constructor completo.
+    public BotonMenu(String texto, Estilo estilo) {
+        // Le pasa el texto al JButton. Guarda el estilo. Letra de títulos, tamaño 14. Quita el fondo normal de Swing.
+        super(texto);
+        this.estilo = estilo;
+        setFont(Fuentes.titulo(14f));
+        setContentAreaFilled(false);
+        // Quita el borde normal de Swing. Quita el recuadro de foco de Swing. Es transparente, el dibujo se hace a mano.
+        // Quita el cambio de color de Swing al pasar el mouse.
+        setBorderPainted(false);
+        setFocusPainted(false);
+        setOpaque(false);
+        setRolloverEnabled(false);
+        // Pone la manito al pasar el mouse. Escucha el mouse para animar el botón.
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addMouseListener(new MouseAdapter() {
+            @Override
+            // Al entrar el mouse, el botón sube.
+            public void mouseEntered(MouseEvent e) { encima = true; repaint(); }
+            @Override
+            // Al salir el mouse, vuelve a su lugar.
+            public void mouseExited(MouseEvent e) { encima = false; apretado = false; repaint(); }
+            @Override
+            // Al apretar, el botón baja.
+            public void mousePressed(MouseEvent e) { apretado = true; repaint(); }
+            @Override
+            // Al soltar, vuelve a su lugar.
+            public void mouseReleased(MouseEvent e) { apretado = false; repaint(); }
         });
     }
 
-    public void setEstilo(Estilo estilo) { // Cambia el estilo (por ejemplo, una pestaña seleccionada).
-        this.estilo = estilo; // Guarda el estilo nuevo.
-        repaint(); // Repinta.
+    // Cambia el estilo (por ejemplo, una pestaña seleccionada).
+    public void setEstilo(Estilo estilo) {
+        // Guarda el estilo nuevo.
+        this.estilo = estilo;
+        repaint();
     }
 
-    public void setPequeno(boolean pequeno) { // Activa o desactiva la versión chica.
-        this.pequeno = pequeno; // Guarda la decisión.
-        setFont(Fuentes.titulo(pequeno ? 12f : 14f)); // Cambia el tamaño de la letra.
-        revalidate(); // Avisa que el tamaño cambió.
-        repaint(); // Repinta.
+    // Activa o desactiva la versión chica.
+    public void setPequeno(boolean pequeno) {
+        // Guarda la decisión. Cambia el tamaño de la letra. Avisa que el tamaño cambió.
+        this.pequeno = pequeno;
+        setFont(Fuentes.titulo(pequeno ? 12f : 14f));
+        revalidate();
+        repaint();
     }
 
-    @Override // Indica que se reemplaza un método de JButton.
-    public void addNotify() { // Swing lo llama cuando el botón entra a una ventana.
-        super.addNotify(); // Deja que Swing haga lo suyo primero.
-        Tema.alCambiar(alCambiarTema); // Empieza a escuchar los cambios de tema.
+    // Swing lo llama cuando el botón entra a una ventana.
+    @Override
+    public void addNotify() {
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
+        super.addNotify();
+        Tema.alCambiar(alCambiarTema);
     }
 
-    @Override // Indica que se reemplaza un método de JButton.
-    public void removeNotify() { // Swing lo llama cuando el botón sale de la ventana.
-        Tema.quitar(alCambiarTema); // Deja de escuchar los cambios de tema.
-        super.removeNotify(); // Deja que Swing haga lo suyo.
+    // Swing lo llama cuando el botón sale de la ventana.
+    @Override
+    public void removeNotify() {
+        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        Tema.quitar(alCambiarTema);
+        super.removeNotify();
     }
 
-    private int relleno() { // Espacio entre el texto y el borde, a los lados.
-        return pequeno ? 12 : 20; // Más chico en la versión chica.
+    // Espacio entre el texto y el borde, a los lados.
+    private int relleno() {
+        // Más chico en la versión chica.
+        return pequeno ? 12 : 20;
     }
 
-    @Override // Indica que se reemplaza un método de JButton.
-    public Dimension getPreferredSize() { // Tamaño que necesita el botón.
-        FontMetrics fm = getFontMetrics(getFont()); // Medidas de la fuente.
-        int alto = fm.getHeight() + (pequeno ? 14 : 22) + BORDE * 2; // Alto del cuerpo del botón.
-        return new Dimension(fm.stringWidth(getText()) + relleno() * 2 + BORDE * 2, alto + SOMBRA + SUBIDA + 1); // Tamaño total, con sitio para la sombra y el movimiento.
+    // Tamaño que necesita el botón.
+    @Override
+    public Dimension getPreferredSize() {
+        // Toma las medidas de la fuente y calcula el alto del cuerpo del botón y su tamaño total, con sitio para la sombra y
+        // el movimiento.
+        FontMetrics fm = getFontMetrics(getFont());
+        int alto = fm.getHeight() + (pequeno ? 14 : 22) + BORDE * 2;
+        return new Dimension(fm.stringWidth(getText()) + relleno() * 2 + BORDE * 2, alto + SOMBRA + SUBIDA + 1);
     }
 
-    private Color colorFondo() { // Color de relleno según el estilo.
-        return switch (estilo) { // Elige según el estilo.
-            case PRINCIPAL -> Tema.boton(); // Durazno.
-            case SECUNDARIO -> Tema.boton2(); // Blanco (claro) o violeta (oscuro).
-            case ROSA -> Tema.rosa(); // Rosa.
-            case PESTANA -> Tema.caja(); // Color de caja (pestaña sin seleccionar).
+    // Color de relleno según el estilo.
+    private Color colorFondo() {
+        // Elige según el estilo. Blanco (claro) o violeta (oscuro).
+        return switch (estilo) {
+            case PRINCIPAL -> Tema.boton();
+            case SECUNDARIO -> Tema.boton2();
+            case ROSA -> Tema.rosa();
+            // Color de caja (pestaña sin seleccionar).
+            case PESTANA -> Tema.caja();
         };
     }
 
-    private Color colorTexto() { // Color de las letras según el estilo.
-        return switch (estilo) { // Elige según el estilo.
-            case PRINCIPAL -> Tema.textoBoton(); // Naranja oscuro.
-            case SECUNDARIO -> Tema.textoBoton2(); // Azul (claro) o rosado (oscuro).
-            case ROSA -> new Color(91, 22, 38); // Guinda oscuro.
-            case PESTANA -> Tema.textoSuave(); // Letras apagadas.
+    // Color de las letras según el estilo.
+    private Color colorTexto() {
+        // Elige según el estilo. Naranja oscuro. Azul (claro) o rosado (oscuro). Guinda oscuro.
+        return switch (estilo) {
+            case PRINCIPAL -> Tema.textoBoton();
+            case SECUNDARIO -> Tema.textoBoton2();
+            case ROSA -> new Color(91, 22, 38);
+            // Letras apagadas.
+            case PESTANA -> Tema.textoSuave();
         };
     }
 
-    @Override // Indica que se reemplaza el método de dibujo de JButton.
-    protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar el botón.
-        Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel para no afectar al original.
-        if (!isEnabled()) { // Si el botón está desactivado.
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f)); // Lo dibuja a medias transparente.
+    // Swing lo llama cada vez que hay que dibujar el botón.
+    @Override
+    protected void paintComponent(Graphics g) {
+        // Usa una copia del pincel y, si el botón está desactivado, lo dibuja a medias transparente.
+        Graphics2D g2 = (Graphics2D) g.create();
+        if (!isEnabled()) {
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
         }
-        int w = getWidth(); // Ancho del botón.
-        int cuerpo = getHeight() - SOMBRA - SUBIDA - 1; // Alto del cuerpo (sin la sombra ni el espacio de movimiento).
-        int y = apretado ? SUBIDA + BAJADA : (encima ? 0 : SUBIDA); // Posición vertical: sube con el mouse, baja al apretar.
-        int sombra = apretado ? 1 : SOMBRA; // La sombra se achica cuando el botón está apretado.
-        g2.setColor(Tema.sombra()); // Color de la sombra dura.
-        g2.fillRect(0, y + cuerpo - BORDE, w, BORDE + sombra); // Dibuja la sombra pegada abajo del cuerpo.
-        g2.setColor(Tema.borde()); // Color del borde.
-        g2.fillRect(0, y, w, cuerpo); // Dibuja el cuerpo completo con el color del borde.
-        g2.setColor(colorFondo()); // Color de relleno.
-        g2.fillRect(BORDE, y + BORDE, w - BORDE * 2, cuerpo - BORDE * 2); // Dibuja el relleno dejando visible el borde.
-        g2.setColor(new Color(255, 255, 255, 100)); // Blanco semitransparente para el brillo.
-        g2.fillRect(BORDE, y + BORDE, w - BORDE * 2, BORDE); // Franja clara arriba.
-        g2.setColor(new Color(0, 0, 0, 41)); // Negro semitransparente para la sombra interior.
-        g2.fillRect(BORDE, y + cuerpo - BORDE * 2, w - BORDE * 2, BORDE); // Franja oscura abajo.
-        g2.setFont(getFont()); // Usa la letra del botón.
-        FontMetrics fm = g2.getFontMetrics(); // Medidas de la fuente.
-        g2.setColor(colorTexto()); // Color de las letras.
-        int tx = (w - fm.stringWidth(getText())) / 2; // Centra el texto horizontalmente.
-        int ty = y + (cuerpo - fm.getHeight()) / 2 + fm.getAscent(); // Centra el texto verticalmente.
-        g2.drawString(getText(), tx, ty); // Dibuja el texto.
-        g2.dispose(); // Libera el pincel.
+        // Calcula el ancho y el alto del cuerpo (sin sombra ni espacio de movimiento) y la posición vertical, que sube con
+        // el mouse y baja al apretar, y achica la sombra cuando está apretado.
+        int w = getWidth();
+        int cuerpo = getHeight() - SOMBRA - SUBIDA - 1;
+        int y = apretado ? SUBIDA + BAJADA : (encima ? 0 : SUBIDA);
+        int sombra = apretado ? 1 : SOMBRA;
+        // Color de la sombra dura. Dibuja la sombra pegada abajo del cuerpo. Color del borde. Dibuja el cuerpo completo con
+        // el color del borde.
+        g2.setColor(Tema.sombra());
+        g2.fillRect(0, y + cuerpo - BORDE, w, BORDE + sombra);
+        g2.setColor(Tema.borde());
+        g2.fillRect(0, y, w, cuerpo);
+        // Color de relleno. Dibuja el relleno dejando visible el borde. Blanco semitransparente para el brillo. Franja clara arriba.
+        g2.setColor(colorFondo());
+        g2.fillRect(BORDE, y + BORDE, w - BORDE * 2, cuerpo - BORDE * 2);
+        g2.setColor(new Color(255, 255, 255, 100));
+        g2.fillRect(BORDE, y + BORDE, w - BORDE * 2, BORDE);
+        // Negro semitransparente para la sombra interior. Franja oscura abajo. Usa la letra del botón. Medidas de la fuente.
+        g2.setColor(new Color(0, 0, 0, 41));
+        g2.fillRect(BORDE, y + cuerpo - BORDE * 2, w - BORDE * 2, BORDE);
+        g2.setFont(getFont());
+        FontMetrics fm = g2.getFontMetrics();
+        // Color de las letras. Centra el texto horizontalmente. Centra el texto verticalmente. Dibuja el texto.
+        g2.setColor(colorTexto());
+        int tx = (w - fm.stringWidth(getText())) / 2;
+        int ty = y + (cuerpo - fm.getHeight()) / 2 + fm.getAscent();
+        g2.drawString(getText(), tx, ty);
+        // Libera el pincel.
+        g2.dispose();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMinimumSize() { // Tamaño mínimo del componente.
-        return getPreferredSize(); // Nunca se achica más de lo que necesita.
+    // Tamaño mínimo del componente.
+    @Override
+    public Dimension getMinimumSize() {
+        // Nunca se achica más de lo que necesita.
+        return getPreferredSize();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMaximumSize() { // Tamaño máximo del componente.
-        return getPreferredSize(); // Nunca se estira más de lo que necesita.
+    // Tamaño máximo del componente.
+    @Override
+    public Dimension getMaximumSize() {
+        // Nunca se estira más de lo que necesita.
+        return getPreferredSize();
     }
 
     // Devuelve un panel que estira este botón a todo el ancho disponible.
-    public javax.swing.JPanel anchoCompleto() { // No recibe nada.
-        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout()); // Panel con BorderLayout, que sí estira lo que tiene adentro.
-        panel.setOpaque(false); // Lo hace transparente.
-        panel.add(this, java.awt.BorderLayout.CENTER); // Pone el botón en el centro (se estira).
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height)); // Permite que se estire a lo ancho.
-        panel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT); // Lo alinea a la izquierda.
-        return panel; // Entrega el panel.
+    // No recibe nada.
+    public javax.swing.JPanel anchoCompleto() {
+        // Panel con BorderLayout, que sí estira lo que tiene adentro. Lo hace transparente. Pone el botón en el centro (se
+        // estira). Permite que se estire a lo ancho.
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout());
+        panel.setOpaque(false);
+        panel.add(this, java.awt.BorderLayout.CENTER);
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height));
+        // Lo alinea a la izquierda. Entrega el panel.
+        panel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        return panel;
     }
 }

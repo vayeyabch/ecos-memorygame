@@ -1,12 +1,13 @@
 package ecos.modelo;
 
-// Modelo de PantallaPremios: los datos del top 5 de jugadores. El premio de cada uno lo calcula CalculoPremio.
-// Por ahora son datos de ejemplo: guardar quién ganó necesita base de datos y no entra esta semana.
-// Responsable: Allison.
+// Modelo de PantallaPremios, los datos del top 5 de jugadores. El premio de cada uno lo calcula CalculoPremio.
+// Por ahora son datos de ejemplo, guardar quién ganó necesita base de datos y no entra esta semana.
+// A cargo de Allison.
 public class RankingPremios {
 
-    private static final String[] NOMBRES = {"Valeria", "Mateo", "Sofía", "Dani", "Kenneth"}; // Los 5 mejores (ejemplo).
-    private static final int[] INTENTOS = {21, 24, 27, 31, 36}; // Intentos de cada uno (ejemplo), de menor a mayor.
+    // Los 5 mejores (ejemplo). Intentos de cada uno (ejemplo), de menor a mayor.
+    private static final String[] NOMBRES = {"Valeria", "Mateo", "Sofía", "Dani", "Kenneth"};
+    private static final int[] INTENTOS = {21, 24, 27, 31, 36};
 
     // Cuántos puestos tiene el ranking.
     public int cantidad() {
@@ -23,12 +24,12 @@ public class RankingPremios {
         return INTENTOS[i];
     }
 
-    // Premio en colones del puesto i, sin símbolo. Ejemplo: "2 320".
+    // Premio en colones del puesto i, sin símbolo. Por ejemplo "2 320".
     public String colones(int i) {
         return CalculoPremio.numeroColones(CalculoPremio.premioColones(INTENTOS[i]));
     }
 
-    // Premio en dólares del puesto i. Ejemplo: "$4.76".
+    // Premio en dólares del puesto i. Por ejemplo "$4.76".
     public String dolares(int i) {
         return CalculoPremio.dolares(CalculoPremio.premioDolares(INTENTOS[i]));
     }

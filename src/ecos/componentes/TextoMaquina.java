@@ -1,73 +1,97 @@
 package ecos.componentes;
 
-import ecos.recursos.Fuentes; // Para usar la fuente pixel del juego.
-import ecos.recursos.Sonido; // Para el sonido de teclear.
-import java.awt.Color; // Clase de Java para representar un color.
-import javax.swing.JLabel; // Etiqueta de Swing: la clase de la que hereda esta.
-import javax.swing.Timer; // Reloj que ejecuta una acción cada cierto tiempo.
+// Clases del propio proyecto que se usan aquí.
+import ecos.recursos.Fuentes;
+import ecos.recursos.Sonido;
+// Librería gráfica AWT, Color para los colores.
+import java.awt.Color;
+// Librería Swing, JLabel para los textos y Timer para los relojes.
+import javax.swing.JLabel;
+import javax.swing.Timer;
 
+// Texto que se escribe letra por letra, como una máquina de escribir.
 public class TextoMaquina extends JLabel {
 
-    private static final int MS_POR_LETRA = 48; // Tiempo en milisegundos que tarda en aparecer cada letra.
+    // Tiempo en milisegundos que tarda en aparecer cada letra.
+    private static final int MS_POR_LETRA = 48;
 
-    private final Timer timer; // Reloj que va agregando una letra a la vez.
-    private String textoCompleto = ""; // Texto que se quiere escribir completo.
-    private int letras = 0; // Cuántas letras se han escrito hasta ahora.
-    private Runnable alTerminar; // Qué hacer cuando se escribe la última letra.
+    // Reloj que va agregando una letra a la vez, texto completo que se quiere escribir, cuántas letras van y qué hacer al
+    // escribir la última.
+    private final Timer timer;
+    private String textoCompleto = "";
+    private int letras = 0;
+    private Runnable alTerminar;
 
-    public TextoMaquina(float tamano) { // Recibe el tamaño de la letra.
-        setFont(Fuentes.titulo(tamano)); // Usa la fuente de títulos (Press Start 2P).
-        setForeground(new Color(0xFFF0E4)); // Letras color crema (la intro siempre es oscura).
-        setHorizontalAlignment(CENTER); // Centra el texto.
-        timer = new Timer(MS_POR_LETRA, e -> alTic()); // Cada tic escribe una letra más.
+    // Recibe el tamaño de la letra.
+    public TextoMaquina(float tamano) {
+        // Usa la fuente de títulos (Press Start 2P). Letras color crema (la intro siempre es oscura). Centra el texto. Cada
+        // tic escribe una letra más.
+        setFont(Fuentes.titulo(tamano));
+        setForeground(new Color(0xFFF0E4));
+        setHorizontalAlignment(CENTER);
+        timer = new Timer(MS_POR_LETRA, e -> alTic());
     }
 
     // Empieza a escribir un texto letra por letra; al terminar ejecuta la acción.
-    public void escribir(String texto, Runnable alTerminar) { // Recibe el texto y qué hacer al final.
-        this.textoCompleto = texto; // Guarda el texto completo.
-        this.letras = 0; // Empieza desde cero letras.
-        this.alTerminar = alTerminar; // Guarda qué hacer al final.
-        setText(""); // Limpia lo que hubiera escrito.
-        if (textoCompleto.isEmpty()) { // Si no hay nada que escribir.
-            terminar(); // Termina de inmediato.
-            return; // Sale del método.
+    // Recibe el texto y qué hacer al final.
+    public void escribir(String texto, Runnable alTerminar) {
+        // Guarda el texto completo. Empieza desde cero letras. Guarda qué hacer al final. Limpia lo que hubiera escrito.
+        this.textoCompleto = texto;
+        this.letras = 0;
+        this.alTerminar = alTerminar;
+        setText("");
+        // Si no hay nada que escribir. Termina de inmediato. Sale del método.
+        if (textoCompleto.isEmpty()) {
+            terminar();
+            return;
         }
-        timer.start(); // Arranca el reloj.
+        // Arranca el reloj.
+        timer.start();
     }
 
     // Borra todo y deja el texto listo para empezar de nuevo.
-    public void reiniciar() { // No recibe nada.
-        timer.stop(); // Detiene el reloj.
-        textoCompleto = ""; // Olvida el texto.
-        letras = 0; // Vuelve a cero letras.
-        alTerminar = null; // Olvida qué hacer al final.
-        setText(""); // Deja la etiqueta vacía.
+    // No recibe nada.
+    public void reiniciar() {
+        // Detiene el reloj. Olvida el texto. Vuelve a cero letras. Olvida qué hacer al final.
+        timer.stop();
+        textoCompleto = "";
+        letras = 0;
+        alTerminar = null;
+        // Deja la etiqueta vacía.
+        setText("");
     }
 
     // Detiene la escritura donde esté, sin ejecutar nada al final.
-    public void detener() { // No recibe nada.
-        timer.stop(); // Detiene el reloj.
-        alTerminar = null; // Olvida qué hacer al final.
+    // No recibe nada.
+    public void detener() {
+        // Detiene el reloj. Olvida qué hacer al final.
+        timer.stop();
+        alTerminar = null;
     }
 
-    private void alTic() { // Se ejecuta en cada tic del reloj.
-        if (letras >= textoCompleto.length()) { // Si ya se escribieron todas las letras.
-            timer.stop(); // Detiene el reloj.
-            terminar(); // Ejecuta lo que sigue.
-        } else { // Si faltan letras.
-            letras++; // Cuenta una letra más.
-            setText(textoCompleto.substring(0, letras)); // Muestra el texto hasta esa letra.
-            if (letras % 2 == 1) { // En una de cada dos letras.
-                Sonido.efecto("teclear"); // Suena el tecleo.
+    // Se ejecuta en cada tic del reloj.
+    private void alTic() {
+        // Si ya se escribieron todas las letras. Detiene el reloj. Ejecuta lo que sigue. Si faltan letras.
+        if (letras >= textoCompleto.length()) {
+            timer.stop();
+            terminar();
+        } else {
+            // Cuenta una letra más. Muestra el texto hasta esa letra. En una de cada dos letras. Suena el tecleo.
+            letras++;
+            setText(textoCompleto.substring(0, letras));
+            if (letras % 2 == 1) {
+                Sonido.efecto("teclear");
             }
         }
     }
 
-    private void terminar() { // Ejecuta la acción final una sola vez.
-        Runnable r = alTerminar; // Guarda la acción.
-        alTerminar = null; // La borra para que no se repita.
-        if (r != null) { // Si había una acción.
-            r.run(); // La ejecuta.
+    // Ejecuta la acción final una sola vez.
+    private void terminar() {
+        // Guarda la acción y la borra para que no se repita, si es que había una.
+        Runnable r = alTerminar;
+        alTerminar = null;
+        if (r != null) {
+            r.run();
         }
     }
 }

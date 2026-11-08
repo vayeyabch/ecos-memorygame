@@ -1,30 +1,43 @@
 package ecos.recursos;
 
-import java.io.File; // Representa un archivo del disco.
-import java.io.FileInputStream; // Lee los bytes de un archivo del disco.
-import java.io.IOException; // Error que ocurre al leer o abrir archivos.
-import java.io.InputStream; // Flujo para leer los bytes de un archivo.
+// Lectura de archivos, File para los archivos, FileInputStream para leer un archivo del disco, IOException para los
+// Lectura de archivos, File para los archivos, FileInputStream para leer un archivo del disco, IOException para los
+// errores de lectura y InputStream para leer archivos.
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+// Abre los archivos del proyecto (imágenes, sonidos y fuentes) desde la carpeta de recursos.
 public class Recursos {
 
-    private static final String CARPETA = "src/recursos/"; // Carpeta del disco donde están las imágenes, fuentes y audios.
+    // Carpeta del disco donde están las imágenes, fuentes y audios.
+    private static final String CARPETA = "src/recursos/";
 
-    public static InputStream abrir(String ruta) throws IOException { // Abre un archivo; la ruta es relativa a src/recursos.
-        File archivo = new File(CARPETA + ruta); // Arma la ruta completa en el disco.
-        if (archivo.exists()) { // Si el archivo existe en el disco (cuando se corre desde VS Code).
-            return new FileInputStream(archivo); // Lo abre desde ahí.
+    // Abre un archivo; la ruta es relativa a src/recursos.
+    public static InputStream abrir(String ruta) throws IOException {
+        // Arma la ruta completa en el disco y, si el archivo existe ahí (cuando se corre desde VS Code), lo abre desde ahí.
+        File archivo = new File(CARPETA + ruta);
+        if (archivo.exists()) {
+            return new FileInputStream(archivo);
         }
-        InputStream dentro = Recursos.class.getResourceAsStream("/recursos/" + ruta); // Si no, lo busca dentro del proyecto compilado (.jar).
-        if (dentro == null) { // Si tampoco está ahí.
-            throw new IOException("No se encontro el recurso: " + ruta); // Lanza un error que dice cuál archivo falta.
+        // Si no, lo busca dentro del proyecto compilado (.jar), y si tampoco está ahí lanza un error que dice cuál archivo
+        // falta.
+        InputStream dentro = Recursos.class.getResourceAsStream("/recursos/" + ruta);
+        if (dentro == null) {
+            throw new IOException("No se encontro el recurso: " + ruta);
         }
-        return dentro; // Entrega el archivo encontrado.
+        // Entrega el archivo encontrado.
+        return dentro;
     }
 
-    public static boolean existe(String ruta) { // Dice si un archivo existe.
-        if (new File(CARPETA + ruta).exists()) { // Si está en el disco.
-            return true; // Existe.
+    // Dice si un archivo existe.
+    public static boolean existe(String ruta) {
+        // Si está en el disco.
+        if (new File(CARPETA + ruta).exists()) {
+            return true;
         }
-        return Recursos.class.getResource("/recursos/" + ruta) != null; // Si no, revisa si está dentro del proyecto compilado.
+        // Si no, revisa si está dentro del proyecto compilado.
+        return Recursos.class.getResource("/recursos/" + ruta) != null;
     }
 }

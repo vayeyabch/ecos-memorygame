@@ -1,39 +1,48 @@
 package ecos.modelo;
 
-import java.util.HashMap; // Mapa usuario -> monedas.
-import java.util.Map; // Tipo de mapa.
+// Utilidades de Java, HashMap para diccionarios rápidos y Map para los diccionarios.
+import java.util.HashMap;
+import java.util.Map;
 
-// Modelo de las monedas: cada usuario acumula monedas al ganar y las gasta en el Ojo espía.
-// Las monedas NO afectan el ranking ni el premio en dinero: eso sale solo de los intentos de la partida.
+// Modelo de las monedas, cada usuario acumula monedas al ganar y las gasta en el Ojo espía.
+// Las monedas NO afectan el ranking ni el premio en dinero, eso sale solo de los intentos de la partida.
 // Un jugador sin cuenta (usuario null) siempre tiene 0 monedas y no se le guarda nada.
-// Responsable: Hellen.
+// A cargo de Hellen.
 public class ModeloMonedas {
 
-    public static final int MONEDAS_POR_VICTORIA = 15; // Lo que gana quien gana una partida.
-    public static final int PRECIO_OJO = 30; // Lo que cuesta el Ojo espía.
+    // Lo que gana quien gana una partida. Lo que cuesta el Ojo espía.
+    public static final int MONEDAS_POR_VICTORIA = 15;
+    public static final int PRECIO_OJO = 30;
 
-    // PENDIENTE (BD): este mapa se cambia por la columna de monedas (puntos) de la tabla usuarios. Hoy se pierde al cerrar el programa.
+    // PENDIENTE (BD), este mapa se cambia por la columna de monedas (puntos) de la tabla usuarios. Hoy se pierde al
+    // cerrar el programa.
     private static final Map<String, Integer> SALDOS = new HashMap<>();
 
-    private static String clave(String usuario) { // El usuario sin importar mayúsculas.
+    // El usuario sin importar mayúsculas.
+    private static String clave(String usuario) {
         return usuario.trim().toLowerCase();
     }
 
-    public int monedas(String usuario) { // Monedas del usuario (0 si no tiene cuenta o es nuevo).
+    // Monedas del usuario (0 si no tiene cuenta o es nuevo).
+    public int monedas(String usuario) {
         return usuario == null ? 0 : SALDOS.getOrDefault(clave(usuario), 0);
     }
 
-    public void sumarVictoria(String usuario) { // Suma las monedas de una victoria.
-        if (usuario != null) { // Sin cuenta no se guarda nada.
+    // Suma las monedas de una victoria.
+    public void sumarVictoria(String usuario) {
+        // Sin cuenta no se guarda nada.
+        if (usuario != null) {
             SALDOS.merge(clave(usuario), MONEDAS_POR_VICTORIA, Integer::sum);
         }
     }
 
-    public boolean alcanzaParaOjo(String usuario) { // Dice si le alcanza para el Ojo espía.
+    // Dice si le alcanza para el Ojo espía.
+    public boolean alcanzaParaOjo(String usuario) {
         return monedas(usuario) >= PRECIO_OJO;
     }
 
-    public boolean comprarOjo(String usuario) { // Cobra el Ojo espía; false si no le alcanza.
+    // Cobra el Ojo espía; false si no le alcanza.
+    public boolean comprarOjo(String usuario) {
         if (!alcanzaParaOjo(usuario)) {
             return false;
         }
@@ -41,7 +50,8 @@ public class ModeloMonedas {
         return true;
     }
 
-    public String reglaMonedas() { // Regla de las monedas para la pantalla de reglas.
+    // Regla de las monedas para la pantalla de reglas.
+    public String reglaMonedas() {
         return "Cada victoria te da <b>" + MONEDAS_POR_VICTORIA + " monedas</b>. Con <b>" + PRECIO_OJO + "</b> comprás el Ojo espía. Sin cuenta no hay premio ni monedas.";
     }
 }

@@ -1,121 +1,159 @@
 package ecos.componentes;
 
-import ecos.app.Tema; // Para usar los colores del tema actual.
-import ecos.recursos.Fuentes; // Para usar las fuentes pixel del juego.
-import java.awt.Color; // Clase de Java para representar un color.
-import java.awt.Dimension; // Representa un tamaño (ancho y alto).
+// Clases del propio proyecto que se usan aquí.
+import ecos.app.Tema;
+import ecos.recursos.Fuentes;
+// Librería gráfica AWT, Color para los colores, Dimension para los tamaños, Font para las fuentes, FontMetrics para
+// medir el texto, Graphics para dibujar, Graphics2D para dibujar con más opciones y Image para las imágenes.
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics; // Medidas de una fuente.
-import java.awt.Graphics; // Herramienta básica para dibujar.
-import java.awt.Graphics2D; // Versión más completa de Graphics.
-import java.awt.Image; // Tipo general de imagen.
-import javax.swing.JComponent; // Componente básico de Swing: la clase de la que hereda esta.
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+// Librería Swing, JComponent para la base de los componentes.
+import javax.swing.JComponent;
 
+// Cajita pequeña con un texto y, si se quiere, un ícono (se usa para intentos, parejas, premios y monedas).
 public class ChipPixel extends JComponent {
 
-    public enum Modo { CAJA, DURAZNO } // CAJA = fondo de caja del tema; DURAZNO = fondo durazno con letras oscuras (premios).
+    // CAJA = fondo de caja del tema; DURAZNO = fondo durazno con letras oscuras (premios).
+    public enum Modo { CAJA, DURAZNO }
 
-    private String texto; // Texto de la cajita.
-    private final Modo modo; // Modo de colores.
-    private final int borde; // Grosor del borde, en píxeles.
-    private final boolean tituloFuente; // true = usa la fuente de títulos; false = la de texto.
-    private Image icono = null; // Icono opcional a la izquierda del texto.
-    private final Runnable alCambiarTema = this::repaint; // Acción que repinta cuando cambia el tema.
+    // Texto de la cajita, modo de colores, grosor del borde en píxeles y si usa la fuente de títulos o la de texto.
+    private String texto;
+    private final Modo modo;
+    private final int borde;
+    private final boolean tituloFuente;
+    // Icono opcional a la izquierda del texto. Acción que repinta cuando cambia el tema.
+    private Image icono = null;
+    private final Runnable alCambiarTema = this::repaint;
 
-    public ChipPixel(String texto, float tamano, boolean tituloFuente, Modo modo, int borde) { // Recibe todo lo necesario para dibujar.
-        this.texto = texto; // Guarda el texto.
-        this.tituloFuente = tituloFuente; // Guarda qué fuente usar.
-        this.modo = modo; // Guarda el modo de colores.
-        this.borde = borde; // Guarda el grosor del borde.
-        setOpaque(false); // Es transparente: el dibujo se hace a mano.
-        setFont(tituloFuente ? Fuentes.titulo(tamano) : Fuentes.texto(tamano).deriveFont(java.awt.Font.BOLD)); // Elige la fuente.
+    // Recibe todo lo necesario para dibujar.
+    public ChipPixel(String texto, float tamano, boolean tituloFuente, Modo modo, int borde) {
+        // Guarda el texto. Guarda qué fuente usar. Guarda el modo de colores. Guarda el grosor del borde.
+        this.texto = texto;
+        this.tituloFuente = tituloFuente;
+        this.modo = modo;
+        this.borde = borde;
+        // Es transparente, el dibujo se hace a mano. Elige la fuente.
+        setOpaque(false);
+        setFont(tituloFuente ? Fuentes.titulo(tamano) : Fuentes.texto(tamano).deriveFont(java.awt.Font.BOLD));
     }
 
-    public void setTexto(String texto) { // Cambia el texto.
-        this.texto = texto; // Lo guarda.
-        revalidate(); // Avisa que el tamaño pudo cambiar.
-        repaint(); // Repinta.
+    // Cambia el texto.
+    public void setTexto(String texto) {
+        // Avisa que el tamaño pudo cambiar.
+        this.texto = texto;
+        revalidate();
+        repaint();
     }
 
-    public String getTexto() { // Entrega el texto actual.
-        return texto; // Devuelve el texto.
+    // Entrega el texto actual.
+    public String getTexto() {
+        // Devuelve el texto.
+        return texto;
     }
 
-    public void setIcono(Image icono) { // Pone un icono a la izquierda del texto.
-        this.icono = icono; // Lo guarda.
-        revalidate(); // Avisa que el tamaño cambió.
-        repaint(); // Repinta.
+    // Pone un icono a la izquierda del texto.
+    public void setIcono(Image icono) {
+        // Avisa que el tamaño cambió.
+        this.icono = icono;
+        revalidate();
+        repaint();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public void addNotify() { // Swing lo llama cuando la cajita entra a una ventana.
-        super.addNotify(); // Deja que Swing haga lo suyo primero.
-        Tema.alCambiar(alCambiarTema); // Empieza a escuchar los cambios de tema.
+    // Swing lo llama cuando la cajita entra a una ventana.
+    @Override
+    public void addNotify() {
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
+        super.addNotify();
+        Tema.alCambiar(alCambiarTema);
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public void removeNotify() { // Swing lo llama cuando la cajita sale de la ventana.
-        Tema.quitar(alCambiarTema); // Deja de escuchar los cambios de tema.
-        super.removeNotify(); // Deja que Swing haga lo suyo.
+    // Swing lo llama cuando la cajita sale de la ventana.
+    @Override
+    public void removeNotify() {
+        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        Tema.quitar(alCambiarTema);
+        super.removeNotify();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getPreferredSize() { // Tamaño que necesita la cajita.
-        FontMetrics fm = getFontMetrics(getFont()); // Medidas de la fuente.
-        int ancho = anchoTexto(fm) + borde * 2 + (tituloFuente ? 16 : 20); // Ancho del texto más borde y relleno.
-        if (icono != null) { // Si hay icono.
-            ancho += icono.getWidth(null) + 8; // Suma el icono y su separación.
+    // Tamaño que necesita la cajita.
+    @Override
+    public Dimension getPreferredSize() {
+        // Toma las medidas de la fuente y calcula el ancho del texto más borde y relleno, sumando el icono y su separación.
+        FontMetrics fm = getFontMetrics(getFont());
+        int ancho = anchoTexto(fm) + borde * 2 + (tituloFuente ? 16 : 20);
+        if (icono != null) {
+            ancho += icono.getWidth(null) + 8;
         }
-        int alto = Math.max(fm.getHeight(), icono != null ? icono.getHeight(null) : 0) + borde * 2 + (tituloFuente ? 12 : 8); // Alto del texto más borde y relleno.
-        return new Dimension(ancho, alto); // Entrega el tamaño.
+        // Alto del texto más borde y relleno. Entrega el tamaño.
+        int alto = Math.max(fm.getHeight(), icono != null ? icono.getHeight(null) : 0) + borde * 2 + (tituloFuente ? 12 : 8);
+        return new Dimension(ancho, alto);
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMinimumSize() { // Tamaño mínimo.
-        return getPreferredSize(); // Nunca se achica más de lo que necesita.
+    // Tamaño mínimo.
+    @Override
+    public Dimension getMinimumSize() {
+        // Nunca se achica más de lo que necesita.
+        return getPreferredSize();
     }
 
-    @Override // Indica que se reemplaza un método de JComponent.
-    public Dimension getMaximumSize() { // Tamaño máximo.
-        return getPreferredSize(); // Nunca se estira más de lo que necesita.
+    // Tamaño máximo.
+    @Override
+    public Dimension getMaximumSize() {
+        // Nunca se estira más de lo que necesita.
+        return getPreferredSize();
     }
 
-    @Override // Indica que se reemplaza el método de dibujo de JComponent.
-    protected void paintComponent(Graphics g) { // Swing lo llama cada vez que hay que dibujar.
-        Graphics2D g2 = (Graphics2D) g.create(); // Copia del pincel para no afectar al original.
-        int w = getWidth(); // Ancho de la cajita.
-        int h = getHeight(); // Alto de la cajita.
-        g2.setColor(Tema.borde()); // Color del borde.
-        g2.fillRect(0, 0, w, h); // Dibuja el borde.
-        g2.setColor(modo == Modo.DURAZNO ? Tema.dorado() : Tema.caja()); // Color del relleno según el modo.
-        g2.fillRect(borde, borde, w - borde * 2, h - borde * 2); // Dibuja el relleno.
-        g2.setFont(getFont()); // Usa la fuente de la cajita.
-        FontMetrics fm = g2.getFontMetrics(); // Medidas de la fuente.
-        int ancho = anchoTexto(fm) + (icono != null ? icono.getWidth(null) + 8 : 0); // Ancho del contenido (icono + texto).
-        int x = (w - ancho) / 2; // Posición para centrar el contenido.
-        if (icono != null) { // Si hay icono.
-            g2.drawImage(icono, x, (h - icono.getHeight(null)) / 2, null); // Dibuja el icono.
-            x += icono.getWidth(null) + 8; // Mueve la posición para escribir el texto después.
+    // Swing lo llama cada vez que hay que dibujar.
+    @Override
+    protected void paintComponent(Graphics g) {
+        // Usa una copia del pincel y calcula el ancho y el alto de la cajita y el color del borde.
+        Graphics2D g2 = (Graphics2D) g.create();
+        int w = getWidth();
+        int h = getHeight();
+        g2.setColor(Tema.borde());
+        // Dibuja el borde. Color del relleno según el modo. Dibuja el relleno. Usa la fuente de la cajita.
+        g2.fillRect(0, 0, w, h);
+        g2.setColor(modo == Modo.DURAZNO ? Tema.dorado() : Tema.caja());
+        g2.fillRect(borde, borde, w - borde * 2, h - borde * 2);
+        g2.setFont(getFont());
+        // Toma las medidas de la fuente, calcula el ancho del contenido (icono y texto) y la posición para centrarlo.
+        FontMetrics fm = g2.getFontMetrics();
+        int ancho = anchoTexto(fm) + (icono != null ? icono.getWidth(null) + 8 : 0);
+        int x = (w - ancho) / 2;
+        if (icono != null) {
+            // Dibuja el icono. Mueve la posición para escribir el texto después.
+            g2.drawImage(icono, x, (h - icono.getHeight(null)) / 2, null);
+            x += icono.getWidth(null) + 8;
         }
-        g2.setColor(modo == Modo.DURAZNO ? new Color(91, 35, 51) : Tema.texto()); // Color de las letras según el modo.
-        dibujarTexto(g2, x, (h - fm.getHeight()) / 2 + fm.getAscent()); // Escribe el texto centrado verticalmente.
-        g2.dispose(); // Libera el pincel.
+        // Color de las letras según el modo. Escribe el texto centrado verticalmente. Libera el pincel.
+        g2.setColor(modo == Modo.DURAZNO ? new Color(91, 35, 51) : Tema.texto());
+        dibujarTexto(g2, x, (h - fm.getHeight()) / 2 + fm.getAscent());
+        g2.dispose();
     }
 
-    // La fuente de títulos no trae el símbolo ₡: se dibuja con la fuente de texto, que sí lo tiene.
-    private Font fuenteColon() { // Fuente solo para el ₡.
+    // La fuente de títulos no trae el símbolo ₡, se dibuja con la fuente de texto, que sí lo tiene.
+    // Fuente solo para el ₡.
+    private Font fuenteColon() {
         return Fuentes.texto(getFont().getSize2D() * 1.5f).deriveFont(Font.BOLD);
     }
 
-    private int anchoTexto(FontMetrics fm) { // Ancho del texto sumando el ₡ con su fuente.
+    // Ancho del texto sumando el ₡ con su fuente.
+    private int anchoTexto(FontMetrics fm) {
         int ancho = 0;
-        for (String parte : texto.split("(?<=₡)|(?=₡)")) { // Separa el ₡ del resto.
+        // Separa el ₡ del resto.
+        for (String parte : texto.split("(?<=₡)|(?=₡)")) {
             ancho += parte.equals("₡") ? getFontMetrics(fuenteColon()).stringWidth(parte) : fm.stringWidth(parte);
         }
         return ancho;
     }
 
-    private void dibujarTexto(Graphics2D g2, int x, int y) { // Escribe el texto pieza por pieza.
+    // Escribe el texto pieza por pieza.
+    private void dibujarTexto(Graphics2D g2, int x, int y) {
         Font normal = g2.getFont();
         for (String parte : texto.split("(?<=₡)|(?=₡)")) {
             boolean colon = parte.equals("₡");

@@ -1,61 +1,75 @@
 package ecos.app.modos.JuegoC;
 
+// Utilidades de Java, Random para los números al azar.
 import java.util.Random;
 
-// Las reglas del modo clásico. No usa pantallas ni dibuja nada: solo guarda el estado.
-//  - Cada jugador tiene su matriz n x n (distinta una de otra).
-//  - Un intento = voltear dos cartas.
-//  - Gana el primero que encuentra todas las parejas de su tablero (18 en el de 6x6).
+// Las reglas del modo clásico. No usa pantallas ni dibuja nada, solo guarda el estado.
+// Cada jugador tiene su propia matriz n x n, distinta de la del otro, y un intento es voltear dos cartas.
+// Gana el primero que encuentra todas las parejas de su tablero (18 en el de 6x6).
 public class PartidaClasica {
 
     public enum Jugada { IGNORADA, PRIMERA, SEGUNDA, ACIERTO, FALLO }
 
-    private final int n; // tamaño de la matriz (6 para 6x6, 4 para 4x4)
-    private final int[][][] caras = new int[2][][]; // caras de cada jugador
-    private final boolean[][] hecha = new boolean[2][]; // marca cuáles cartas ya se encontraron
-    private final int[] intentos = new int[2]; // intentos del jugador
-    private final int[] parejas = new int[2]; // parejas encontradas del jugador
-    private final ComparadorParejasClasico comparador = new ComparadorParejasClasico(); // compara dos cartas y dice si son pareja
-    private int turno = 0; // el jugador que tiene el turno (0 o 1)
-    private int primera = -1; // primera carta volteada (-1 = ninguna)
-    private int cartaA = -1; // las dos cartas del último intento
-    private int cartaB = -1; // las dos cartas del último intento
-    private int terminoPrimero = -1; // quién completó su tablero primero
+    // Tamaño de la matriz (6 para 6x6, 4 para 4x4). caras de cada jugador. Marca cuáles cartas ya se encontraron.
+    // intentos del jugador.
+    private final int n;
+    private final int[][][] caras = new int[2][][];
+    private final boolean[][] hecha = new boolean[2][];
+    private final int[] intentos = new int[2];
+    // Parejas encontradas del jugador, la comparación de dos cartas para saber si son pareja, el jugador que tiene el turno
+    // (0 o 1) y la primera carta volteada (-1 si no hay ninguna).
+    private final int[] parejas = new int[2];
+    private final ComparadorParejasClasico comparador = new ComparadorParejasClasico();
+    private int turno = 0;
+    private int primera = -1;
+    // Las dos cartas del último intento. Quién completó su tablero primero.
+    private int cartaA = -1;
+    private int cartaB = -1;
+    private int terminoPrimero = -1;
 
     public PartidaClasica(int n) {
-        this.n = n; // tamaño de la matriz (6 para 6x6, 4 para 4x4)
+        // Tamaño de la matriz (6 para 6x6, 4 para 4x4).
+        this.n = n;
         for (int p = 0; p < 2; p++) {
-            caras[p] = MezclaCartasClasico.crearMatriz(n, new Random()); // un azar distinto por jugador
-            hecha[p] = new boolean[n * n]; //36 valores false por defecto 
+            // Un azar distinto por jugador. 36 valores false por defecto.
+            caras[p] = MezclaCartasClasico.crearMatriz(n, new Random());
+            hecha[p] = new boolean[n * n];
         }
     }
 
-    // El indice va de 0 a n*n-1: fila = indice / n, columna = indice % n.
+    // El indice va de 0 a n*n-1, fila = indice / n, columna = indice % n.
     private int cara(int jugador, int indice) {
-        return caras[jugador][indice / n][indice % n]; // devuelve la cara de la carta en esa posición
+        // Devuelve la cara de la carta en esa posición.
+        return caras[jugador][indice / n][indice % n];
     }
 
     // El jugador toca una carta.
     public Jugada seleccionar(int jugador, int indice) {
-        if (jugador != turno || hecha[jugador][indice] || indice == primera) { // no es su turno, o ya encontró esa carta, o tocó la misma dos veces
+        // No es su turno, o ya encontró esa carta, o tocó la misma dos veces.
+        if (jugador != turno || hecha[jugador][indice] || indice == primera) {
             return Jugada.IGNORADA;
         }
-        if (primera < 0) { // no hay primera carta: esta será la primera
+        // No hay primera carta, esta será la primera.
+        if (primera < 0) {
             primera = indice;
             return Jugada.PRIMERA;
         }
         cartaA = primera;
-        cartaB = indice; // la segunda carta
+        // La segunda carta.
+        cartaB = indice;
         primera = -1;
-        intentos[jugador]++; // incrementa el contador de intentos del jugador
+        // Incrementa el contador de intentos del jugador.
+        intentos[jugador]++;
         return Jugada.SEGUNDA; 
     }
 
-    // Se llama después de la SEGUNDA carta: compara y actualiza.
+    // Se llama después de la SEGUNDA carta, compara y actualiza.
     public Jugada resolver() {
-        boolean iguales = comparador.comparar(cara(turno, cartaA), cara(turno, cartaB)); // compara las dos cartas del jugador que tiene el turno   
+        // Compara las dos cartas del jugador que tiene el turno.
+        boolean iguales = comparador.comparar(cara(turno, cartaA), cara(turno, cartaB));
         if (!iguales) {
-            return Jugada.FALLO; // Da fallo si no son iguales.
+            // Da fallo si no son iguales.
+            return Jugada.FALLO;
         }
         hecha[turno][cartaA] = true;
         hecha[turno][cartaB] = true;
@@ -63,7 +77,8 @@ public class PartidaClasica {
         if (completo(turno) && terminoPrimero < 0) {
             terminoPrimero = turno;
         }
-        return Jugada.ACIERTO; // Da acierto si son iguales y marca las cartas como encontradas.
+        // Da acierto si son iguales y marca las cartas como encontradas.
+        return Jugada.ACIERTO;
     }
 
     // Pasa el turno al otro jugador, salvo que el otro ya terminó. Dice si cambió.
@@ -73,22 +88,25 @@ public class PartidaClasica {
             return false;
         }
         turno = otro;
-        primera = -1; // si es 0, da 1; si es 1, da 0
+        // Si es 0, da 1; si es 1, da 0.
+        primera = -1;
         return true;
     }
 
-    // Se acabó el tiempo: devuelve la carta que quedó volteada (o -1 si no había).
+    // Se acabó el tiempo, devuelve la carta que quedó volteada (o -1 si no había).
     public int cancelarSeleccion() {
         int carta = primera;
         primera = -1;
         return carta;
     }
 
-    public boolean hayPrimera() { // dice si hay una carta volteada
+    // Dice si hay una carta volteada.
+    public boolean hayPrimera() {
         return primera >= 0;
     }
 
-    public boolean completo(int jugador) { // dice si el jugador completó su tablero
+    // Dice si el jugador completó su tablero.
+    public boolean completo(int jugador) {
         return parejas[jugador] == n * n / 2;
     }
 
@@ -102,27 +120,33 @@ public class PartidaClasica {
         return terminoPrimero;
     }
 
-    public int[][] getCaras(int jugador) { // devuelve la matriz de caras del jugador
+    // Devuelve la matriz de caras del jugador.
+    public int[][] getCaras(int jugador) {
         return caras[jugador];
     }
 
-    public int getTurno() { // devuelve el jugador que tiene el turno (0 o 1)
+    // Devuelve el jugador que tiene el turno (0 o 1).
+    public int getTurno() {
         return turno;
     }
 
-    public int getIntentos(int jugador) { // devuelve la cantidad de intentos del jugador
+    // Devuelve la cantidad de intentos del jugador.
+    public int getIntentos(int jugador) {
         return intentos[jugador];
     }
 
-    public int getParejas(int jugador) { // devuelve la cantidad de parejas encontradas del jugador
+    // Devuelve la cantidad de parejas encontradas del jugador.
+    public int getParejas(int jugador) {
         return parejas[jugador];
     }
 
-    public int getCartaA() { // devuelve la primera carta 
+    // Devuelve la primera carta.
+    public int getCartaA() {
         return cartaA;
     }
 
-    public int getCartaB() { // devuelve la segunda carta
+    // Devuelve la segunda carta.
+    public int getCartaB() {
         return cartaB;
     }
 }
