@@ -29,9 +29,6 @@ import ecos.pantallas.PantallaReglasPatrones;
 import ecos.pantallas.pantallaAcceso;
 import ecos.pantallas.pantallaInicio;
 import ecos.pantallas.pantallaIntro;
-import ecos.pantallas.pantallaAcceso;
-import ecos.pantallas.pantallaInicio;
-import ecos.pantallas.pantallaIntro;
 import ecos.recursos.Sprites;
 // Librería Swing, SwingUtilities para ejecutar cosas en el hilo de Swing.
 import javax.swing.SwingUtilities;
