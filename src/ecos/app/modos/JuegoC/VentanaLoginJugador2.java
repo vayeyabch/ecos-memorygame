@@ -7,7 +7,8 @@ import ecos.componentes.CampoTextoPixel;
 import ecos.componentes.CapaModal;
 import ecos.componentes.Etiqueta;
 import ecos.componentes.PanelPixel;
-import ecos.pantallas.PantallaAcceso;
+import ecos.pantallas.pantallaAcceso;
+// La importación de PantallaAcceso se eliminó porque la clase ya no existe en este proyecto.
 import ecos.recursos.Sonido;
 // Librería gráfica AWT, Component para cualquier elemento de la pantalla y Dimension para los tamaños.
 import java.awt.Component;
@@ -47,7 +48,7 @@ public class VentanaLoginJugador2 {
         panel.add(Box.createVerticalStrut(10));
         panel.add(centrar(Etiqueta.titulo("CONTRASEÑA", 10f, Etiqueta.Rol.SUAVE)));
         // Contraseña con su ojito.
-        JComponent claveConOjo = PantallaAcceso.conOjo(campoClave);
+        JComponent claveConOjo = pantallaAcceso.conOjo(campoClave);
         claveConOjo.setMaximumSize(new Dimension(campoUsuario.getPreferredSize().width + 40, claveConOjo.getPreferredSize().height));
         panel.add(centrar(claveConOjo));
         panel.add(Box.createVerticalStrut(8));

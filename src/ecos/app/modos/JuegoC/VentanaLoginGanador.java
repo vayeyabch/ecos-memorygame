@@ -43,7 +43,7 @@ public class VentanaLoginGanador {
         panel.add(centrar(campoUsuario));
         panel.add(Box.createVerticalStrut(10));
         panel.add(centrar(Etiqueta.titulo("CONTRASEÑA", 10f, Etiqueta.Rol.SUAVE)));
-                JComponent claveConOjo = ecos.pantallas.PantallaAcceso.conOjo(campoClave); // Contraseña con su ojito.
+                JComponent claveConOjo = ecos.pantallas.pantallaAcceso.conOjo(campoClave); // Contraseña con su ojito.
         claveConOjo.setMaximumSize(new Dimension(campoUsuario.getPreferredSize().width + 40, claveConOjo.getPreferredSize().height));
         panel.add(centrar(claveConOjo));
         panel.add(Box.createVerticalStrut(8));
