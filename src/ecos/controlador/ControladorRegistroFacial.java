@@ -13,13 +13,10 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-// Controlador de PantallaRegistroFacial (paso 2 de 2), usa la cámara para guiar los tres movimientos (frente, izquierda,
-// derecha) y, si salen bien, guarda la cuenta con su rostro. La mascota del visor se mueve igual que la persona.
+// Controlador de PantallaRegistroFacial (paso 2 de 2), usa la cámara para pedir que la persona mire al frente y, si sale
+// bien, guarda la cuenta con su rostro, marca el check en "Mirá al frente" y suena el sonido de éxito.
 // A cargo de Valeria.
 public class ControladorRegistroFacial {
-
-    // Cuánto se corre la mascota en cada movimiento, al frente, izquierda, derecha.
-    private static final int[] POSES = {0, -22, 22};
 
     private final PantallaRegistroFacial vista;
     private final ModeloRegistroFacial modelo;
@@ -64,7 +61,7 @@ public class ControladorRegistroFacial {
         }
         CapturaFacial nueva;
         try {
-            nueva = new CapturaFacial(ReconocedorFacial.compartido());
+            nueva = new CapturaFacial(ReconocedorFacial.compartido(), true); // true = solo mirar al frente
         } catch (Throwable t) {
             // Falta un archivo del detector o las librerías de OpenCV no cargaron.
             t.printStackTrace();
@@ -74,7 +71,7 @@ public class ControladorRegistroFacial {
         captura = nueva;
         vista.getBotonCapturar().setEnabled(false);
         vista.getVisor().setEstado(VisorEscaner.Estado.ESCANEANDO);
-        vista.getVisor().setDesplazamiento(POSES[0]);
+        vista.getVisor().setDesplazamiento(0);
         Sonido.efecto("escaneo");
         nueva.iniciar(new CapturaFacial.Escucha() {
             @Override
@@ -83,12 +80,7 @@ public class ControladorRegistroFacial {
                     if (captura != nueva) {
                         return;
                     }
-                    // La mascota se corre al lado que se pide.
-                    vista.getVisor().setDesplazamiento(POSES[paso]);
                     vista.setTextoEstado(instruccion);
-                    if (paso > 0) {
-                        Sonido.efecto("tick");
-                    }
                 });
             }
 
@@ -134,8 +126,10 @@ public class ControladorRegistroFacial {
                 }
                 captura = null;
                 vista.getVisor().setEstado(VisorEscaner.Estado.OK);
+                // Check en "Mirá al frente", mensaje y sonido de éxito.
+                vista.marcarFrente();
                 vista.setTextoEstado("¡Rostro registrado! Ya podés iniciar sesión.");
-                Sonido.efecto("registro_ok");
+                Sonido.efecto(Sonido.EXITO);
                 // Un momento después de mostrar el OK vuelve al acceso para iniciar sesión.
                 Timer espera = new Timer(1500, e -> vista.irAAcceso());
                 espera.setRepeats(false);

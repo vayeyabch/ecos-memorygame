@@ -5,6 +5,8 @@ import ecos.app.Sesion;
 import ecos.modelo.ModeloAcceso;
 import ecos.modelo.Usuario;
 import ecos.pantallas.pantallaAcceso;
+import ecos.recursos.Sonido;
+
 
 // Controlador de PantallaAcceso, conecta el botón Entrar con ModeloAcceso. Pendiente, conectar el login con Face ID.
 // A cargo de Valeria.
@@ -21,6 +23,8 @@ public class ControladorAcceso {
                 Usuario u = modelo.iniciarSesion(vista.getUsuario(), vista.getClave());
                 // Guarda quién inició sesión y va al menú.
                 Sesion.setNombre(u.getUsuario());
+                // Suena el sonido de éxito.
+                Sonido.efecto(Sonido.EXITO);
                 vista.irAMenu();
             } catch (IllegalArgumentException ex) {
                 vista.mostrarError(ex.getMessage());

@@ -20,6 +20,8 @@ public class Sonido {
     private static String nombreMusica = null;
     private static boolean activo = true;
 
+    public static final String EXITO = "victoria";
+
     // Empieza una canción en bucle; recibe su nombre (por ejemplo "menu").
     public static void musica(String nombre) {
         // Si no se pide ninguna canción. Para la que esté sonando. Olvida el nombre.

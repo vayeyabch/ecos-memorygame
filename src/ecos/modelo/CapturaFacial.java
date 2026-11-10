@@ -11,8 +11,9 @@ import org.bytedeco.javacv.OpenCVFrameGrabber;
 import org.bytedeco.opencv.opencv_core.Mat;
 import static org.bytedeco.opencv.global.opencv_core.flip;
 
-// Guía a la persona con tres movimientos (mirar al frente, girar la cabeza a su izquierda y a su derecha) usando la cámara.
-// Solo avanza cuando DETECTA que el movimiento se está haciendo bien. Corre en un hilo aparte y avisa por medio de Escucha.
+// Guía a la persona con la cámara. Puede pedir tres movimientos (mirar al frente, girar la cabeza a su izquierda y a su
+// derecha) o solo mirar al frente (modo "solo frente", el que usa el registro). Solo avanza cuando DETECTA que el movimiento
+// se está haciendo bien. Corre en un hilo aparte y avisa por medio de Escucha.
 // Sirve igual para registrar el rostro que para entrar con Face ID, quien la usa decide qué hacer con las fotos.
 // Los avisos de Escucha llegan en el hilo de la captura, no en el de la interfaz (el controlador debe pasarlos a Swing).
 // A cargo de Valeria.
@@ -20,8 +21,9 @@ public class CapturaFacial {
 
     // Los movimientos, en orden, cuántas fotos de frente se toman, tiempo mínimo entre fotos, cuadros seguidos con el giro
     // correcto para darlo por bueno (unos 0,25 s), tiempo máximo por movimiento y pausa entre lecturas de la cámara.
-    private static final ReconocedorFacial.Pose[] SECUENCIA = {
+    private static final ReconocedorFacial.Pose[] COMPLETA = {
         ReconocedorFacial.Pose.FRENTE, ReconocedorFacial.Pose.IZQUIERDA, ReconocedorFacial.Pose.DERECHA};
+    private static final ReconocedorFacial.Pose[] SOLO_FRENTE = {ReconocedorFacial.Pose.FRENTE};
     private static final int FOTOS_FRENTE = 5;
     private static final long ESPERA_FOTOS_MS = 350;
     private static final int CONFIRMAR = 4;
@@ -36,7 +38,7 @@ public class CapturaFacial {
         // Mensaje de avance o de ayuda mientras se hace el movimiento.
         void alProgresar(String texto);
 
-        // Hizo los tres movimientos, entrega las fotos de frente.
+        // Hizo todos los movimientos pedidos, entrega las fotos de frente.
         void alTerminar(List<byte[]> caras);
 
         // No se pudo, con el motivo.
@@ -44,12 +46,21 @@ public class CapturaFacial {
     }
 
     private final ReconocedorFacial reconocedor;
+    // Los movimientos que se piden en esta captura.
+    private final ReconocedorFacial.Pose[] secuencia;
     private final OpenCVFrameConverter.ToMat aMat = new OpenCVFrameConverter.ToMat();
     // Se pone en true para detener la captura desde fuera.
     private volatile boolean cancelado = false;
 
+    // Pide los tres movimientos (frente, izquierda y derecha).
     public CapturaFacial(ReconocedorFacial reconocedor) {
+        this(reconocedor, false);
+    }
+
+    // Si soloFrente es true, pide únicamente mirar al frente; si es false, los tres movimientos.
+    public CapturaFacial(ReconocedorFacial reconocedor, boolean soloFrente) {
         this.reconocedor = reconocedor;
+        this.secuencia = soloFrente ? SOLO_FRENTE : COMPLETA;
     }
 
     // Empieza la captura en un hilo aparte.
@@ -84,7 +95,7 @@ public class CapturaFacial {
             int aciertos = 0;
             long ultimaToma = 0;
             long inicioPaso = System.currentTimeMillis();
-            escucha.alCambiarPaso(0, instruccion(SECUENCIA[0]));
+            escucha.alCambiarPaso(0, instruccion(secuencia[0]));
             while (!cancelado) {
                 Frame cuadro = camara.grab();
                 if (cuadro == null || cuadro.image == null) {
@@ -101,7 +112,7 @@ public class CapturaFacial {
                 flip(color, espejo, 1);
                 Mat gris = reconocedor.aGris(espejo);
                 ReconocedorFacial.Deteccion d = reconocedor.detectarPose(gris);
-                ReconocedorFacial.Pose pedida = SECUENCIA[paso];
+                ReconocedorFacial.Pose pedida = secuencia[paso];
                 long ahora = System.currentTimeMillis();
 
                 if (ahora - inicioPaso > TIEMPO_POR_PASO_MS) {
@@ -129,13 +140,13 @@ public class CapturaFacial {
                     paso++;
                     aciertos = 0;
                     inicioPaso = System.currentTimeMillis();
-                    if (paso >= SECUENCIA.length) {
+                    if (paso >= secuencia.length) {
                         if (!cancelado) {
                             escucha.alTerminar(caras);
                         }
                         return;
                     }
-                    escucha.alCambiarPaso(paso, instruccion(SECUENCIA[paso]));
+                    escucha.alCambiarPaso(paso, instruccion(secuencia[paso]));
                 }
                 Thread.sleep(PAUSA_MS);
             }
@@ -155,9 +166,9 @@ public class CapturaFacial {
     }
 
     // Texto de lo que se le pide a la persona.
-    private static String instruccion(ReconocedorFacial.Pose p) {
+    private String instruccion(ReconocedorFacial.Pose p) {
         switch (p) {
-            case FRENTE: return "Paso 1 de 3: mirá de frente a la cámara.";
+            case FRENTE: return secuencia.length == 1 ? "Mirá de frente a la cámara." : "Paso 1 de 3: mirá de frente a la cámara.";
             case IZQUIERDA: return "Paso 2 de 3: girá la cabeza hacia tu IZQUIERDA.";
             default: return "Paso 3 de 3: girá la cabeza hacia tu DERECHA.";
         }

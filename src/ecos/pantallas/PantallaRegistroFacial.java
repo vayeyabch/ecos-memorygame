@@ -34,17 +34,17 @@ import java.awt.Insets;
 // Captura del rostro para terminar el registro.
 // A cargo de Valeria. Pantalla lista; falta conectarla a su controlador y al modelo.
 public class PantallaRegistroFacial extends Pantalla {
-     // Cuánto se corre la mascota en cada pose, al frente, izquierda, derecha. Mensaje normal del visor.
-     private static final int[] POSES = {0, -22, 22};
+    // Mensaje normal del visor.
     private static final String TEXTO_INICIAL = "Colocá tu rostro dentro del marco.";
 
-    // El escáner con la mascota, el texto que dice qué está pasando, el botón que inicia la captura y el reloj que pasa de
-    // una pose a la siguiente.
+    // El escáner con la mascota, el texto que dice qué está pasando, el botón que inicia la captura, el reloj de la simulación
+    // y la lista de lo que hay que hacer (una sola casilla, mirar al frente, que se marca con un check al terminar).
     private final VisorEscaner visor = new VisorEscaner();
+    private final ListaReglas pasos = new ListaReglas(300, "Mirá al frente");
     private final Etiqueta estado = Etiqueta.texto("", 18f, Etiqueta.Rol.SUAVE);
     private final BotonMenu capturar = new BotonMenu("Registrar mi rostro", true);
     private final Timer reloj = new Timer(1100, e -> avanzarCaptura());
-    // En qué pose va la captura. True mientras la captura está corriendo.
+    // En qué paso va la simulación. True mientras la captura está corriendo.
     private int paso = 0;
     private boolean ocupado = false;
     // Lo que hace el botón cuando el controlador lo define (cámara real). Si no, se usa la simulación de abajo.
@@ -81,13 +81,13 @@ public class PantallaRegistroFacial extends Pantalla {
         columnaVisor.add(Box.createVerticalStrut(10));
         columnaVisor.add(estado);
 
-        // Columna derecha, las poses y una nota. Apila en vertical.
+        // Columna derecha, lo que hay que hacer y una nota. Apila en vertical.
         JPanel columnaPoses = new JPanel();
         columnaPoses.setOpaque(false);
         columnaPoses.setLayout(new BoxLayout(columnaPoses, BoxLayout.Y_AXIS));
-        columnaPoses.add(alinear(Etiqueta.titulo("LA CAPTURA TIENE 3 POSES", 10f, Etiqueta.Rol.SUAVE)));
+        columnaPoses.add(alinear(Etiqueta.titulo("LA CAPTURA TIENE 1 PASO", 10f, Etiqueta.Rol.SUAVE)));
         columnaPoses.add(Box.createVerticalStrut(12));
-        columnaPoses.add(alinear(new ListaReglas(300, "Mirá al frente", "Girá un poco a la izquierda", "Girá un poco a la derecha")));
+        columnaPoses.add(alinear(pasos));
         columnaPoses.add(Box.createVerticalStrut(14));
         columnaPoses.add(alinear(Etiqueta.texto("<html><body style='width:300px'>Solo te registrás una vez. Después entrás con tu cara las veces que quieras.</body></html>", 17f, Etiqueta.Rol.SUAVE)));
 
@@ -127,38 +127,36 @@ public class PantallaRegistroFacial extends Pantalla {
     }
      // Simulación visual de la captura, temporal hasta que exista OpenCV.
 
-    // Muestra las 3 poses y termina en OK.
+    // Simula mirar al frente y termina en OK.
     private void simularCaptura() {
         // Si ya está capturando.
         if (ocupado) {
             return;
         }
-        // Marca que empezó. Desactiva el botón mientras corre. Empieza en la primera pose. Suena el escáner.
+        // Marca que empezó. Desactiva el botón mientras corre. Suena el escáner.
         ocupado = true;
         capturar.setEnabled(false);
         paso = 0;
         Sonido.efecto("escaneo");
-        // El visor empieza a escanear. Primera pose, al frente. Arranca el reloj de las poses.
+        // El visor empieza a escanear. Arranca el reloj.
         visor.setEstado(VisorEscaner.Estado.ESCANEANDO);
-        visor.setDesplazamiento(POSES[0]);
+        visor.setDesplazamiento(0);
         setTextoEstado("Capturando rostro…");
         reloj.start();
     }
 
     // Se ejecuta cada 1,1 segundos mientras corre la captura.
     private void avanzarCaptura() {
-        // Pasa al siguiente paso. Si todavía quedan poses. La mascota gira a la siguiente pose.
+        // Pasa al siguiente paso.
         paso++;
-        if (paso < POSES.length) {
-            Sonido.efecto("tick");
-            visor.setDesplazamiento(POSES[paso]);
-        // Cuando terminaron las poses. La mascota vuelve al centro. El visor se pone en OK.
-        } else if (paso == POSES.length) {
+        // Primero se muestra el OK, con el check en "Mirá al frente" y el sonido de éxito.
+        if (paso == 1) {
             visor.setDesplazamiento(0);
             visor.setEstado(VisorEscaner.Estado.OK);
+            marcarFrente();
             setTextoEstado("¡Rostro registrado! Ya podés iniciar sesión.");
-            // Suena el éxito. Un momento después de mostrar el OK. Detiene el reloj. Vuelve al acceso para iniciar sesión.
-            Sonido.efecto("registro_ok");
+            Sonido.efecto(Sonido.EXITO);
+        // Un momento después detiene el reloj y vuelve al acceso para iniciar sesión.
         } else {
             reloj.stop();
             irA("acceso");
@@ -169,13 +167,14 @@ public class PantallaRegistroFacial extends Pantalla {
     // Se ejecuta cada vez que se entra a esta pantalla.
     @Override
     public void alEntrar() {
-        // Pone la música. Por si quedó algo corriendo. Libera la captura. Vuelve a la primera pose.
+        // Pone la música. Por si quedó algo corriendo. Libera la captura. Vuelve al primer paso.
         super.alEntrar();
         reloj.stop();
         ocupado = false;
         paso = 0;
         // Activa el botón. El visor vuelve a su estado normal. La mascota vuelve al centro. Mensaje inicial.
         capturar.setEnabled(true);
+        pasos.setMarcada(0, false);
         visor.setEstado(VisorEscaner.Estado.NORMAL);
         visor.setDesplazamiento(0);
         setTextoEstado(TEXTO_INICIAL);
@@ -197,6 +196,9 @@ public class PantallaRegistroFacial extends Pantalla {
     // Entrega el visor para que el controlador cambie su estado. Entrega el botón por si el controlador necesita su propio evento.
     public VisorEscaner getVisor() { return visor; }
     public BotonMenu getBotonCapturar() { return capturar; }
+
+    // El controlador la llama cuando el rostro quedó registrado, marca con un check la casilla "Mirá al frente".
+    public void marcarFrente() { pasos.setMarcada(0, true); }
 
     // El controlador define qué hace el botón "Registrar mi rostro".
     public void setAccionCapturar(Runnable accion) { accionCapturar = accion; }

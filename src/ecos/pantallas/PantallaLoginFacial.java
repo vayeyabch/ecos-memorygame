@@ -113,7 +113,7 @@ public class PantallaLoginFacial extends Pantalla {
             visor.setEstado(VisorEscaner.Estado.OK);
             setTextoEstado("¡Rostro reconocido!");
             // Suena el éxito. Espera 1 segundo antes de entrar. Un momento después de mostrar el OK. Detiene el reloj.
-            Sonido.efecto("registro_ok");
+            Sonido.efecto(Sonido.EXITO);
             reloj.setDelay(1000);
         } else {
             reloj.stop();
@@ -172,3 +172,4 @@ public class PantallaLoginFacial extends Pantalla {
         return c;
     }
 }
+

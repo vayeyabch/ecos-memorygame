@@ -15,13 +15,10 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-// Controlador de PantallaLoginFacial, usa la cámara para guiar los tres movimientos (frente, izquierda, derecha) y, si salen
-// bien, busca a quién pertenece el rostro. Si lo reconoce, inicia sesión y va al menú.
+// Controlador de PantallaLoginFacial, usa la cámara para pedir que la persona mire al frente y, si sale bien, busca a
+// quién pertenece el rostro. Si lo reconoce, inicia sesión y va al menú.
 // A cargo de Valeria.
 public class ControladorLoginFacial {
-
-    // Cuánto se corre la mascota en cada movimiento, al frente, izquierda, derecha.
-    private static final int[] POSES = {0, -22, 22};
 
     private final PantallaLoginFacial vista;
     private final ModeloLoginFacial modelo;
@@ -55,7 +52,7 @@ public class ControladorLoginFacial {
         }
         CapturaFacial nueva;
         try {
-            nueva = new CapturaFacial(ReconocedorFacial.compartido());
+            nueva = new CapturaFacial(ReconocedorFacial.compartido(), true); // true = solo mirar al frente
         } catch (Throwable t) {
             // Falta un archivo del detector o las librerías de OpenCV no cargaron.
             t.printStackTrace();
@@ -65,7 +62,7 @@ public class ControladorLoginFacial {
         captura = nueva;
         vista.getBotonEscanear().setEnabled(false);
         vista.getVisor().setEstado(VisorEscaner.Estado.ESCANEANDO);
-        vista.getVisor().setDesplazamiento(POSES[0]);
+        vista.getVisor().setDesplazamiento(0);
         Sonido.efecto("escaneo");
         nueva.iniciar(new CapturaFacial.Escucha() {
             @Override
@@ -74,11 +71,7 @@ public class ControladorLoginFacial {
                     if (captura != nueva) {
                         return;
                     }
-                    vista.getVisor().setDesplazamiento(POSES[paso]);
                     vista.setTextoEstado(instruccion);
-                    if (paso > 0) {
-                        Sonido.efecto("tick");
-                    }
                 });
             }
 
@@ -138,7 +131,7 @@ public class ControladorLoginFacial {
                 Sesion.setNombre(u.getUsuario());
                 vista.getVisor().setEstado(VisorEscaner.Estado.OK);
                 vista.setTextoEstado("¡Rostro reconocido! Hola, " + u.getUsuario() + ".");
-                Sonido.efecto("registro_ok");
+                Sonido.efecto(Sonido.EXITO);
                 Timer espera = new Timer(1200, e -> vista.irAMenu());
                 espera.setRepeats(false);
                 espera.start();

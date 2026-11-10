@@ -21,6 +21,9 @@ public class ListaReglas extends JPanel {
     // Los textos de las reglas. Ancho del texto, en píxeles (se usa para que parta las líneas).
     private final Etiqueta[] etiquetas;
     private final int ancho;
+    // Los cuadraditos de cada regla y cuáles están marcados con un check.
+    private final JComponent[] cuadros;
+    private final boolean[] marcadas;
 
     // Recibe el ancho del texto y las reglas.
     public ListaReglas(int ancho, String... reglas) {
@@ -29,6 +32,8 @@ public class ListaReglas extends JPanel {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         etiquetas = new Etiqueta[reglas.length];
+        cuadros = new JComponent[reglas.length];
+        marcadas = new boolean[reglas.length];
         // Recorre las reglas. Crea la etiqueta del texto. Le pone el texto. Fila, cuadradito + texto.
         for (int i = 0; i < reglas.length; i++) {
             etiquetas[i] = Etiqueta.texto("", 20f, Etiqueta.Rol.TEXTO);
@@ -37,15 +42,24 @@ public class ListaReglas extends JPanel {
             // La fila es transparente. Alineada a la izquierda. El cuadradito rosa de la izquierda.
             fila.setOpaque(false);
             fila.setAlignmentX(Component.LEFT_ALIGNMENT);
+            final int posicion = i;
             JComponent cuadro = new JComponent() {
                 // Dibuja el cuadradito.
                 @Override
                 protected void paintComponent(Graphics g) {
-                    // Color de la sombra del cuadradito. Dibuja la sombra corrida. Dibuja el cuadradito.
+                    // Color de la sombra del cuadradito. Dibuja la sombra corrida. Dibuja el cuadradito (verde si está marcado).
                     g.setColor(Tema.borde());
                     g.fillRect(2, 9, 12, 12);
-                    g.setColor(Tema.rosa());
+                    g.setColor(marcadas[posicion] ? Tema.acierto() : Tema.rosa());
                     g.fillRect(0, 7, 12, 12);
+                    // Si está marcado, dibuja el check (una palomita hecha de cuadritos).
+                    if (marcadas[posicion]) {
+                        g.setColor(Tema.borde());
+                        g.fillRect(2, 12, 2, 2);
+                        g.fillRect(4, 14, 2, 2);
+                        g.fillRect(6, 12, 2, 2);
+                        g.fillRect(8, 10, 2, 2);
+                    }
                 }
 
                 // Tamaño del cuadradito.
@@ -56,11 +70,19 @@ public class ListaReglas extends JPanel {
                 }
             };
             // Pone el cuadradito a la izquierda. Pone el texto en el centro. Agrega la fila a la lista. Deja un espacio entre reglas.
+            cuadros[i] = cuadro;
             fila.add(cuadro, BorderLayout.WEST);
             fila.add(etiquetas[i], BorderLayout.CENTER);
             add(fila);
             add(Box.createVerticalStrut(8));
         }
+    }
+
+    // Pone o quita el check de una regla (por ejemplo, cuando ya se cumplió).
+    // Recibe cuál regla y si queda marcada.
+    public void setMarcada(int indice, boolean marcada) {
+        marcadas[indice] = marcada;
+        cuadros[indice].repaint();
     }
 
     // Cambia el texto de una regla (por ejemplo, para mostrar el tamaño del tablero elegido).
