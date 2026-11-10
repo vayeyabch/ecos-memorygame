@@ -231,7 +231,7 @@ public class ControladorPatron {
         // Espera 0.7 s para que se oiga la derrota y abre la ventana final, con los botones de volver al menú y jugar otra vez.
         despues(700, () -> {
             if (actual == partida) {
-                VentanaFinPatron.mostrar(vista, Sesion.getJugador1(), nivel, casillas, motivo,
+                VentanaFinPatron.mostrar(vista, Sesion.getNombre(), nivel, casillas, motivo,
                         () -> irA.accept("menu"), this::iniciar);
             }
         });
