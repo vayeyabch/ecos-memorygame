@@ -1,7 +1,7 @@
 package ecos.app;
 
 // Datos que se comparten entre pantallas mientras el programa está abierto, quién inició sesión, los jugadores de la
-// partida, el tamaño del tablero y el mejor nivel.
+// partida y el tamaño del tablero.
 public class Sesion {
 
     // Nombre de quien inició sesión y nombres de los jugadores 1 y 2 de la partida clásica, además de si el jugador 2 juega
@@ -10,9 +10,8 @@ public class Sesion {
     private static String jugador1 = "Jugador 1";
     private static String jugador2 = "Invitado";
     private static boolean invitado2 = true;
-    // Tamaño del tablero clásico, 4 (4x4) o 6 (6x6). Mejor nivel alcanzado en el modo patrones.
+    // Tamaño del tablero clásico, 4 (4x4) o 6 (6x6).
     private static int tamano = 6;
-    private static int mejorNivel = 0;
 
     // Entrega el nombre de quien inició sesión. Guarda el nombre de quien inició sesión. Entrega el nombre del jugador 1.
     // Guarda el nombre del jugador 1.
@@ -30,6 +29,4 @@ public class Sesion {
     // Guarda el mejor nivel si supera al anterior.
     public static int getTamano() { return tamano; }
     public static void setTamano(int t) { tamano = t; }
-    public static int getMejorNivel() { return mejorNivel; }
-    public static void setMejorNivel(int n) { mejorNivel = Math.max(mejorNivel, n); }
 }

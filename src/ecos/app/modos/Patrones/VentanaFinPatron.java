@@ -7,18 +7,19 @@ import java.awt.Component;
 // Librería Swing, JComponent para la base de los componentes.
 import javax.swing.JComponent;
 
-// Ventana de fin del modo patrones (la de un solo jugador, parecida a VentanaVictoria).
+// Ventana de fin del modo patrones, la de un solo jugador, parecida a VentanaVictoria pero sin premio.
 public class VentanaFinPatron {
 
-// Abre la ventana final. Origen = pantalla sobre la que aparece; verPremios / jugarOtra = lo que hacen los botones
+    // Abre la ventana final sobre la pantalla de origen. Recibe el nombre, el nivel alcanzado, las casillas del último patrón,
+    // el motivo por el que terminó y lo que hacen los botones de menú y jugar otra vez.
     public static void mostrar(Component origen, String nombre, int nivelAlcanzado, int casillas, String motivo,
-            // Cuerpo, dos datos (niveles superados = nivel alcanzado - 1, porque el último nivel no lo pasó).
-            String premio, Runnable verPremios, Runnable jugarOtra) {
+            Runnable irMenu, Runnable jugarOtra) {
+        // El cuerpo muestra dos datos, los niveles superados (el último nivel no lo pasó, por eso se resta uno) y las casillas.
         JComponent cuerpo = DialogoResultado.filaDatos("Niveles superados", "" + (nivelAlcanzado - 1),
-                // Título, motivo (subtítulo), cuerpo, premio abajo y los dos botones.
                 "Casillas del último patrón", "" + casillas);
+        // Título, motivo, cuerpo y los dos botones, sin premio.
         new DialogoResultado("¡" + nombre + ", llegaste al nivel " + nivelAlcanzado + "!", motivo, cuerpo,
-                "Premio: " + premio, new String[]{"Ver premios", "Jugar otra vez"},
-                new Runnable[]{verPremios, jugarOtra}).mostrar(origen);
+                null, new String[]{"Volver al menú", "Jugar otra vez"},
+                new Runnable[]{irMenu, jugarOtra}).mostrar(origen);
     }
 }

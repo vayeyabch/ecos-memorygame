@@ -7,7 +7,6 @@ import ecos.app.Sesion;
 // A cargo de Hellen.
 public class ModeloLoginJugador2 {
     private final ModeloAcceso acceso;
-    private Usuario encontrado;
 
     public ModeloLoginJugador2() {
         this(new ModeloAcceso());
@@ -16,9 +15,6 @@ public class ModeloLoginJugador2 {
     public ModeloLoginJugador2(ModeloAcceso acceso) {
         this.acceso = acceso;
     }
-
-
-
 
     // Devuelve el mensaje de error, o null si todo está bien.
     public String validar(String usuario, String clave) {
@@ -31,7 +27,7 @@ public class ModeloLoginJugador2 {
         }
         try {
             // La cuenta tiene que existir y la contraseña ser la correcta.
-            encontrado = acceso.iniciarSesion(usuario, clave);
+            acceso.iniciarSesion(usuario, clave);
         } catch (IllegalArgumentException e) {
             return e.getMessage();
         } catch (RuntimeException e) {

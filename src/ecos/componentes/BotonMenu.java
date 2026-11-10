@@ -63,17 +63,17 @@ public class BotonMenu extends JButton {
         // Pone la manito al pasar el mouse. Escucha el mouse para animar el botón.
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener(new MouseAdapter() {
-            @Override
             // Al entrar el mouse, el botón sube.
+            @Override
             public void mouseEntered(MouseEvent e) { encima = true; repaint(); }
-            @Override
             // Al salir el mouse, vuelve a su lugar.
+            @Override
             public void mouseExited(MouseEvent e) { encima = false; apretado = false; repaint(); }
-            @Override
             // Al apretar, el botón baja.
-            public void mousePressed(MouseEvent e) { apretado = true; repaint(); }
             @Override
+            public void mousePressed(MouseEvent e) { apretado = true; repaint(); }
             // Al soltar, vuelve a su lugar.
+            @Override
             public void mouseReleased(MouseEvent e) { apretado = false; repaint(); }
         });
     }
@@ -128,7 +128,7 @@ public class BotonMenu extends JButton {
 
     // Color de relleno según el estilo.
     private Color colorFondo() {
-        // Elige según el estilo. Blanco (claro) o violeta (oscuro).
+        // Elige el color de fondo según el estilo.
         return switch (estilo) {
             case PRINCIPAL -> Tema.boton();
             case SECUNDARIO -> Tema.boton2();
@@ -140,7 +140,7 @@ public class BotonMenu extends JButton {
 
     // Color de las letras según el estilo.
     private Color colorTexto() {
-        // Elige según el estilo. Naranja oscuro. Azul (claro) o rosado (oscuro). Guinda oscuro.
+        // Elige el color de las letras según el estilo.
         return switch (estilo) {
             case PRINCIPAL -> Tema.textoBoton();
             case SECUNDARIO -> Tema.textoBoton2();

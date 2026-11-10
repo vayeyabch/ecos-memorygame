@@ -44,14 +44,14 @@ public class BotonAcercaDe extends JButton {
         // Pone la manito al pasar el mouse. Escucha el mouse para animar el botón.
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener(new MouseAdapter() {
-            @Override
             // Al apretar, el botón baja.
+            @Override
             public void mousePressed(MouseEvent e) { apretado = true; repaint(); }
-            @Override
             // Al soltar, vuelve a su lugar.
-            public void mouseReleased(MouseEvent e) { apretado = false; repaint(); }
             @Override
+            public void mouseReleased(MouseEvent e) { apretado = false; repaint(); }
             // Al salir el mouse, vuelve a su lugar.
+            @Override
             public void mouseExited(MouseEvent e) { apretado = false; repaint(); }
         });
         // Al hacer clic suena y abre la ventana "Acerca de". Se esconde o se muestra según la pantalla. Empieza oculto hasta

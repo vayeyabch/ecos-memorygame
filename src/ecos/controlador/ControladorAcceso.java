@@ -4,7 +4,7 @@ package ecos.controlador;
 import ecos.app.Sesion;
 import ecos.modelo.ModeloAcceso;
 import ecos.modelo.Usuario;
-import ecos.pantallas.pantallaAcceso;
+import ecos.pantallas.PantallaAcceso;
 import ecos.recursos.Sonido;
 
 
@@ -12,11 +12,11 @@ import ecos.recursos.Sonido;
 // A cargo de Valeria.
 public class ControladorAcceso {
 
-    public ControladorAcceso(pantallaAcceso vista) {
+    public ControladorAcceso(PantallaAcceso vista) {
         this(vista, new ModeloAcceso());
     }
 
-    public ControladorAcceso(pantallaAcceso vista, ModeloAcceso modelo) {
+    public ControladorAcceso(PantallaAcceso vista, ModeloAcceso modelo) {
         // Qué hacer cuando se aprieta Entrar.
         vista.setAccionEntrar(() -> {
             try {

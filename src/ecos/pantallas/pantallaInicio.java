@@ -34,7 +34,7 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
 // Pantalla de bienvenida con el logo y el texto START que parpadea; al tocarlo se pasa al acceso.
-public class pantallaInicio extends Pantalla {
+public class PantallaInicio extends Pantalla {
 
     // Cada cuánto cambia el parpadeo de START.
     private static final int PARPADEO_MS = 550;
@@ -47,7 +47,7 @@ public class pantallaInicio extends Pantalla {
     private boolean saliendo;
 
     // Arma la pantalla, logo y START al centro, con manito al pasar el mouse y clic que avisa al controlador.
-    public pantallaInicio() {
+    public PantallaInicio() {
         super("inicio", "inicio");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 28, 16));

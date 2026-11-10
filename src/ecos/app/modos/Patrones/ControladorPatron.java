@@ -2,8 +2,6 @@ package ecos.app.modos.Patrones;
 
 // Clases del propio proyecto que se usan aquí.
 import ecos.app.Sesion;
-import ecos.modelo.CalculoPremio;
-import ecos.modelo.ModeloVictoria;
 import ecos.pantallas.PantallaPatron;
 // Utilidades de Java, List para las listas.
 import java.util.List;
@@ -33,8 +31,6 @@ public class ControladorPatron {
     private final PantallaPatron vista;
     private final Consumer<String> irA;
     private final Timer reloj = new Timer(100, e -> tick());
-    // Guarda la victoria en la base.
-    private final ModeloVictoria victoria = new ModeloVictoria();
     private SecuenciaPatron secuencia = new SecuenciaPatron();
     // La fase actual del juego y los segundos que quedan de los 12 y de los 2 entre casillas. La barra delgada corre desde
     // la primera casilla.
@@ -220,48 +216,25 @@ public class ControladorPatron {
         }
     }
 
-    // El jugador perdió, suena la derrota y sale la ventana final.
-   // motivo = por qué terminó (se muestra en la ventana final
-
+    // El jugador perdió, suena la derrota y sale la ventana final, que muestra el motivo por el que terminó. Este modo no
+    // da premio ni monedas y no guarda nada en la base de datos.
     private void terminar(String motivo) {
         reloj.stop();
         fase = Fase.TERMINADO;
         vista.setJugable(false);
         vista.setInfo("Fin del juego");
         SonidosPartidaPatron.derrota();
-        // Nivel en el que perdió, casillas de ese patrón y texto del premio.
+        // Nivel en el que perdió y casillas de ese patrón.
+        final int actual = partida;
         int nivel = secuencia.getNivel();
         int casillas = secuencia.getCasillas();
-        String premio = premioFinal(nivel);
-        final int actual = partida;
-        final String cuenta = Sesion.getNombre();
-        // Si superó el nivel 1 hay premio y se guarda (en segundo plano, usa la base de datos). Cada nivel cuenta como un
-        // intento. Sin premio no se guarda nada.
-        Thread t = new Thread(() -> {
-            if (nivel > 1) {
-                victoria.registrarPatrones(cuenta, nivel);
+        // Espera 0.7 s para que se oiga la derrota y abre la ventana final, con los botones de volver al menú y jugar otra vez.
+        despues(700, () -> {
+            if (actual == partida) {
+                VentanaFinPatron.mostrar(vista, Sesion.getJugador1(), nivel, casillas, motivo,
+                        () -> irA.accept("menu"), this::iniciar);
             }
-            // Espera 0.7 s (para que se oiga la derrota) y abre la ventana final (si el jugador no salió de la pantalla).
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                if (actual == partida) {
-                    despues(700, () -> VentanaFinPatron.mostrar(vista, Sesion.getJugador1(), nivel, casillas, motivo, premio,
-                            // Botón "Ver premios" y jugar otra vez.
-                            () -> irA.accept("premios"), this::iniciar));
-                }
-            });
-        }, "guardar-victoria");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    // Premio con la fórmula del equipo, 1 / intentos x 100 x dólar del día (CalculoPremio).
-    // Aquí cada nivel que el jugador intentó cuenta como un intento. Si no superó ni el nivel 1, no hay premio.
-    private static String premioFinal(int nivelAlcanzado) {
-        // No superó ni el primer nivel.
-        if (nivelAlcanzado <= 1) {
-            return "ninguno (¡inténtalo otra vez!)";
-        }
-        return CalculoPremio.textoPremio(nivelAlcanzado);
+        });
     }
 
     // Hace algo una sola vez después de unos milisegundos (si la partida sigue siendo la misma).

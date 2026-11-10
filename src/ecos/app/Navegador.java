@@ -67,12 +67,6 @@ public class Navegador {
         return !historial.isEmpty();
     }
 
-    // Devuelve el id de la pantalla actual.
-    public String getIdActual() {
-        // Si no hay pantalla devuelve null; si hay, su id.
-        return actual == null ? null : actual.getId();
-    }
-
     // Avisa cada vez que cambia la pantalla (la barra superior lo usa para ocultarse en la intro).
     // Recibe la acción que se quiere ejecutar en cada cambio.
     public void alCambiarPantalla(Consumer<String> accion) {

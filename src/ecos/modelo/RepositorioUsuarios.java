@@ -80,18 +80,6 @@ public class RepositorioUsuarios {
         }
     }
 
-    // Suma monedas a la cuenta.
-    public void sumarMonedas(String usuario, int cantidad) {
-        String sql = "UPDATE usuarios SET monedas = monedas + ? WHERE LOWER(usuario) = LOWER(?)";
-        try (Connection c = ConexionBD.abrir(); PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, cantidad);
-            ps.setString(2, usuario);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al sumar monedas", e);
-        }
-    }
-
     // Cobra monedas solo si le alcanzan, todo en una instrucción. true si se cobró, false si no tenía suficientes.
     public boolean cobrarMonedas(String usuario, int cantidad) {
         String sql = "UPDATE usuarios SET monedas = monedas - ? WHERE LOWER(usuario) = LOWER(?) AND monedas >= ?";

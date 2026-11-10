@@ -26,11 +26,6 @@ public class ModeloVictoria {
         return registrar(usuario, ModoJuego.CLASICO, intentos);
     }
 
-    // Victoria en el modo patrones: guarda la partida (el nivel cuenta como los intentos). Mismas reglas de arriba.
-    public Partida registrarPatrones(String usuario, int intentos) {
-        return registrar(usuario, ModoJuego.PATRONES, intentos);
-    }
-
     private Partida registrar(String usuario, ModoJuego modo, int intentos) {
         // Sin cuenta no se guarda nada.
         if (usuario == null || usuario.isBlank()) {
@@ -40,9 +35,7 @@ public class ModeloVictoria {
         Partida partida = new Partida(usuario, modo, intentos, CalculoPremio.premioDolares(intentos),
                 CalculoPremio.premioColones(intentos), TipoCambio.getCompra(), LocalDateTime.now());
         try {
-            boolean guardada = modo == ModoJuego.CLASICO
-                    ? repo.guardarVictoriaConMonedas(partida, ModeloMonedas.MONEDAS_POR_VICTORIA)
-                    : repo.guardarVictoria(partida);
+            boolean guardada = repo.guardarVictoriaConMonedas(partida, ModeloMonedas.MONEDAS_POR_VICTORIA);
             return guardada ? partida : null;
         } catch (RuntimeException e) {
             e.printStackTrace();

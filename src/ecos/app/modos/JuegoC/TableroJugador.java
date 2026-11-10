@@ -42,11 +42,6 @@ public class TableroJugador extends JPanel {
         }
     }
 
-    // Devuelve la cantidad de cartas en el tablero.
-    public int getCantidad() {
-        return cartas.length;
-    }
-
     // Devuelve la carta en la posición i.
     public CartaPixel getCarta(int i) {
         return cartas[i];

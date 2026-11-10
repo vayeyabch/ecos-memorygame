@@ -36,19 +36,6 @@ public class ModeloMonedas {
         }
     }
 
-    // Suma las monedas de una victoria. Cuando se gana una partida clásica lo hace ModeloVictoria junto con la partida,
-    // este método queda para sumar solas.
-    public void sumarVictoria(String usuario) {
-        if (usuario == null) {
-            return;
-        }
-        try {
-            repo.sumarMonedas(usuario, MONEDAS_POR_VICTORIA);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-        }
-    }
-
     // Dice si le alcanza para el Ojo espía.
     public boolean alcanzaParaOjo(String usuario) {
         return monedas(usuario) >= PRECIO_OJO;

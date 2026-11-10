@@ -68,7 +68,6 @@ public class Etiqueta extends JLabel {
             case TEXTO -> Tema.texto();
             case SUAVE -> Tema.textoSuave();
             case ACENTO -> Tema.acento();
-            // Rojo de error. Verde de acierto.
             case CARMESI -> Tema.carmesi();
             case PELIGRO -> Tema.peligro();
             case ACIERTO -> Tema.acierto();

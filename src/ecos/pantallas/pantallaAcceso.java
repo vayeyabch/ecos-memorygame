@@ -2,7 +2,6 @@ package ecos.pantallas;
 
 // Clases del propio proyecto que se usan aquí.
 import ecos.app.Pantalla;
-import ecos.app.Sesion;
 import ecos.app.Tema;
 import ecos.componentes.BotonMenu;
 import ecos.componentes.CampoClavePixel;
@@ -37,7 +36,7 @@ import java.awt.BasicStroke;
 import java.awt.Cursor;
 
 // Pantalla para iniciar sesión con usuario y contraseña o con Face ID; también tiene el botón para registrarse.
-public class pantallaAcceso extends Pantalla {
+public class PantallaAcceso extends Pantalla {
 
     // Mascotas que desfilan arriba de la tarjeta y campos del usuario y la contraseña.
     private final DesfileMascotas desfile = new DesfileMascotas();
@@ -46,10 +45,10 @@ public class pantallaAcceso extends Pantalla {
     // Aquí salen los avisos de error (vacío mientras no haya) y lo que hace el botón Entrar cuando el controlador lo define.
     // Si no se define entra directo (temporal).
     private final Etiqueta mensaje = Etiqueta.texto(" ", 18f, Etiqueta.Rol.SUAVE);
-    private Runnable accionEntrar = null;
+    private Runnable accionEntrar = () -> { };
 
     // Arma la pantalla.
-    public pantallaAcceso() {
+    public PantallaAcceso() {
         // Id de la pantalla y música que usa. Centra todo en la pantalla. Deja espacio para la barra de arriba. Máximo 20
         // letras en el usuario.
         super("acceso", "acceso");
@@ -57,17 +56,10 @@ public class pantallaAcceso extends Pantalla {
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 28, 16));
         campoUsuario.setLimite(20);
 
-        // Botón de entrar con usuario y contraseña, que por ahora entra directo porque la lógica real viene después, y botón
-        // para entrar con la cara, que va a la pantalla del escaneo.
+        // Botón de entrar con usuario y contraseña, que suena y avisa al controlador, y botón para entrar con la cara, que va a
+        // la pantalla del escaneo.
         BotonMenu entrar = new BotonMenu("Entrar", true);
-        entrar.addActionListener(e -> {
-            if (accionEntrar == null) {
-                entrarTemporal();
-            } else {
-                Sonido.efecto("click");
-                accionEntrar.run();
-            }
-        });
+        entrar.addActionListener(e -> { Sonido.efecto("click"); accionEntrar.run(); });
         BotonMenu faceId = new BotonMenu("Entrar con Face ID", BotonMenu.Estilo.SECUNDARIO);
         faceId.addActionListener(e -> { Sonido.efecto("click"); irA("login_facial"); });
         // Botón chico para crear una cuenta, que va a la pantalla de registro.
@@ -158,16 +150,6 @@ public class pantallaAcceso extends Pantalla {
     public void limpiarMensaje() {
         mensaje.setText(" ");
         mensaje.setRol(Etiqueta.Rol.SUAVE);
-    }
-
-    // TEMPORAL, entra al menú con el usuario escrito. Se reemplaza cuando exista el login de verdad.
-    // Entra sin revisar nada.
-    private void entrarTemporal() {
-        // Suena el clic. Lee el usuario. Guarda el nombre (o "Jugador 1" si lo dejó vacío).
-        Sonido.efecto("click");
-        String usuario = campoUsuario.getText().trim();
-        Sesion.setNombre(usuario.isEmpty() ? "Jugador 1" : usuario);
-        irA("menu");
     }
 
     // Pone un botón de ojo al lado del campo de contraseña.

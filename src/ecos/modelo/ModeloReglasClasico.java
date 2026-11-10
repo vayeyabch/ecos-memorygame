@@ -50,12 +50,6 @@ public class ModeloReglasClasico {
         return estado != Jugador2.SIN_ELEGIR;
     }
 
-    // True si el jugador 2 inició sesión.
-    public boolean esCuenta() { return estado == Jugador2.CUENTA; }
-
-    // True si juega sin cuenta.
-    public boolean esInvitado() { return estado == Jugador2.INVITADO; }
-
     // Mensaje cuando el jugador 2 inició sesión.
     public String textoCuenta() {
         return "Jugador 2: " + Sesion.getJugador2() + ". Suma monedas y entra al ranking.";

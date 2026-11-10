@@ -15,15 +15,6 @@ import java.util.List;
 // A cargo de la Parte 2.
 public class RepositorioPartidas {
 
-    // Guarda la victoria (modo patrones, no lleva monedas). true si se guardó, false si la cuenta no existe.
-    public boolean guardarVictoria(Partida p) {
-        try (Connection c = ConexionBD.abrir()) {
-            return insertar(c, p);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al guardar la victoria", e);
-        }
-    }
-
     // Guarda la victoria Y suma las monedas en una sola transacción: o quedan las dos cosas o ninguna.
     // true si quedaron las dos, false si la cuenta no existe (no se guarda nada).
     public boolean guardarVictoriaConMonedas(Partida p, int monedas) {
