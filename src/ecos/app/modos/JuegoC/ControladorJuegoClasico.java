@@ -4,6 +4,8 @@ package ecos.app.modos.JuegoC;
 import ecos.app.Sesion;
 import ecos.modelo.CalculoPremio;
 import ecos.modelo.ModeloMonedas;
+import ecos.modelo.ModeloVictoria;
+import ecos.modelo.Partida;
 import ecos.pantallas.PantallaClasico;
 // Acciones de Java, Consumer para una acción que recibe un dato.
 import java.util.function.Consumer;
@@ -33,6 +35,8 @@ public class ControladorJuegoClasico {
     private final Consumer<String> irA;
     private final Timer reloj = new Timer(100, e -> tick());
     private final ModeloMonedas monedas = new ModeloMonedas();
+    // Guarda la victoria (partida + 15 monedas) en la base.
+    private final ModeloVictoria victoria = new ModeloVictoria();
     // Las reglas del juego (cartas, turnos, intentos), los segundos que le quedan al jugador del turno y un bloqueo que
     // congela clics y tiempo mientras se resuelve un intento. También si ya sonó la música de poco tiempo.
     private PartidaClasica modelo;
@@ -219,28 +223,39 @@ public class ControladorJuegoClasico {
         ultimoSegundo = 99;
     }
 
-    // Alguien encontró todas las parejas, se calcula el premio, se suman las monedas y se abre la ventana de victoria.
+    // Alguien encontró todas las parejas, se guarda la victoria (partida + monedas) y se abre la ventana de victoria.
     private void terminar() {
         reloj.stop();
         quitarUrgencia();
         // Nadie puede tocar nada.
         esperando = true;
+        final int actual = partida;
         int ganador = modelo.ganador();
         // Puntaje = intentos del ganador (menos intentos, más premio). null si el ganador juega sin cuenta.
         int puntaje = modelo.getIntentos(ganador);
         String cuenta = cuenta(ganador);
         // Premio solo con cuenta (fórmula de Allison, 1 / intentos x 100 x dólar); sin cuenta no hay premio
         String premio = cuenta == null ? null : CalculoPremio.textoPremio(puntaje);
-        // +15 monedas (si no tiene cuenta, no se guarda nada).
-        monedas.sumarVictoria(cuenta);
-        String extra = cuenta == null ? "Sin cuenta no hay premio ni monedas." : "+" + ModeloMonedas.MONEDAS_POR_VICTORIA + " monedas para " + cuenta;
         int i0 = modelo.getIntentos(0);
         int i1 = modelo.getIntentos(1);
-        // Espera 0.9 s y abre VentanaVictoria con los datos y los dos botones
-        despues(900, () -> vista.mostrarVictoria(ganador, i0, i1, premio, extra,
-                // Botón "Ver premios". botón "Jugar otra vez".
-                () -> irA.accept("premios"),
-                this::iniciar));
+        // Guardar usa la base de datos, así que se hace en segundo plano. Sin cuenta no se guarda nada.
+        Thread t = new Thread(() -> {
+            Partida guardada = victoria.registrarClasico(cuenta, puntaje);
+            String extra = cuenta == null ? "Sin cuenta no hay premio ni monedas."
+                    : guardada != null ? "+" + ModeloMonedas.MONEDAS_POR_VICTORIA + " monedas para " + cuenta
+                    : "No se pudo guardar la victoria (revisá la conexión).";
+            // Espera 0.9 s y abre VentanaVictoria con los datos y los dos botones (si el jugador no salió de la pantalla).
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (actual == partida) {
+                    despues(900, () -> vista.mostrarVictoria(ganador, i0, i1, premio, extra,
+                            // Botón "Ver premios". botón "Jugar otra vez".
+                            () -> irA.accept("premios"),
+                            this::iniciar));
+                }
+            });
+        }, "guardar-victoria");
+        t.setDaemon(true);
+        t.start();
     }
 
     // Cuenta de cada jugador, el jugador 1 es quien inició sesión; el 2 puede jugar sin cuenta (null).
