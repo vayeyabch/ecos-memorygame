@@ -49,6 +49,9 @@ public class PantallaRegistroFacial extends Pantalla {
     private boolean ocupado = false;
     // Lo que hace el botón cuando el controlador lo define (cámara real). Si no, se usa la simulación de abajo.
     private Runnable accionCapturar = null;
+    // El rostro es opcional, este botón crea la cuenta sin rostro (o cancela si la cuenta ya existía).
+    private final BotonMenu omitir = new BotonMenu("Omitir por ahora", BotonMenu.Estilo.SECUNDARIO);
+    private Runnable accionOmitir = () -> irA("acceso");
 
 
     public PantallaRegistroFacial() {
@@ -70,6 +73,8 @@ public class PantallaRegistroFacial extends Pantalla {
             }
         });
 
+        omitir.addActionListener(e -> { Sonido.efecto("click"); accionOmitir.run(); });
+
         // Visor al centro de su columna. Mensaje al centro de su columna. Columna izquierda, el visor y su mensaje.
         visor.setAlignmentX(Component.CENTER_ALIGNMENT);
         estado.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -89,7 +94,7 @@ public class PantallaRegistroFacial extends Pantalla {
         columnaPoses.add(Box.createVerticalStrut(12));
         columnaPoses.add(alinear(pasos));
         columnaPoses.add(Box.createVerticalStrut(14));
-        columnaPoses.add(alinear(Etiqueta.texto("<html><body style='width:300px'>Solo te registrás una vez. Después entrás con tu cara las veces que quieras.</body></html>", 17f, Etiqueta.Rol.SUAVE)));
+        columnaPoses.add(alinear(Etiqueta.texto("<html><body style='width:300px'>Es opcional: si lo omitís, entrás con tu contraseña y podés registrar tu rostro después.</body></html>", 17f, Etiqueta.Rol.SUAVE)));
 
         // Las dos columnas lado a lado. Reglas de posición.
         JPanel cuerpo = new JPanel(new GridBagLayout());
@@ -108,7 +113,7 @@ public class PantallaRegistroFacial extends Pantalla {
         // Indicador de paso. No se estira hacia abajo.
         titulo.setOpaque(false);
         titulo.add(Etiqueta.texto("Registrá tu rostro", 32f, Etiqueta.Rol.TEXTO), BorderLayout.WEST);
-        titulo.add(Etiqueta.titulo("PASO 2 DE 2", 10f, Etiqueta.Rol.SUAVE), BorderLayout.EAST);
+        titulo.add(Etiqueta.titulo("PASO 2 DE 2 · OPCIONAL", 10f, Etiqueta.Rol.SUAVE), BorderLayout.EAST);
         titulo.setMaximumSize(new Dimension(Integer.MAX_VALUE, titulo.getPreferredSize().height));
 
         // Tarjeta de la pantalla que apila todo en vertical, con margen interno.
@@ -121,6 +126,8 @@ public class PantallaRegistroFacial extends Pantalla {
         tarjeta.add(alinear(cuerpo));
         tarjeta.add(Box.createVerticalStrut(18));
         tarjeta.add(alinear(capturar.anchoCompleto()));
+        tarjeta.add(Box.createVerticalStrut(10));
+        tarjeta.add(alinear(omitir.anchoCompleto()));
         // Agrega la tarjeta a la pantalla.
         add(tarjeta);
 
@@ -174,6 +181,7 @@ public class PantallaRegistroFacial extends Pantalla {
         paso = 0;
         // Activa el botón. El visor vuelve a su estado normal. La mascota vuelve al centro. Mensaje inicial.
         capturar.setEnabled(true);
+        omitir.setEnabled(true);
         pasos.setMarcada(0, false);
         visor.setEstado(VisorEscaner.Estado.NORMAL);
         visor.setDesplazamiento(0);
@@ -196,6 +204,10 @@ public class PantallaRegistroFacial extends Pantalla {
     // Entrega el visor para que el controlador cambie su estado. Entrega el botón por si el controlador necesita su propio evento.
     public VisorEscaner getVisor() { return visor; }
     public BotonMenu getBotonCapturar() { return capturar; }
+    public BotonMenu getBotonOmitir() { return omitir; }
+
+    // El controlador define qué hace el botón "Omitir por ahora".
+    public void setAccionOmitir(Runnable accion) { accionOmitir = accion; }
 
     // El controlador la llama cuando el rostro quedó registrado, marca con un check la casilla "Mirá al frente".
     public void marcarFrente() { pasos.setMarcada(0, true); }

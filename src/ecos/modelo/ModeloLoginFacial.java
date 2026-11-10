@@ -33,11 +33,11 @@ public class ModeloLoginFacial {
             throw new IllegalArgumentException("No se pudo conectar con la base de datos.");
         }
         if (conRostro.isEmpty()) {
-            throw new IllegalArgumentException("Todavía no hay rostros registrados.");
+            throw new IllegalArgumentException("Todavía no hay rostros registrados. Entrá con tu contraseña y registrá el tuyo.");
         }
         ReconocedorFacial.Resultado r = ReconocedorFacial.compartido().identificar(conRostro, caras);
         if (r == null || r.usuario == null || r.confianza >= UMBRAL) {
-            throw new IllegalArgumentException("No te reconocí. Probá de nuevo o entrá con tu contraseña.");
+            throw new IllegalArgumentException("No te reconocí. Probá de nuevo o entrá con tu contraseña. Si no tenés rostro registrado, escribí tu usuario y contraseña y tocá «Registrar mi rostro».");
         }
         return r.usuario;
     }

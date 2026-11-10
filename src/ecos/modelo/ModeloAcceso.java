@@ -15,6 +15,18 @@ public class ModeloAcceso {
         this.repo = repo;
     }
 
+    // Dice si la cuenta tiene rostro registrado. Lanza IllegalArgumentException si el usuario no existe.
+    public boolean tieneRostro(String usuario) {
+        if (usuario.isEmpty()) {
+            throw new IllegalArgumentException("Escribí tu usuario.");
+        }
+        Usuario u = repo.buscarPorUsuario(usuario);
+        if (u == null) {
+            throw new IllegalArgumentException("Ese usuario no existe.");
+        }
+        return u.getRostro() != null && !u.getRostro().isEmpty();
+    }
+
     // Revisa lo escrito. Si está bien entrega la cuenta; si no lanza IllegalArgumentException con el mensaje para la pantalla.
     public Usuario iniciarSesion(String usuario, String clave) {
         if (usuario.isEmpty() || clave.isEmpty()) {

@@ -46,6 +46,11 @@ public class PantallaAcceso extends Pantalla {
     // Si no se define entra directo (temporal).
     private final Etiqueta mensaje = Etiqueta.texto(" ", 18f, Etiqueta.Rol.SUAVE);
     private Runnable accionEntrar = () -> { };
+    // Lo que hace el botón Face ID (si el controlador no lo define, va directo al escaneo) y el botón "Registrar mi rostro",
+    // que solo aparece cuando la cuenta no tiene rostro.
+    private Runnable accionFaceId = () -> irA("login_facial");
+    private Runnable accionRegistrarRostro = () -> { };
+    private final BotonMenu registrarRostro = new BotonMenu("Registrar mi rostro", BotonMenu.Estilo.ROSA);
 
     // Arma la pantalla.
     public PantallaAcceso() {
@@ -61,7 +66,10 @@ public class PantallaAcceso extends Pantalla {
         BotonMenu entrar = new BotonMenu("Entrar", true);
         entrar.addActionListener(e -> { Sonido.efecto("click"); accionEntrar.run(); });
         BotonMenu faceId = new BotonMenu("Entrar con Face ID", BotonMenu.Estilo.SECUNDARIO);
-        faceId.addActionListener(e -> { Sonido.efecto("click"); irA("login_facial"); });
+        faceId.addActionListener(e -> { Sonido.efecto("click"); accionFaceId.run(); });
+        // Botón escondido hasta que se intenta Face ID sin tener rostro. Pide la contraseña para comprobar que la cuenta es tuya.
+        registrarRostro.setVisible(false);
+        registrarRostro.addActionListener(e -> { Sonido.efecto("click"); accionRegistrarRostro.run(); });
         // Botón chico para crear una cuenta, que va a la pantalla de registro.
         BotonMenu registrarse = new BotonMenu("Registrarse", BotonMenu.Estilo.ROSA);
         registrarse.setPequeno(true);
@@ -94,6 +102,8 @@ public class PantallaAcceso extends Pantalla {
         // Botón Entrar con Face ID. "¿No tenés cuenta?" y Registrarse.
         tarjeta.add(Box.createVerticalStrut(10));
         tarjeta.add(alinear(faceId.anchoCompleto()));
+        tarjeta.add(Box.createVerticalStrut(10));
+        tarjeta.add(alinear(registrarRostro.anchoCompleto()));
         tarjeta.add(Box.createVerticalStrut(16));
         tarjeta.add(alinear(filaRegistro));
         // Ancho máximo de la tarjeta.
@@ -137,6 +147,17 @@ public class PantallaAcceso extends Pantalla {
     // El controlador define qué hace el botón Entrar.
     public void setAccionEntrar(Runnable accion) { accionEntrar = accion; }
 
+    // El controlador define qué hace el botón Entrar con Face ID y el botón Registrar mi rostro.
+    public void setAccionFaceId(Runnable accion) { accionFaceId = accion; }
+    public void setAccionRegistrarRostro(Runnable accion) { accionRegistrarRostro = accion; }
+
+    // Muestra u oculta el botón Registrar mi rostro.
+    public void mostrarOpcionRostro(boolean ver) { registrarRostro.setVisible(ver); revalidate(); }
+
+    // El controlador las llama para ir al escaneo de Face ID o al registro del rostro.
+    public void irALoginFacial() { irA("login_facial"); }
+    public void irARegistroFacial() { irA("registro_facial"); }
+
     // El controlador la llama cuando el login salió bien.
     public void irAMenu() { irA("menu"); }
 
@@ -148,6 +169,7 @@ public class PantallaAcceso extends Pantalla {
 
     // Borra el aviso (deja un espacio para que la tarjeta no cambie de alto).
     public void limpiarMensaje() {
+        registrarRostro.setVisible(false);
         mensaje.setText(" ");
         mensaje.setRol(Etiqueta.Rol.SUAVE);
     }

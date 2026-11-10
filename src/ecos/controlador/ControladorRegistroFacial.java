@@ -32,6 +32,7 @@ public class ControladorRegistroFacial {
         this.modelo = modelo;
         // Al tocar "Registrar mi rostro" se llama empezar(), al entrar a la pantalla alEntrar() y al salir cancelar().
         vista.setAccionCapturar(this::empezar);
+        vista.setAccionOmitir(this::omitir);
         vista.setAlEntrar(this::alEntrar);
         vista.setAlSalir(this::cancelar);
     }
@@ -49,6 +50,38 @@ public class ControladorRegistroFacial {
             captura.cancelar();
             captura = null;
         }
+        // Al salir ya no se está agregando rostro a ninguna cuenta.
+        ModeloRegistroFacial.limpiarExistente();
+    }
+
+    // "Omitir por ahora": si es un registro nuevo crea la cuenta sin rostro; si era una cuenta que ya existía solo vuelve.
+    private void omitir() {
+        if (captura != null) {
+            return;
+        }
+        if (modelo.esCuentaExistente()) {
+            vista.irAAcceso();
+            return;
+        }
+        vista.getBotonOmitir().setEnabled(false);
+        vista.getBotonCapturar().setEnabled(false);
+        vista.setTextoEstado("Creando tu cuenta…");
+        new Thread(() -> {
+            String error = modelo.guardarSinRostro();
+            SwingUtilities.invokeLater(() -> {
+                vista.getBotonOmitir().setEnabled(true);
+                if (error != null) {
+                    falla(error);
+                    return;
+                }
+                vista.getVisor().setEstado(VisorEscaner.Estado.OK);
+                vista.setTextoEstado("¡Cuenta creada! Podés registrar tu rostro después.");
+                Sonido.efecto(Sonido.EXITO);
+                Timer espera = new Timer(1500, e -> vista.irAAcceso());
+                espera.setRepeats(false);
+                espera.start();
+            });
+        }, "crear-cuenta").start();
     }
 
     private void empezar() {
