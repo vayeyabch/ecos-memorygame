@@ -9,8 +9,8 @@ import ecos.pantallas.PantallaPremios;
 // Librería Swing, SwingUtilities para ejecutar cosas en el hilo de Swing.
 import javax.swing.SwingUtilities;
 
-// Controlador de PantallaPremios, al entrar muestra el top 5 con el dólar guardado y, en segundo plano,
-// pide el dólar del día al BCCR (una vez al día). Si llega un valor nuevo, refresca la pantalla.
+// Controlador de PantallaPremios, al entrar muestra lo último que se sabía y, en segundo plano, pide el dólar del día al
+// BCCR (una vez al día), lee el top 5 real de la base y las monedas de quien juega. Cuando todo llega, refresca la pantalla.
 // La vista no toca el modelo, todo lo que muestra se lo pasa este controlador.
 // A cargo de Allison.
 public class ControladorPremios {
@@ -19,6 +19,9 @@ public class ControladorPremios {
     private final RankingPremios ranking = new RankingPremios();
     // Monedas acumuladas (aparte del ranking).
     private final ModeloMonedas monedas = new ModeloMonedas();
+    // Monedas de quien inició sesión, leídas en segundo plano. Cada entrada a la pantalla suma 1 para ignorar cargas viejas.
+    private volatile int misMonedas = 0;
+    private int carga = 0;
 
     // Guarda la vista y le dice que, cuando se entre a la pantalla, ejecute alEntrar.
     public ControladorPremios(PantallaPremios vista) {
@@ -26,17 +29,23 @@ public class ControladorPremios {
         vista.setAlEntrar(this::alEntrar);
     }
 
-    // Al entrar se muestra lo que ya se sabe y en segundo plano se pide el dólar nuevo.
+    // Al entrar se muestra lo que ya se sabe y en segundo plano se pide todo lo que usa internet o la base.
     private void alEntrar() {
-        // Primero lo que ya se sabe, para que la pantalla nunca salga vacía. La consulta usa internet, no puede correr en el
-        // hilo de la interfaz.
+        // Primero lo que ya se sabe, para que la pantalla nunca salga vacía.
         mostrar();
+        final int actual = ++carga;
+        final String usuario = Sesion.getNombre();
         Thread t = new Thread(() -> {
-            if (TipoCambio.actualizarSiHaceFalta()) {
-                // Llegó un dólar nuevo, se refresca.
-                SwingUtilities.invokeLater(this::mostrar);
-            }
-        }, "tipo-cambio");
+            TipoCambio.actualizarSiHaceFalta();
+            ranking.cargar();
+            misMonedas = monedas.monedas(usuario);
+            SwingUtilities.invokeLater(() -> {
+                // Si el jugador ya salió de la pantalla o volvió a entrar, esta carga ya no vale.
+                if (actual == carga) {
+                    mostrar();
+                }
+            });
+        }, "premios-carga");
         t.setDaemon(true);
         t.start();
     }
@@ -57,6 +66,6 @@ public class ControladorPremios {
         }
         vista.mostrar(ranking.dolarDelDia(), nombres, intentos, colones, dolares);
         // Monedas de quien inició sesión.
-        vista.setMonedas(Sesion.getNombre(), monedas.monedas(Sesion.getNombre()));
+        vista.setMonedas(Sesion.getNombre(), misMonedas);
     }
 }

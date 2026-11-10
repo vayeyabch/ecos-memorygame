@@ -3,6 +3,7 @@ package ecos.app.modos.Patrones;
 // Clases del propio proyecto que se usan aquí.
 import ecos.app.Sesion;
 import ecos.modelo.CalculoPremio;
+import ecos.modelo.ModeloVictoria;
 import ecos.pantallas.PantallaPatron;
 // Utilidades de Java, List para las listas.
 import java.util.List;
@@ -32,6 +33,8 @@ public class ControladorPatron {
     private final PantallaPatron vista;
     private final Consumer<String> irA;
     private final Timer reloj = new Timer(100, e -> tick());
+    // Guarda la victoria en la base.
+    private final ModeloVictoria victoria = new ModeloVictoria();
     private SecuenciaPatron secuencia = new SecuenciaPatron();
     // La fase actual del juego y los segundos que quedan de los 12 y de los 2 entre casillas. La barra delgada corre desde
     // la primera casilla.
@@ -230,10 +233,25 @@ public class ControladorPatron {
         int nivel = secuencia.getNivel();
         int casillas = secuencia.getCasillas();
         String premio = premioFinal(nivel);
-        // Espera 0.7 s (para que se oiga la derrota) y abre la ventana final
-        despues(700, () -> VentanaFinPatron.mostrar(vista, Sesion.getJugador1(), nivel, casillas, motivo, premio,
-                // Botón "Ver premios" y jugar otra vez.
-                () -> irA.accept("premios"), this::iniciar));
+        final int actual = partida;
+        final String cuenta = Sesion.getNombre();
+        // Si superó el nivel 1 hay premio y se guarda (en segundo plano, usa la base de datos). Cada nivel cuenta como un
+        // intento. Sin premio no se guarda nada.
+        Thread t = new Thread(() -> {
+            if (nivel > 1) {
+                victoria.registrarPatrones(cuenta, nivel);
+            }
+            // Espera 0.7 s (para que se oiga la derrota) y abre la ventana final (si el jugador no salió de la pantalla).
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (actual == partida) {
+                    despues(700, () -> VentanaFinPatron.mostrar(vista, Sesion.getJugador1(), nivel, casillas, motivo, premio,
+                            // Botón "Ver premios" y jugar otra vez.
+                            () -> irA.accept("premios"), this::iniciar));
+                }
+            });
+        }, "guardar-victoria");
+        t.setDaemon(true);
+        t.start();
     }
 
     // Premio con la fórmula del equipo, 1 / intentos x 100 x dólar del día (CalculoPremio).
