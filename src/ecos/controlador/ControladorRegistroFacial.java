@@ -54,7 +54,7 @@ public class ControladorRegistroFacial {
         ModeloRegistroFacial.limpiarExistente();
     }
 
-    // "Omitir por ahora": si es un registro nuevo crea la cuenta sin rostro; si era una cuenta que ya existía solo vuelve.
+    // Botón Omitir por ahora, si es un registro nuevo crea la cuenta sin rostro y si era una cuenta que ya existía solo vuelve.
     private void omitir() {
         if (captura != null) {
             return;

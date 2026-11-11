@@ -41,7 +41,7 @@ public class AvisoDeslizante extends JComponent {
     }
 
     private AvisoDeslizante(String texto, Estilo estilo, Image icono, java.awt.Component origen) {
-        this.texto = texto;
+        this.texto = ecos.app.Idioma.t(texto);
         this.estilo = estilo;
         this.icono = icono;
         // Transparente, solo se ve la franja.

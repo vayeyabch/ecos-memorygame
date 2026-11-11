@@ -18,7 +18,7 @@ public class ControladorAcceso {
     }
 
     public ControladorAcceso(PantallaAcceso vista, ModeloAcceso modelo) {
-        // Face ID: si escribió su usuario y la cuenta no tiene rostro, avisa y ofrece registrarlo. Si no escribió usuario
+        // Botón de Face ID, si escribió su usuario y la cuenta no tiene rostro, avisa y ofrece registrarlo. Si no escribió usuario
         // o sí tiene rostro, va al escaneo.
         vista.setAccionFaceId(() -> {
             vista.limpiarMensaje();

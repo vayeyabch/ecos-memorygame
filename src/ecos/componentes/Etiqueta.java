@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 // Librería gráfica AWT, Color para los colores.
@@ -19,6 +20,13 @@ public class Etiqueta extends JLabel {
     private Rol rol;
     private Color colorFijo = Color.BLACK;
     private final Runnable alCambiarTema = this::colorear;
+    // Texto en español (la clave) y acción que vuelve a traducirlo cuando cambia el idioma. Si el texto va dentro de HTML,
+    // el estilo de su caja y si sus números llevan la fuente clara. La clave no lleva valor inicial porque JLabel pone el
+    // texto antes de que se creen los campos.
+    private String clave;
+    private String estiloHtml = null;
+    private boolean numerosClaros = false;
+    private final Runnable alCambiarIdioma = this::traducir;
 
     // Recibe el texto y el rol (de qué color es).
     public Etiqueta(String texto, Rol rol) {
@@ -44,6 +52,36 @@ public class Etiqueta extends JLabel {
         Etiqueta e = new Etiqueta(texto, rol);
         e.setFont(Fuentes.texto(tamano));
         return e;
+    }
+
+    // Cambia el texto, que se muestra en el idioma actual.
+    // Recibe el texto en español.
+    @Override
+    public void setText(String texto) {
+        // Guarda el texto original como clave. Es un texto simple, sin HTML propio. Pone el texto traducido.
+        clave = texto;
+        estiloHtml = null;
+        super.setText(Idioma.t(texto));
+    }
+
+    // Cambia el texto cuando es largo y se tiene que partir en varias líneas, lo mete en una caja HTML con ese estilo.
+    // Recibe el texto en español, el estilo de la caja (por ejemplo, el ancho) y si los números van con la fuente clara.
+    public void setTextoHtml(String texto, String estilo, boolean numeros) {
+        // Guarda el texto original como clave junto con cómo se arma la caja. Pone el texto traducido.
+        clave = texto;
+        estiloHtml = estilo;
+        numerosClaros = numeros;
+        traducir();
+    }
+
+    // Vuelve a poner el texto en el idioma actual.
+    private void traducir() {
+        // Si el texto es simple, solo lo traduce. Si va en una caja HTML, traduce el texto y arma la caja de nuevo.
+        String texto = Idioma.t(clave);
+        if (estiloHtml != null && texto != null) {
+            texto = "<html><div style='" + estiloHtml + "'>" + (numerosClaros ? Fuentes.conNumeros(texto) : texto) + "</div></html>";
+        }
+        super.setText(texto);
     }
 
     // Cambia el rol (el color) de la etiqueta.
@@ -80,17 +118,21 @@ public class Etiqueta extends JLabel {
     // Swing lo llama cuando la etiqueta entra a una ventana.
     @Override
     public void addNotify() {
-        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema. Se pone al día con el tema actual.
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema y de idioma. Se pone al día con el tema
+        // y el idioma actuales.
         super.addNotify();
         Tema.alCambiar(alCambiarTema);
+        Idioma.alCambiar(alCambiarIdioma);
         colorear();
+        traducir();
     }
 
     // Swing lo llama cuando la etiqueta sale de la ventana.
     @Override
     public void removeNotify() {
-        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        // Deja de escuchar los cambios de tema y de idioma. Deja que Swing haga lo suyo.
         Tema.quitar(alCambiarTema);
+        Idioma.quitar(alCambiarIdioma);
         super.removeNotify();
     }
 }

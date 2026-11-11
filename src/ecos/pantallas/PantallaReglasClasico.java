@@ -104,7 +104,7 @@ public class PantallaReglasClasico extends Pantalla {
 
     // Mensaje de debajo de los botones; "rol" decide el color (SUAVE normal, ACIERTO ok, PELIGRO aviso).
     public void setEstadoJugador2(String texto, Etiqueta.Rol rol) {
-        estado.setText("<html><div style='width:460px'>" + ecos.recursos.Fuentes.conNumeros(texto) + "</div></html>");
+        estado.setTextoHtml(texto, "width:460px", true);
         estado.setRol(rol);
         revalidate();
     }

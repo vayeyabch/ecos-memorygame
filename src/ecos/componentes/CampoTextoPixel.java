@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
@@ -29,6 +30,8 @@ public class CampoTextoPixel extends JTextField {
     private static final int BORDE = 4;
     private final String ayuda;
     private final Runnable alCambiarTema = this::actualizarColores;
+    // Acción que repinta el texto de ayuda cuando cambia el idioma.
+    private final Runnable alCambiarIdioma = this::repaint;
 
     // Recibe el texto de ayuda y el ancho en columnas.
     public CampoTextoPixel(String ayuda, int columnas) {
@@ -79,6 +82,7 @@ public class CampoTextoPixel extends JTextField {
         // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema. Se pone al día con el tema actual.
         super.addNotify();
         Tema.alCambiar(alCambiarTema);
+        Idioma.alCambiar(alCambiarIdioma);
         actualizarColores();
     }
 
@@ -87,6 +91,7 @@ public class CampoTextoPixel extends JTextField {
     public void removeNotify() {
         // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
         Tema.quitar(alCambiarTema);
+        Idioma.quitar(alCambiarIdioma);
         super.removeNotify();
     }
 
@@ -115,7 +120,7 @@ public class CampoTextoPixel extends JTextField {
             Color c = Tema.textoSuave();
             // Lo usa para el texto de ayuda. Dibuja el texto de ayuda a la izquierda y centrado vertical.
             g2.setColor(c);
-            g2.drawString(ayuda, getInsets().left, (getHeight() + g2.getFontMetrics().getAscent()) / 2 - 2);
+            g2.drawString(Idioma.t(ayuda), getInsets().left, (getHeight() + g2.getFontMetrics().getAscent()) / 2 - 2);
         }
         // Libera el pincel. Deja que JTextField dibuje el texto escrito y el cursor.
         g2.dispose();

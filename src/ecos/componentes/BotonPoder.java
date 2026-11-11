@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sprites;
@@ -29,6 +30,7 @@ public class BotonPoder extends JButton {
     private boolean encima = false;
     // Acción que repinta el botón cuando cambia el tema.
     private final Runnable alCambiarTema = this::repaint;
+    private final Runnable alCambiarIdioma = this::repaint;
 
     // Constructor que recibe el nombre y el precio.
     public BotonPoder(String texto, int precio) {
@@ -74,6 +76,7 @@ public class BotonPoder extends JButton {
         // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
         super.addNotify();
         Tema.alCambiar(alCambiarTema);
+        Idioma.alCambiar(alCambiarIdioma);
     }
 
     // Swing lo llama cuando el botón sale de la ventana.
@@ -81,6 +84,7 @@ public class BotonPoder extends JButton {
     public void removeNotify() {
         // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
         Tema.quitar(alCambiarTema);
+        Idioma.quitar(alCambiarIdioma);
         super.removeNotify();
     }
 
@@ -135,7 +139,7 @@ public class BotonPoder extends JButton {
         g2.setFont(Fuentes.titulo(9f));
         FontMetrics fm = g2.getFontMetrics();
         g2.setColor(Tema.textoBoton());
-        g2.drawString(texto, 44, h / 2 + fm.getAscent() / 2 - 1);
+        g2.drawString(Idioma.t(texto), 44, h / 2 + fm.getAscent() / 2 - 1);
         // Calcula el ancho y la posición de la cajita del precio, pegada a la derecha, y elige y dibuja su borde.
         int pw = 66;
         int px = w - pw - 8;

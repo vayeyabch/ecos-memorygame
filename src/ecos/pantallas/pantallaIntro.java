@@ -1,6 +1,7 @@
 package ecos.pantallas;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Pantalla;
 import ecos.componentes.BarraCarga;
 import ecos.componentes.BotonMenu;
@@ -53,7 +54,7 @@ public class PantallaIntro extends Pantalla {
     private final TextoMaquina texto2 = new TextoMaquina(16f);
     // Barra de carga, mensaje de carga y la caja que guarda ambos.
     private final BarraCarga barra = new BarraCarga();
-    private final JLabel mensaje = new JLabel(MENSAJE);
+    private final JLabel mensaje = new JLabel(Idioma.t(MENSAJE));
     private final JPanel cajaCarga = new JPanel();
     // Tres relojes, uno para los pasos de la intro, otro para el fundido de los logos y otro para los puntitos del mensaje.
     // Reloj de los pasos de la intro (se reconfigura en cada paso). reloj del fundido de los logos (5 escalones). reloj
@@ -142,7 +143,7 @@ public class PantallaIntro extends Pantalla {
         // Suma un puntito y vuelve a cero después de tres. Escribe el mensaje con sus puntitos.
         relojPuntos.addActionListener(e -> {
             puntos = (puntos + 1) % 4;
-            mensaje.setText(MENSAJE + ".".repeat(puntos));
+            mensaje.setText(Idioma.t(MENSAJE) + ".".repeat(puntos));
         });
     }
 
@@ -170,7 +171,7 @@ public class PantallaIntro extends Pantalla {
         texto2.reiniciar();
         // La barra empieza vacía. Deja el mensaje sin puntitos. Espera medio segundo y hace aparecer el primer logo.
         barra.setEncendidos(0);
-        mensaje.setText(MENSAJE);
+        mensaje.setText(Idioma.t(MENSAJE));
         despues(500, () -> fundir(logo1, () -> despues(1000 - 900, this::paso1)));
     }
 

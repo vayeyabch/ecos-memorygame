@@ -52,14 +52,18 @@ public class PantallaRegistro extends Pantalla {
     private final CampoClavePixel campoClave = new CampoClavePixel("6 o más", 5);
     private final CampoClavePixel campoClave2 = new CampoClavePixel("Otra vez", 5);
     private final Etiqueta mensaje = Etiqueta.texto(AYUDA, 18f, Etiqueta.Rol.SUAVE);
-    // Qué hace el botón; null = ir directo al registro facial.
+    // Qué hace el botón Siguiente; null = ir directo al registro facial. Qué hace el botón Crear cuenta, que lo pone el
+    // controlador. Los dos botones, para poder apagarlos mientras se guarda.
     private Runnable accionSiguiente = null;
+    private Runnable accionCrearCuenta = () -> { };
+    private final BotonMenu siguiente = new BotonMenu("Mi rostro (opcional)", true);
+    private final BotonMenu crearCuenta = new BotonMenu("Crear cuenta", BotonMenu.Estilo.SECUNDARIO);
 
     public PantallaRegistro() {
         // Id de la pantalla y música que usa.
         super("registro", "acceso");
         setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 28, 16));
+        setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 10, 16));
 
         // Máximo 50 letras en el nombre. Máximo 50 letras en los apellidos. Máximo 100 letras en el correo. Máximo 20 letras
         // en el usuario.
@@ -79,8 +83,8 @@ public class PantallaRegistro extends Pantalla {
         agregar(formulario, bloque("REPETIR CONTRASEÑA", conOjo(campoClave2)), 3, 1, 1);
 
         // Botón que lleva al registro facial, que al apretarse suena el clic y, si el controlador puso su propia acción, la
-        // ejecuta.
-        BotonMenu siguiente = new BotonMenu("Siguiente: mi rostro", true);
+        // ejecuta. El botón Crear cuenta suena y avisa al controlador.
+        crearCuenta.addActionListener(e -> { Sonido.efecto("click"); accionCrearCuenta.run(); });
         siguiente.addActionListener(e -> {
             Sonido.efecto("click");
             if (accionSiguiente != null) {
@@ -110,8 +114,10 @@ public class PantallaRegistro extends Pantalla {
         tarjeta.add(Box.createVerticalStrut(2));
         // Mensaje de avisos. Ancho máximo de la tarjeta (igual que en PantallaAcceso).
         tarjeta.add(alinear(mensaje));
-        tarjeta.add(Box.createVerticalStrut(10));
+        tarjeta.add(Box.createVerticalStrut(6));
         tarjeta.add(alinear(siguiente.anchoCompleto()));
+        tarjeta.add(Box.createVerticalStrut(6));
+        tarjeta.add(alinear(crearCuenta.anchoCompleto()));
         tarjeta.setMaximumSize(new Dimension(480, Integer.MAX_VALUE));
 
         // Columna con las mascotas arriba y la tarjeta abajo, apiladas en vertical y centradas.
@@ -122,7 +128,7 @@ public class PantallaRegistro extends Pantalla {
         // Tarjeta al centro. Agrega las mascotas. Agrega la tarjeta.
         tarjeta.setAlignmentX(Component.CENTER_ALIGNMENT);
         columna.add(desfile);
-        columna.add(Box.createVerticalStrut(18));
+        columna.add(Box.createVerticalStrut(4));
         columna.add(tarjeta);
         // Agrega todo a la pantalla.
         add(columna);
@@ -146,6 +152,26 @@ public class PantallaRegistro extends Pantalla {
     public void setAccionSiguiente(Runnable accion) {
         // Guarda la acción.
         this.accionSiguiente = accion;
+    }
+
+    // El controlador define qué hace el botón Crear cuenta (crear la cuenta sin rostro).
+    public void setAccionCrearCuenta(Runnable accion) { accionCrearCuenta = accion; }
+
+    // Apaga los dos botones mientras se guarda la cuenta, y los vuelve a prender al terminar.
+    public void setOcupado(boolean ocupado) {
+        siguiente.setEnabled(!ocupado);
+        crearCuenta.setEnabled(!ocupado);
+    }
+
+    // Avisa que la cuenta quedó creada y, un momento después, va a iniciar sesión.
+    public void mostrarCuentaCreada() {
+        // Pone el aviso en verde. Suena el éxito. Espera un momento para que se lea y va a la pantalla de acceso.
+        mensaje.setText("¡Cuenta creada! Ya podés iniciar sesión.");
+        mensaje.setRol(Etiqueta.Rol.ACIERTO);
+        Sonido.efecto(Sonido.EXITO);
+        javax.swing.Timer espera = new javax.swing.Timer(1500, e -> irA("acceso"));
+        espera.setRepeats(false);
+        espera.start();
     }
 
     // El controlador la llama cuando los datos están bien.

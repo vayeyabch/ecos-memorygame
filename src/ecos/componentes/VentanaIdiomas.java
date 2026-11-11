@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.recursos.Sonido;
 // Librería gráfica AWT, Component para cualquier elemento de la pantalla.
 import java.awt.Component;
@@ -10,10 +11,10 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 
-// Ventana que se abre con el botón del globo, muestra los idiomas disponibles. Todavía sin lógica (solo se cierra).
+// Ventana que se abre con el botón del globo, muestra los idiomas disponibles y cambia el idioma de todo el juego.
 public class VentanaIdiomas {
 
-    // Título de la ventana, en inglés "AVAILABLE LANGUAGES", y nombres de los idiomas, que se quedan igual en los dos
+    // Título de la ventana, "AVAILABLE LANGUAGES" en inglés, y nombres de los idiomas, que se quedan igual en los dos
     // idiomas.
     private static final String TITULO = "IDIOMAS DISPONIBLES";
     private static final String ESPANOL = "Español";
@@ -29,13 +30,12 @@ public class VentanaIdiomas {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setPadding(18);
         CapaModal capa = new CapaModal(panel);
-        // Botón de español (el idioma actual se ve resaltado).
+        // Título, botón de español y botón de inglés (el idioma actual se ve resaltado).
         panel.add(centrar(Etiqueta.titulo(TITULO, 15f, Etiqueta.Rol.TEXTO)));
         panel.add(Box.createVerticalStrut(16));
-        panel.add(centrar(opcion(ESPANOL, BotonMenu.Estilo.PRINCIPAL, capa)));
+        panel.add(centrar(opcion(ESPANOL, Idioma.Lengua.ESPANOL, capa)));
         panel.add(Box.createVerticalStrut(10));
-        // Versión chica.
-        panel.add(centrar(opcion(INGLES, BotonMenu.Estilo.SECUNDARIO, capa)));
+        panel.add(centrar(opcion(INGLES, Idioma.Lengua.INGLES, capa)));
         panel.add(Box.createVerticalStrut(16));
         BotonMenu cerrar = new BotonMenu(CERRAR, BotonMenu.Estilo.ROSA);
         cerrar.setPequeno(true);
@@ -45,12 +45,13 @@ public class VentanaIdiomas {
         capa.mostrar(origen);
     }
 
-    // Un botón de idioma. Por ahora solo suena y cierra la ventana, falta cambiar el idioma de verdad.
-    // Recibe el texto, el estilo y la ventana.
-    private static JComponent opcion(String texto, BotonMenu.Estilo estilo, CapaModal capa) {
-        // Crea el botón, que suena y cierra, y lo estira al ancho de la ventana.
-        BotonMenu boton = new BotonMenu(texto, estilo);
-        boton.addActionListener(e -> { Sonido.efecto("click"); capa.cerrar(); });
+    // Un botón de idioma, al hacer clic suena, cambia el idioma y cierra la ventana.
+    // Recibe el texto, el idioma que activa y la ventana.
+    private static JComponent opcion(String texto, Idioma.Lengua lengua, CapaModal capa) {
+        // Crea el botón, resaltado si es el idioma actual, que suena, cambia el idioma y cierra, y lo estira al ancho de la
+        // ventana.
+        BotonMenu boton = new BotonMenu(texto, lengua == Idioma.actual() ? BotonMenu.Estilo.PRINCIPAL : BotonMenu.Estilo.SECUNDARIO);
+        boton.addActionListener(e -> { Sonido.efecto("click"); capa.cerrar(); Idioma.cambiar(lengua); });
         return boton.anchoCompleto();
     }
 

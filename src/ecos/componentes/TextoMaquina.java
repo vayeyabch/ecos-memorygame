@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
 // Librería gráfica AWT, Color para los colores.
@@ -36,7 +37,7 @@ public class TextoMaquina extends JLabel {
     // Recibe el texto y qué hacer al final.
     public void escribir(String texto, Runnable alTerminar) {
         // Guarda el texto completo. Empieza desde cero letras. Guarda qué hacer al final. Limpia lo que hubiera escrito.
-        this.textoCompleto = texto;
+        this.textoCompleto = Idioma.t(texto);
         this.letras = 0;
         this.alTerminar = alTerminar;
         setText("");

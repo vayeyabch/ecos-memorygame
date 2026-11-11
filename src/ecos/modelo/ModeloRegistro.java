@@ -1,7 +1,7 @@
 package ecos.modelo;
 
 // Modelo de PantallaRegistro (paso 1 de 2), revisa los datos del formulario. Si están bien los deja guardados en memoria
-// hasta que se registre el rostro (paso 2), que es cuando la cuenta se crea en la base de datos.
+// para registrar el rostro (paso 2, que es opcional) o para crear la cuenta de una vez sin rostro.
 // A cargo de Valeria.
 public class ModeloRegistro {
 
@@ -60,6 +60,25 @@ public class ModeloRegistro {
         }
         // Todo bien, queda pendiente de registrar el rostro. La contraseña se guarda ya convertida en hash.
         pendiente = new Usuario(usuario, nombre, apellidos, correo, Seguridad.hash(clave));
+        return null;
+    }
+
+    // Crea la cuenta que dejó pendiente validar sin registrar el rostro, que es opcional. Devuelve el mensaje de error, o
+    // null si la cuenta quedó guardada.
+    public String guardarSinRostro() {
+        if (pendiente == null) {
+            return "Completá todos los campos.";
+        }
+        try {
+            if (repo.existe(pendiente.getUsuario())) {
+                return "Ese usuario ya existe. Probá con otro.";
+            }
+            repo.guardar(pendiente);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return "No se pudo guardar en la base de datos.";
+        }
+        pendiente = null;
         return null;
     }
 

@@ -1,31 +1,37 @@
 package ecos.pantallas;
 
 // Clases del propio proyecto que se usan aquí.
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.Timer;
-
 import ecos.app.Pantalla;
 import ecos.componentes.ImagenPixel;
 import ecos.componentes.TextoPixel;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
 import ecos.recursos.Sprites;
+// Librería gráfica AWT, Color para los colores, Component para cualquier elemento de la pantalla, Cursor para el cursor
+// del mouse y GridBagLayout para acomodar en una cuadrícula flexible.
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.GridBagLayout;
+// Eventos del mouse y el teclado de AWT, ActionEvent para las acciones, ComponentAdapter para reaccionar a cambios de
+// tamaño, ComponentEvent para los datos de esos cambios, MouseAdapter para reaccionar al mouse y MouseEvent para los
+// datos de un clic.
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+// Librería Swing, AbstractAction para definir acciones, Action para las acciones de los botones, Box para los espacios
+// entre componentes, BoxLayout para apilar en fila o columna, BorderFactory para los bordes, JPanel para los paneles,
+// KeyStroke para los atajos de teclado y Timer para los relojes.
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.Timer;
 
 // Pantalla de bienvenida con el logo y el texto START que parpadea; al tocarlo se pasa al acceso.
 public class PantallaInicio extends Pantalla {

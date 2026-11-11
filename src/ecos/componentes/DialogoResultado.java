@@ -44,7 +44,7 @@ public class DialogoResultado {
         if (texto != null) {
             panel.add(Box.createVerticalStrut(12));
             // Con los números en la fuente clara.
-            panel.add(centrar(Etiqueta.texto("<html><div style='text-align:center'>" + ecos.recursos.Fuentes.conNumeros(texto) + "</div></html>", 18f, Etiqueta.Rol.SUAVE)));
+            panel.add(centrar(Etiqueta.texto("<html><div style='text-align:center'>" + ecos.recursos.Fuentes.conNumeros(ecos.app.Idioma.t(texto)) + "</div></html>", 18f, Etiqueta.Rol.SUAVE)));
         }
         if (cuerpo != null) {
             panel.add(Box.createVerticalStrut(12));

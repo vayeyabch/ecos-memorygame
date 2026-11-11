@@ -163,7 +163,7 @@ public class PantallaLoginFacial extends Pantalla {
     // Cambia el mensaje de debajo del visor (con salto de línea automático).
     public void setTextoEstado(String texto) {
         // Lo envuelve en html para que parta las líneas.
-        estado.setText("<html><div style='text-align:center;width:250px'>" + texto + "</div></html>");
+        estado.setTextoHtml(texto, "text-align:center;width:250px", false);
     }
 
     // Alinea un componente al centro de la tarjeta (todos los de esta tarjeta van centrados).

@@ -53,7 +53,7 @@ public class ModeloRegistroFacial {
         return null;
     }
 
-    // Guarda el rostro capturado: en la cuenta que ya existe, o crea la cuenta pendiente con su rostro. Devuelve el
+    // Guarda el rostro capturado, en la cuenta que ya existe, o crea la cuenta pendiente con su rostro. Devuelve el
     // mensaje de error, o null si quedó guardado.
     public String guardar(List<byte[]> caras) {
         if (caras == null || caras.isEmpty()) {

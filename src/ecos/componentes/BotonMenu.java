@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 // Librería gráfica AWT, AlphaComposite para la transparencia, Color para los colores, Cursor para el cursor del mouse,
@@ -38,8 +39,11 @@ public class BotonMenu extends JButton {
     private boolean pequeno = false;
     private boolean encima = false;
     private boolean apretado = false;
-    // Acción que repinta el botón cuando cambia el tema.
+    // Acción que repinta el botón cuando cambia el tema. Texto en español (la clave) y acción que lo traduce otra vez cuando
+    // cambia el idioma. La clave no lleva valor inicial porque JButton pone el texto antes de que se creen los campos.
     private final Runnable alCambiarTema = this::repaint;
+    private String clave;
+    private final Runnable alCambiarIdioma = this::traducir;
 
     // Constructor simple, si es principal usa el color durazno y si no el secundario.
     public BotonMenu(String texto, boolean principal) {
@@ -78,6 +82,21 @@ public class BotonMenu extends JButton {
         });
     }
 
+    // Cambia el texto del botón, que se muestra en el idioma actual.
+    // Recibe el texto en español.
+    @Override
+    public void setText(String texto) {
+        // Guarda el texto original como clave. Pone el texto traducido.
+        clave = texto;
+        super.setText(Idioma.t(texto));
+    }
+
+    // Vuelve a poner el texto en el idioma actual.
+    private void traducir() {
+        // Traduce el texto guardado.
+        super.setText(Idioma.t(clave));
+    }
+
     // Cambia el estilo (por ejemplo, una pestaña seleccionada).
     public void setEstilo(Estilo estilo) {
         // Guarda el estilo nuevo.
@@ -97,16 +116,20 @@ public class BotonMenu extends JButton {
     // Swing lo llama cuando el botón entra a una ventana.
     @Override
     public void addNotify() {
-        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema y de idioma. Se pone al día con el
+        // idioma actual.
         super.addNotify();
         Tema.alCambiar(alCambiarTema);
+        Idioma.alCambiar(alCambiarIdioma);
+        traducir();
     }
 
     // Swing lo llama cuando el botón sale de la ventana.
     @Override
     public void removeNotify() {
-        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        // Deja de escuchar los cambios de tema y de idioma. Deja que Swing haga lo suyo.
         Tema.quitar(alCambiarTema);
+        Idioma.quitar(alCambiarIdioma);
         super.removeNotify();
     }
 

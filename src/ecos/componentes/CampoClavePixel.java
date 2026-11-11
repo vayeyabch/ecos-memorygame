@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 import ecos.recursos.Sonido;
@@ -21,6 +22,8 @@ public class CampoClavePixel extends JPasswordField {
     private static final int BORDE = 4;
     private final String ayuda;
     private final Runnable alCambiarTema = this::actualizarColores;
+    // Acción que repinta el texto de ayuda cuando cambia el idioma.
+    private final Runnable alCambiarIdioma = this::repaint;
 
     // Recibe el texto de ayuda y el ancho en columnas.
     public CampoClavePixel(String ayuda, int columnas) {
@@ -51,6 +54,7 @@ public class CampoClavePixel extends JPasswordField {
         // Deja que Swing haga lo suyo. Empieza a escuchar los cambios de tema. Actualiza los colores.
         super.addNotify();
         Tema.alCambiar(alCambiarTema);
+        Idioma.alCambiar(alCambiarIdioma);
         actualizarColores();
     }
 
@@ -59,6 +63,7 @@ public class CampoClavePixel extends JPasswordField {
     public void removeNotify() {
         // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
         Tema.quitar(alCambiarTema);
+        Idioma.quitar(alCambiarIdioma);
         super.removeNotify();
     }
 
@@ -84,7 +89,7 @@ public class CampoClavePixel extends JPasswordField {
             g2.setFont(getFont());
             g2.setColor(Tema.textoSuave());
             // Dibuja la ayuda centrada.
-            g2.drawString(ayuda, getInsets().left, (getHeight() + g2.getFontMetrics().getAscent()) / 2 - 2);
+            g2.drawString(Idioma.t(ayuda), getInsets().left, (getHeight() + g2.getFontMetrics().getAscent()) / 2 - 2);
         }
         // Libera el pincel. Dibuja los puntitos y el cursor.
         g2.dispose();

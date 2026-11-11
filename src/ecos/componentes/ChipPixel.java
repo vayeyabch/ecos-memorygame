@@ -1,6 +1,7 @@
 package ecos.componentes;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;
 import ecos.app.Tema;
 import ecos.recursos.Fuentes;
 // Librería gráfica AWT, Color para los colores, Dimension para los tamaños, Font para las fuentes, FontMetrics para
@@ -21,19 +22,23 @@ public class ChipPixel extends JComponent {
     // CAJA = fondo de caja del tema; DURAZNO = fondo durazno con letras oscuras (premios).
     public enum Modo { CAJA, DURAZNO }
 
-    // Texto de la cajita, modo de colores, grosor del borde en píxeles y si usa la fuente de títulos o la de texto.
+    // Texto que se dibuja (ya en el idioma actual), el texto en español para traducirlo otra vez, modo de colores, grosor
+    // del borde en píxeles y si usa la fuente de títulos o la de texto.
     private String texto;
+    private String clave;
     private final Modo modo;
     private final int borde;
     private final boolean tituloFuente;
     // Icono opcional a la izquierda del texto. Acción que repinta cuando cambia el tema.
     private Image icono = null;
     private final Runnable alCambiarTema = this::repaint;
+    private final Runnable alCambiarIdioma = this::traducir;
 
     // Recibe todo lo necesario para dibujar.
     public ChipPixel(String texto, float tamano, boolean tituloFuente, Modo modo, int borde) {
-        // Guarda el texto. Guarda qué fuente usar. Guarda el modo de colores. Guarda el grosor del borde.
-        this.texto = texto;
+        // Guarda el texto y lo traduce. Guarda qué fuente usar. Guarda el modo de colores. Guarda el grosor del borde.
+        this.clave = texto;
+        this.texto = Idioma.t(texto);
         this.tituloFuente = tituloFuente;
         this.modo = modo;
         this.borde = borde;
@@ -43,9 +48,17 @@ public class ChipPixel extends JComponent {
     }
 
     // Cambia el texto.
-    public void setTexto(String texto) {
-        // Avisa que el tamaño pudo cambiar.
-        this.texto = texto;
+    // Recibe el texto en español.
+    public void setTexto(String clave) {
+        // Guarda el texto para poder traducirlo otra vez. Pone el texto traducido.
+        this.clave = clave;
+        traducir();
+    }
+
+    // Vuelve a poner el texto en el idioma actual.
+    private void traducir() {
+        // Traduce el texto guardado. Avisa que el tamaño pudo cambiar.
+        texto = Idioma.t(clave);
         revalidate();
         repaint();
     }
@@ -67,16 +80,20 @@ public class ChipPixel extends JComponent {
     // Swing lo llama cuando la cajita entra a una ventana.
     @Override
     public void addNotify() {
-        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema.
+        // Deja que Swing haga lo suyo primero. Empieza a escuchar los cambios de tema y de idioma. Se pone al día con el
+        // idioma actual.
         super.addNotify();
         Tema.alCambiar(alCambiarTema);
+        Idioma.alCambiar(alCambiarIdioma);
+        traducir();
     }
 
     // Swing lo llama cuando la cajita sale de la ventana.
     @Override
     public void removeNotify() {
-        // Deja de escuchar los cambios de tema. Deja que Swing haga lo suyo.
+        // Deja de escuchar los cambios de tema y de idioma. Deja que Swing haga lo suyo.
         Tema.quitar(alCambiarTema);
+        Idioma.quitar(alCambiarIdioma);
         super.removeNotify();
     }
 

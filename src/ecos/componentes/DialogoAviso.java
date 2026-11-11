@@ -44,7 +44,7 @@ public class DialogoAviso {
         }
         panel.add(centrar(Etiqueta.titulo(titulo, 14f, Etiqueta.Rol.TEXTO)));
         panel.add(Box.createVerticalStrut(10));
-        panel.add(centrar(Etiqueta.texto("<html><div style='width:400px;text-align:center'>" + ecos.recursos.Fuentes.conNumeros(mensaje) + "</div></html>", 20f, Etiqueta.Rol.SUAVE)));
+        panel.add(centrar(Etiqueta.texto("<html><div style='width:400px;text-align:center'>" + ecos.recursos.Fuentes.conNumeros(ecos.app.Idioma.t(mensaje)) + "</div></html>", 20f, Etiqueta.Rol.SUAVE)));
         panel.add(Box.createVerticalStrut(14));
         panel.add(centrar(entendido));
         // Se crea la capa con el panel y el botón solo cierra el aviso.

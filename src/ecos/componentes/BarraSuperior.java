@@ -22,7 +22,7 @@ import javax.swing.Timer;
 // Barra de arriba con los botones de atrás, idioma, tema y música.
 public class BarraSuperior extends JPanel {
 
-    // Botones de la barra, volver a la pantalla anterior, idioma (español o inglés, todavía sin lógica), tema (sol o luna,
+    // Botones de la barra, volver a la pantalla anterior, idioma (español o inglés), tema (sol o luna,
     // claro u oscuro) y música (silenciar o activar).
     private final BotonMenu atras = new BotonMenu("< Atrás", BotonMenu.Estilo.PRINCIPAL);
     private final BotonIcono idioma = new BotonIcono();
@@ -64,8 +64,7 @@ public class BarraSuperior extends JPanel {
         tema.setDibujo(this::dibujarTema);
         musica.setDibujo(this::dibujarMusica);
 
-        // Al hacer clic suena el efecto y vuelve a la pantalla anterior. Suena y abre la ventana de idiomas (todavía sin
-        // lógica). Al hacer clic cambia el tema y suena el efecto. Al hacer clic silencia o activa; si queda activo suena un
+        // Al hacer clic suena el efecto y vuelve a la pantalla anterior. Suena y abre la ventana de idiomas. Al hacer clic cambia el tema y suena el efecto. Al hacer clic silencia o activa; si queda activo suena un
         // efecto.
         atras.addActionListener(e -> { Sonido.efecto("click"); navegador.atras(); });
         idioma.addActionListener(e -> { Sonido.efecto("click"); VentanaIdiomas.mostrar(this); });
