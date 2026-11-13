@@ -26,6 +26,25 @@ public class ModeloVictoria {
         return registrar(usuario, ModoJuego.CLASICO, intentos);
     }
 
+    // Partida del multijugador en red: se guarda siempre (queda en el historial) pero sin premio, así no entra al ranking.
+    // Solo quien gana recibe las monedas. Puede tardar (base de datos), llamarlo fuera del hilo de la interfaz. Devuelve la
+    // partida guardada, o null si no hay cuenta o no se pudo guardar.
+    public Partida registrarRed(String usuario, int intentos, boolean gano) {
+        if (usuario == null || usuario.isBlank()) {
+            return null;
+        }
+        // La base exige intentos mayores que 0.
+        Partida partida = new Partida(usuario, ModoJuego.RED, Math.max(1, intentos), 0, 0, TipoCambio.getCompra(),
+                LocalDateTime.now());
+        try {
+            boolean guardada = repo.guardarVictoriaConMonedas(partida, gano ? ModeloMonedas.MONEDAS_POR_VICTORIA : 0);
+            return guardada ? partida : null;
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private Partida registrar(String usuario, ModoJuego modo, int intentos) {
         // Sin cuenta no se guarda nada.
         if (usuario == null || usuario.isBlank()) {

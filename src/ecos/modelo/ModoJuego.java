@@ -1,11 +1,13 @@
 package ecos.modelo;
 
-// Los dos modos de juego. Cada uno sabe cómo se escribe en la columna modo de la tabla partidas.
+// Los modos de juego. Cada uno sabe cómo se escribe en la columna modo de la tabla partidas.
 // A cargo de la Parte 2.
 public enum ModoJuego {
 
     CLASICO("clasico"),
-    PATRONES("patrones");
+    PATRONES("patrones"),
+    // Multijugador en red (solo da monedas, no entra al ranking).
+    RED("red");
 
     // Texto que se guarda en la base de datos.
     private final String codigo;
@@ -14,7 +16,7 @@ public enum ModoJuego {
         this.codigo = codigo;
     }
 
-    // Texto para la base de datos ("clasico" o "patrones").
+    // Texto para la base de datos ("clasico", "patrones" o "red").
     public String getCodigo() {
         return codigo;
     }

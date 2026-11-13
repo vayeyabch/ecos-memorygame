@@ -60,7 +60,7 @@ public class PantallaMenu extends Pantalla {
         caja.add(saludo);
 
         // tarjeta de Clásico con el selector de tablero
-        TarjetaModo clasico = new TarjetaModo("Clásico", "2 jugadores · parejas", Sprites.mascota(1, 80), () -> alElegirModo.accept("reglas_clasico"));
+        TarjetaModo clasico = new TarjetaModo("Clásico", "Local o en red · parejas", Sprites.mascota(1, 80), () -> alElegirModo.accept("modo_clasico"));
         clasico.agregarExtra(crearSelector());
         TarjetaModo patrones = new TarjetaModo("Patrones", "1 jugador · memoriza", Sprites.mascota(2, 80), () -> alElegirModo.accept("reglas_patrones"));
         TarjetaModo premios = new TarjetaModo("Premios", "Top 5", Sprites.ui("trophy", 72), () -> alElegirModo.accept("premios"));

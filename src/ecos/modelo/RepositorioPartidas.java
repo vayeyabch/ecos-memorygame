@@ -38,12 +38,12 @@ public class RepositorioPartidas {
         }
     }
 
-    // Top de jugadores: la mejor partida de cada usuario, de mayor a menor premio en dólares (a igual premio gana la más
+    // Top de jugadores (las partidas del multijugador en red NO cuentan): la mejor partida de cada usuario, de mayor a menor premio en dólares (a igual premio gana la más
     // antigua). Las monedas no influyen.
     public List<Partida> top(int cantidad) {
         String sql = "SELECT usuario, modo, intentos, premio_dolares, premio_colones, dolar, fecha FROM ("
                 + " SELECT DISTINCT ON (LOWER(usuario)) usuario, modo, intentos, premio_dolares, premio_colones, dolar, fecha"
-                + " FROM partidas ORDER BY LOWER(usuario), premio_dolares DESC, fecha ASC) mejores"
+                + " FROM partidas WHERE modo <> 'red' ORDER BY LOWER(usuario), premio_dolares DESC, fecha ASC) mejores"
                 + " ORDER BY premio_dolares DESC, fecha ASC LIMIT ?";
         List<Partida> lista = new ArrayList<>();
         try (Connection c = ConexionBD.abrir(); PreparedStatement ps = c.prepareStatement(sql)) {

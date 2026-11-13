@@ -12,6 +12,8 @@ import ecos.controlador.ControladorInicio;
 import ecos.controlador.ControladorIntro;
 import ecos.controlador.ControladorLoginFacial;
 import ecos.controlador.ControladorMenu;
+import ecos.controlador.ControladorModoClasico;
+import ecos.controlador.ControladorMultijugador;
 import ecos.controlador.ControladorPremios;
 import ecos.controlador.ControladorRegistro;
 import ecos.controlador.ControladorRegistroFacial;
@@ -20,6 +22,8 @@ import ecos.controlador.ControladorReglasPatrones;
 import ecos.pantallas.PantallaClasico;
 import ecos.pantallas.PantallaLoginFacial;
 import ecos.pantallas.PantallaMenu;
+import ecos.pantallas.PantallaModoClasico;
+import ecos.pantallas.PantallaMultijugador;
 import ecos.pantallas.PantallaPatron;
 import ecos.pantallas.PantallaPremios;
 import ecos.pantallas.PantallaRegistro;
@@ -59,6 +63,8 @@ public class Main {
         PantallaPremios premios = new PantallaPremios();
         PantallaClasico clasico = new PantallaClasico();
         PantallaPatron patrones = new PantallaPatron();
+        PantallaMultijugador multijugador = new PantallaMultijugador();
+        PantallaModoClasico modoClasico = new PantallaModoClasico();
         // Se registran todas las pantallas para poder navegar entre ellas por su nombre.
         // Cada pantalla se registra en el navegador con su nombre.
         n.registrar(intro);
@@ -73,6 +79,8 @@ public class Main {
         n.registrar(premios);
         n.registrar(clasico);
         n.registrar(patrones);
+        n.registrar(multijugador);
+        n.registrar(modoClasico);
 
         // Controladores (uno por pantalla). Los nuevos todavía no tienen lógica.
         // Cada controlador se conecta con su vista; los que necesitan cambiar de pantalla reciben el navegador.
@@ -88,6 +96,8 @@ public class Main {
         new ControladorPremios(premios);
         new ControladorJuegoClasico(clasico, n::ir);
         new ControladorPatron(patrones, n::ir);
+        new ControladorMultijugador(multijugador);
+        new ControladorModoClasico(modoClasico, n::ir);
         return ventana;
     }
 

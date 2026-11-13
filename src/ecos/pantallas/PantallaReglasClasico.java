@@ -39,7 +39,7 @@ public class PantallaReglasClasico extends Pantalla {
     private Runnable alComenzar = () -> { };
 
     public PantallaReglasClasico() {
-        super("reglas_clasico", "menu");
+        super("reglas_clasico", "modo_clasico");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 24, 16));
 
@@ -104,7 +104,7 @@ public class PantallaReglasClasico extends Pantalla {
 
     // Mensaje de debajo de los botones; "rol" decide el color (SUAVE normal, ACIERTO ok, PELIGRO aviso).
     public void setEstadoJugador2(String texto, Etiqueta.Rol rol) {
-        estado.setTextoHtml(texto, "width:460px", true);
+        estado.setText("<html><div style='width:460px'>" + ecos.recursos.Fuentes.conNumeros(texto) + "</div></html>");
         estado.setRol(rol);
         revalidate();
     }
