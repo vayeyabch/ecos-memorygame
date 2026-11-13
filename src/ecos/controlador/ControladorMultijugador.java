@@ -1,6 +1,7 @@
 package ecos.controlador;
 
 // Clases del propio proyecto que se usan aquí.
+import ecos.app.Idioma;                       // traduce los textos al idioma actual
 import ecos.app.Sesion;                       // nombre del usuario que inició sesión
 import ecos.modelo.ClienteJuego;              // sirve para conectarse a la IP del anfitrión
 import ecos.modelo.ConexionJuego;             // la conexión ya abierta, para enviar y recibir mensajes
@@ -9,6 +10,7 @@ import ecos.modelo.ModeloMultijugador;        // las reglas del juego (solo las 
 import ecos.modelo.ModeloVictoria;            // guarda la partida y las monedas en la base de datos
 import ecos.modelo.Partida;                   // lo que devuelve ModeloVictoria al guardar
 import ecos.modelo.ServidorJuego;             // abre el puerto y espera al invitado
+
 import ecos.pantallas.PantallaMultijugador;   // la pantalla (lobby y tablero)
 // Utilidades de Java, List para las listas y StringJoiner para armar el texto de las cartas.
 import java.util.List;
@@ -333,7 +335,7 @@ public class ControladorMultijugador {
     private String textoFinal() {
         String n0 = soyAnfitrion ? miNombre() : nombreRival;
         String n1 = soyAnfitrion ? nombreRival : miNombre();
-        String r = pts0 == pts1 ? "¡Empate!" : "Ganó " + (pts0 > pts1 ? n0 : n1) + ".";
+        String r = pts0 == pts1 ? Idioma.t("¡Empate!") : Idioma.t("Ganó " + (pts0 > pts1 ? n0 : n1) + ".");
         return r + " " + n0 + " " + pts0 + " - " + pts1 + " " + n1 + ".";
     }
 
@@ -355,17 +357,17 @@ public class ControladorMultijugador {
             // Texto que se agrega al resultado según lo que pasó.
             String extra;
             if (usuario == null || usuario.isBlank()) {
-                extra = " Sin cuenta no se guardan monedas.";
+                extra = " " + Idioma.t("Sin cuenta no se guardan monedas.");
             } else if (guardada == null) {
-                extra = " No se pudo guardar la partida.";
+                extra = " " + Idioma.t("No se pudo guardar la partida.");
             } else if (gano) {
-                extra = " ¡Ganaste " + ModeloMonedas.MONEDAS_POR_VICTORIA + " monedas!";
+                extra = " " + Idioma.t("¡Ganaste " + ModeloMonedas.MONEDAS_POR_VICTORIA + " monedas!");
             } else {
-                extra = " Esta vez no hay monedas.";
+                extra = " " + Idioma.t("Esta vez no hay monedas.");
             }
             // El aviso se muestra en el hilo de la pantalla.
             SwingUtilities.invokeLater(() -> vista.mostrarFin("¡Terminó la partida!",
-                    resultado + extra + " Usá «Salir de la partida» para volver."));
+                    resultado + extra + " " + Idioma.t("Usá «Salir de la partida» para volver.")));
         }, "guardar-partida-red").start();
     }
 

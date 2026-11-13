@@ -50,13 +50,13 @@ public class Textos {
     // Traduce solo las partes de un texto HTML que están entre etiquetas, y deja las etiquetas igual.
     // Recibe el texto HTML en español.
     private static String traducirHtml(String html) {
-        // Recorre cada parte de texto. Si la conoce, usa la traducción y si no, la deja igual. Copia el resto.
+        // Recorre cada parte de texto. Si la conoce (fija o con datos), usa la traducción y si no, la deja igual. Copia el resto.
         Matcher m = ENTRE_ETIQUETAS.matcher(html);
         StringBuilder sb = new StringBuilder();
         while (m.find()) {
             String parte = m.group(1);
-            String traducida = TABLA.get(parte.strip());
-            String nueva = traducida == null ? parte : parte.replace(parte.strip(), traducida);
+            String traducida = ingles(parte.strip());
+            String nueva = parte.replace(parte.strip(), traducida);
             m.appendReplacement(sb, Matcher.quoteReplacement(">" + nueva + "<"));
         }
         m.appendTail(sb);
@@ -280,5 +280,59 @@ public class Textos {
         p("Monedas de %s: %s", "%s's coins: %s");
         p("Monedas: %s", "Coins: %s");
         p("Las monedas no cambian el ranking: sirven para comprar el Ojo espía.", "Coins don't change the ranking: they're for buying the Spy Eye.");
+
+        // Elegir cómo jugar el modo clásico (local o en red).
+        p("Elegí cómo querés jugar", "Choose how you want to play");
+        p("Multijugador en red", "Network multiplayer");
+        p("Local o en red · parejas", "Local or network · pairs");
+        p("2 jugadores · una computadora", "2 players · one computer");
+        p("2 jugadores · 2 computadoras", "2 players · 2 computers");
+        p("Cada jugador tiene su tablero con las parejas en otro orden y juegan por turnos.", "Each player has their own board with the pairs in a different order, and you take turns.");
+        p("Gana quien encuentre todas las parejas con menos intentos.", "Whoever finds all the pairs with the fewest attempts wins.");
+        p("Con cuenta ganás <b>premio en dinero</b>, entrás al <b>ranking</b> y sumás monedas.", "With an account you win <b>cash prizes</b>, join the <b>ranking</b> and earn coins.");
+        p("Uno crea la partida y el otro se une con su IP. Deben estar en la misma red.", "One creates the game and the other joins with their IP. You must be on the same network.");
+        p("Comparten un solo tablero: gana quien junte más parejas.", "You share a single board: whoever collects the most pairs wins.");
+        p("Cada victoria suma <b>monedas</b>, pero no cuenta para el ranking ni para el premio en dinero.", "Each win earns <b>coins</b>, but it doesn't count toward the ranking or the cash prize.");
+
+        // Multijugador en red (lobby).
+        p("Dos computadoras, un tablero. Ganás monedas si ganás la partida, no cuenta para el ranking.", "Two computers, one board. You earn coins if you win the game; it doesn't count toward the ranking.");
+        p("TABLERO", "BOARD");
+        p("SI VAS A CREAR LA PARTIDA", "IF YOU'RE CREATING THE GAME");
+        p("SI TE VAS A UNIR", "IF YOU'RE JOINING");
+        p("IP del anfitrión (o IP:puerto)", "Host IP (or IP:port)");
+        p("Crear partida", "Create game");
+        p("Unirse", "Join");
+        p("Volver", "Back");
+        p("Salir de la partida", "Leave game");
+        p("Esperando al otro jugador… Buscando tu IP pública…", "Waiting for the other player… Looking up your public IP…");
+        p("Esperando al otro jugador…", "Waiting for the other player…");
+        p("IP pública (por internet):", "Public IP (over the internet):");
+        p("IP pública (por internet): %s", "Public IP (over the internet): %s");
+        p("no se pudo averiguar (¿hay internet?)", "couldn't be determined (is there internet?)");
+        p("(no se pudo averiguar)", "(couldn't be determined)");
+        p("IP local (misma wifi):", "Local IP (same wifi):");
+        p("Por internet hay que reenviar el puerto %s (TCP) del router a esta computadora.", "Over the internet you need to forward port %s (TCP) on the router to this computer.");
+        p("No se pudo abrir el puerto %s. ¿Ya hay una partida creada?", "Could not open port %s. Is there already a game created?");
+        p("Escribí la IP del anfitrión.", "Type the host's IP.");
+        p("Conectando…", "Connecting…");
+        p("Conectado, esperando que empiece la partida…", "Connected, waiting for the game to start…");
+        p("No se pudo conectar. Revisá la IP, el puerto y que el anfitrión haya creado la partida.", "Could not connect. Check the IP, the port, and that the host has created the game.");
+
+        // Partida en red.
+        p("Jugador", "Player");
+        p("Rival", "Opponent");
+        p("¡Es tu turno!", "It's your turn!");
+        p("TU TURNO", "YOUR TURN");
+        p("¡Terminó la partida!", "The game is over!");
+        p("¡Empate!", "It's a tie!");
+        p("Ganó %s.", "%s wins.");
+        p("Sin cuenta no se guardan monedas.", "Without an account, coins aren't saved.");
+        p("No se pudo guardar la partida.", "Could not save the game.");
+        p("¡Ganaste %s monedas!", "You won %s coins!");
+        p("Esta vez no hay monedas.", "No coins this time.");
+        p("Usá «Salir de la partida» para volver.", "Use “Leave game” to go back.");
+        p("Se cortó la conexión", "The connection was lost");
+        p("Se cortó la conexión.", "The connection was lost.");
+        p("El otro jugador se desconectó. Usá «Salir de la partida» para volver.", "The other player disconnected. Use “Leave game” to go back.");
     }
 }
