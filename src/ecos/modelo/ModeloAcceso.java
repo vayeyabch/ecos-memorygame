@@ -1,10 +1,8 @@
 package ecos.modelo;
 
-// Modelo de PantallaAcceso, revisa usuario y contraseña al iniciar sesión. No sabe nada de pantallas ni botones.
-// A cargo de Valeria.
+// Modelo de PantallaAcceso: revisa usuario y contraseña al iniciar sesión. No sabe nada de pantallas ni botones.
 public class ModeloAcceso {
 
-    // De aquí se buscan las cuentas.
     private final RepositorioUsuarios repo;
 
     public ModeloAcceso() {

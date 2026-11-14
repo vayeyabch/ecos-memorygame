@@ -1,14 +1,11 @@
 package ecos.controlador;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.modelo.ModeloRegistro;
 import ecos.pantallas.PantallaRegistro;
-// Librería Swing, SwingUtilities para volver al hilo de la pantalla.
 import javax.swing.SwingUtilities;
 
-// Controlador de PantallaRegistro (paso 1 de 2), al tocar Siguiente revisa el formulario con ModeloRegistro y, si está
-// bien, pasa al registro del rostro, que es opcional. Al tocar Crear cuenta también lo revisa y crea la cuenta sin rostro.
-// A cargo de Valeria.
+// Controlador de PantallaRegistro (paso 1 de 2): al tocar Siguiente revisa el formulario con ModeloRegistro y pasa al
+// registro del rostro, que es opcional. Crear cuenta también lo revisa y crea la cuenta sin rostro.
 public class ControladorRegistro {
 
     private final PantallaRegistro vista;
@@ -21,7 +18,6 @@ public class ControladorRegistro {
     public ControladorRegistro(PantallaRegistro vista, ModeloRegistro modelo) {
         this.vista = vista;
         this.modelo = modelo;
-        // Lo que hacen los botones Siguiente y Crear cuenta.
         vista.setAccionSiguiente(this::siguiente);
         vista.setAccionCrearCuenta(this::crearCuenta);
     }

@@ -1,13 +1,10 @@
 package ecos.modelo;
 
-// Utilidades de Java, List para las listas.
 import java.util.List;
 
-// Modelo de PantallaRegistroFacial (paso 2 de 2), guarda la cuenta en la base de datos junto con el rostro capturado.
-// A cargo de Valeria.
+// Modelo de PantallaRegistroFacial (paso 2 de 2): guarda la cuenta en la base junto con el rostro capturado.
 public class ModeloRegistroFacial {
 
-    // De aquí se guarda la cuenta.
     private final RepositorioUsuarios repo;
 
     public ModeloRegistroFacial() {
@@ -33,7 +30,7 @@ public class ModeloRegistroFacial {
         return existente != null || ModeloRegistro.pendiente() != null;
     }
 
-    // Crea la cuenta pendiente SIN rostro (el rostro es opcional). Devuelve el mensaje de error, o null si quedó guardada.
+    // Crea la cuenta pendiente sin rostro (el rostro es opcional). Devuelve el mensaje de error, o null si quedó guardada.
     public String guardarSinRostro() {
         Usuario p = ModeloRegistro.pendiente();
         if (p == null) {
@@ -75,7 +72,6 @@ public class ModeloRegistroFacial {
             return "Volvé al paso 1 y completá tus datos.";
         }
         try {
-            // Por si alguien tomó ese usuario mientras tanto.
             if (repo.existe(p.getUsuario())) {
                 return "Ese usuario ya existe. Volvé al paso 1 y elegí otro.";
             }

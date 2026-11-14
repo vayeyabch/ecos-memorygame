@@ -1,26 +1,21 @@
 package ecos.modelo;
 
-// Utilidades de Java, ArrayList y List para las listas.
 import java.util.ArrayList;
 import java.util.List;
-// Clases de la cámara (JavaCV), un cuadro, el convertidor a imagen de OpenCV y el lector de la cámara.
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
-// Imagen de OpenCV y la función que la voltea como un espejo.
 import org.bytedeco.opencv.opencv_core.Mat;
 import static org.bytedeco.opencv.global.opencv_core.flip;
 
-// Guía a la persona con la cámara. Puede pedir tres movimientos (mirar al frente, girar la cabeza a su izquierda y a su
-// derecha) o solo mirar al frente (modo "solo frente", el que usa el registro). Solo avanza cuando DETECTA que el movimiento
-// se está haciendo bien. Corre en un hilo aparte y avisa por medio de Escucha.
-// Sirve igual para registrar el rostro que para entrar con Face ID, quien la usa decide qué hacer con las fotos.
-// Los avisos de Escucha llegan en el hilo de la captura, no en el de la interfaz (el controlador debe pasarlos a Swing).
-// A cargo de Valeria.
+// Guía a la persona con la cámara. Puede pedir tres movimientos (mirar al frente y girar la cabeza a cada lado) o solo
+// mirar al frente, que es lo que usa el registro. Solo avanza cuando detecta que el movimiento está bien hecho.
+// Corre en un hilo aparte y avisa por medio de Escucha. Sirve igual para registrar el rostro que para entrar con Face ID.
+// Los avisos llegan en el hilo de la captura, así que el controlador debe pasarlos al hilo de Swing.
 public class CapturaFacial {
 
-    // Los movimientos, en orden, cuántas fotos de frente se toman, tiempo mínimo entre fotos, cuadros seguidos con el giro
-    // correcto para darlo por bueno (unos 0,25 s), tiempo máximo por movimiento y pausa entre lecturas de la cámara.
+    // Los movimientos en orden, fotos de frente que se toman, tiempo mínimo entre fotos, cuadros seguidos con el giro
+    // correcto (unos 0,25 s), tiempo máximo por movimiento y pausa entre lecturas de la cámara.
     private static final ReconocedorFacial.Pose[] COMPLETA = {
         ReconocedorFacial.Pose.FRENTE, ReconocedorFacial.Pose.IZQUIERDA, ReconocedorFacial.Pose.DERECHA};
     private static final ReconocedorFacial.Pose[] SOLO_FRENTE = {ReconocedorFacial.Pose.FRENTE};
@@ -75,93 +70,89 @@ public class CapturaFacial {
         cancelado = true;
     }
 
-    // Todo el trabajo de la captura.
+    // Abre la cámara, hace la captura y avisa si algo falla. La cámara se cierra sola al terminar, pase lo que pase.
     private void correr(Escucha escucha) {
-        OpenCVFrameGrabber camara = new OpenCVFrameGrabber(0);
-        try {
+        // Etapa en que falla: 0 abriendo la cámara, 1 capturando, 2 ya terminó.
+        int etapa = 0;
+        try (OpenCVFrameGrabber camara = new OpenCVFrameGrabber(0)) {
             camara.setImageWidth(640);
             camara.setImageHeight(480);
             camara.start();
+            etapa = 1;
+            capturar(camara, escucha);
+            etapa = 2;
         } catch (Exception | UnsatisfiedLinkError e) {
             e.printStackTrace();
-            if (!cancelado) {
-                escucha.alFallar("No se pudo abrir la cámara. Revisá que esté conectada y que otro programa no la esté usando.");
+            // Si ya había terminado, el error fue al cerrar la cámara y no hay nada que avisar.
+            if (!cancelado && etapa < 2) {
+                escucha.alFallar(etapa == 0
+                        ? "No se pudo abrir la cámara. Revisá que esté conectada y que otro programa no la esté usando."
+                        : "Falló la cámara. Intentá de nuevo.");
             }
-            return;
         }
-        try {
-            List<byte[]> caras = new ArrayList<>();
-            int paso = 0;
-            int aciertos = 0;
-            long ultimaToma = 0;
-            long inicioPaso = System.currentTimeMillis();
-            escucha.alCambiarPaso(0, instruccion(secuencia[0]));
-            while (!cancelado) {
-                Frame cuadro = camara.grab();
-                if (cuadro == null || cuadro.image == null) {
-                    Thread.sleep(PAUSA_MS);
-                    continue;
-                }
-                Mat color = aMat.convert(cuadro);
-                if (color == null || color.empty()) {
-                    Thread.sleep(PAUSA_MS);
-                    continue;
-                }
-                // Se voltea como un espejo, así "mi izquierda" se ve a la izquierda.
-                Mat espejo = new Mat();
-                flip(color, espejo, 1);
-                Mat gris = reconocedor.aGris(espejo);
-                ReconocedorFacial.Deteccion d = reconocedor.detectarPose(gris);
-                ReconocedorFacial.Pose pedida = secuencia[paso];
-                long ahora = System.currentTimeMillis();
+    }
 
-                if (ahora - inicioPaso > TIEMPO_POR_PASO_MS) {
-                    escucha.alFallar("No se detectó el movimiento a tiempo. Intentá de nuevo.");
+    // Lee la cámara cuadro por cuadro hasta que la persona hace los movimientos pedidos, se acaba el tiempo o se cancela.
+    private void capturar(OpenCVFrameGrabber camara, Escucha escucha) throws Exception {
+        List<byte[]> caras = new ArrayList<>();
+        int paso = 0;
+        int aciertos = 0;
+        long ultimaToma = 0;
+        long inicioPaso = System.currentTimeMillis();
+        escucha.alCambiarPaso(0, instruccion(secuencia[0]));
+        while (!cancelado) {
+            Frame cuadro = camara.grab();
+            if (cuadro == null || cuadro.image == null) {
+                Thread.sleep(PAUSA_MS);
+                continue;
+            }
+            Mat color = aMat.convert(cuadro);
+            if (color == null || color.empty()) {
+                Thread.sleep(PAUSA_MS);
+                continue;
+            }
+            // Se voltea como un espejo, así "mi izquierda" se ve a la izquierda.
+            Mat espejo = new Mat();
+            flip(color, espejo, 1);
+            Mat gris = reconocedor.aGris(espejo);
+            ReconocedorFacial.Deteccion d = reconocedor.detectarPose(gris);
+            ReconocedorFacial.Pose pedida = secuencia[paso];
+            long ahora = System.currentTimeMillis();
+
+            if (ahora - inicioPaso > TIEMPO_POR_PASO_MS) {
+                escucha.alFallar("No se detectó el movimiento a tiempo. Intentá de nuevo.");
+                return;
+            }
+            boolean pasoListo = false;
+            if (d.pose != pedida) {
+                // Se pierde el avance de confirmación y se le dice qué corregir.
+                aciertos = 0;
+                escucha.alProgresar(pista(d.pose, pedida));
+            } else if (pedida == ReconocedorFacial.Pose.FRENTE) {
+                if (ahora - ultimaToma >= ESPERA_FOTOS_MS) {
+                    caras.add(reconocedor.recortar(gris, d.cara));
+                    ultimaToma = ahora;
+                }
+                escucha.alProgresar("Mirá al frente… foto " + caras.size() + " de " + FOTOS_FRENTE);
+                pasoListo = caras.size() >= FOTOS_FRENTE;
+            } else {
+                aciertos++;
+                escucha.alProgresar("¡Bien! Mantené el giro un momento…");
+                pasoListo = aciertos >= CONFIRMAR;
+            }
+            if (pasoListo) {
+                paso++;
+                aciertos = 0;
+                inicioPaso = System.currentTimeMillis();
+                if (paso >= secuencia.length) {
+                    if (!cancelado) {
+                        escucha.alTerminar(caras);
+                    }
                     return;
                 }
-                boolean pasoListo = false;
-                if (d.pose != pedida) {
-                    // Se pierde el avance de confirmación y se le dice qué corregir.
-                    aciertos = 0;
-                    escucha.alProgresar(pista(d.pose, pedida));
-                } else if (pedida == ReconocedorFacial.Pose.FRENTE) {
-                    if (ahora - ultimaToma >= ESPERA_FOTOS_MS) {
-                        caras.add(reconocedor.recortar(gris, d.cara));
-                        ultimaToma = ahora;
-                    }
-                    escucha.alProgresar("Mirá al frente… foto " + caras.size() + " de " + FOTOS_FRENTE);
-                    pasoListo = caras.size() >= FOTOS_FRENTE;
-                } else {
-                    aciertos++;
-                    escucha.alProgresar("¡Bien! Mantené el giro un momento…");
-                    pasoListo = aciertos >= CONFIRMAR;
-                }
-                if (pasoListo) {
-                    paso++;
-                    aciertos = 0;
-                    inicioPaso = System.currentTimeMillis();
-                    if (paso >= secuencia.length) {
-                        if (!cancelado) {
-                            escucha.alTerminar(caras);
-                        }
-                        return;
-                    }
-                    escucha.alCambiarPaso(paso, instruccion(secuencia[paso]));
-                }
-                Thread.sleep(PAUSA_MS);
+                escucha.alCambiarPaso(paso, instruccion(secuencia[paso]));
             }
-        } catch (Exception | UnsatisfiedLinkError e) {
-            e.printStackTrace();
-            if (!cancelado) {
-                escucha.alFallar("Falló la cámara. Intentá de nuevo.");
-            }
-        } finally {
-            // Siempre se libera la cámara.
-            try {
-                camara.release();
-            } catch (Exception e) {
-                // No importa.
-            }
+            Thread.sleep(PAUSA_MS);
         }
     }
 

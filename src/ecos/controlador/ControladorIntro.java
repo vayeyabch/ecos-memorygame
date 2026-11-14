@@ -1,17 +1,13 @@
 package ecos.controlador;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.pantallas.PantallaIntro;
-// Acciones de Java, Consumer para una acción que recibe un dato.
 import java.util.function.Consumer;
 
-// Controlador de PantallaIntro, cuando termina la carga (o se salta) pasa a la pantalla de inicio.
-// Esta pantalla solo anima los logos, no tiene datos, por eso no necesita modelo.
-// A cargo de Hellen.
+// Controlador de PantallaIntro: cuando termina la carga, o se salta, pasa al inicio. Solo anima los logos, así que no
+// necesita modelo.
 public class ControladorIntro {
 
     public ControladorIntro(PantallaIntro vista, Consumer<String> irA) {
-        // Al terminar la intro pasa al inicio.
         vista.setAlTerminar(() -> irA.accept("inicio"));
     }
 }

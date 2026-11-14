@@ -1,6 +1,5 @@
 package ecos.modelo;
 
-// Base de datos, la conexión, la consulta con ? y el resultado.
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,14 +8,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-// Guarda y lee las victorias en la tabla partidas (usuario, modo, intentos, premio_dolares, premio_colones, dolar, fecha).
-// Cada método abre y cierra su conexión (ConexionBD). Si la base falla lanza RuntimeException; quien lo llama decide qué
-// mostrar. Solo se guardan partidas de cuentas que existen en la tabla usuarios, así que un invitado nunca queda guardado.
-// A cargo de la Parte 2.
+// Guarda y lee las victorias de la tabla partidas. Cada método abre y cierra su conexión (ConexionBD). Si la base falla
+// lanza RuntimeException y quien llama decide qué mostrar. Solo se guardan partidas de cuentas que existen en usuarios,
+// así que un invitado nunca queda guardado.
 public class RepositorioPartidas {
 
-    // Guarda la victoria Y suma las monedas en una sola transacción: o quedan las dos cosas o ninguna.
-    // true si quedaron las dos, false si la cuenta no existe (no se guarda nada).
+    // Guarda la victoria y suma las monedas en una sola transacción. Devuelve false si la cuenta no existe y no se
+    // guarda nada.
     public boolean guardarVictoriaConMonedas(Partida p, int monedas) {
         try (Connection c = ConexionBD.abrir()) {
             c.setAutoCommit(false);
@@ -38,8 +36,8 @@ public class RepositorioPartidas {
         }
     }
 
-    // Top de jugadores (las partidas del multijugador en red NO cuentan): la mejor partida de cada usuario, de mayor a menor premio en dólares (a igual premio gana la más
-    // antigua). Las monedas no influyen.
+    // Top de jugadores: la mejor partida de cada usuario, de mayor a menor premio en dólares. Si hay empate gana la más
+    // antigua. Las partidas del multijugador en red y las monedas no cuentan.
     public List<Partida> top(int cantidad) {
         String sql = "SELECT usuario, modo, intentos, premio_dolares, premio_colones, dolar, fecha FROM ("
                 + " SELECT DISTINCT ON (LOWER(usuario)) usuario, modo, intentos, premio_dolares, premio_colones, dolar, fecha"
@@ -61,7 +59,7 @@ public class RepositorioPartidas {
         return lista;
     }
 
-    // Inserta la partida usando el nombre de la cuenta tal como está en usuarios. 0 filas = esa cuenta no existe.
+    // Inserta la partida con el nombre de la cuenta como está en usuarios; 0 filas significa que la cuenta no existe.
     private boolean insertar(Connection c, Partida p) throws SQLException {
         String sql = "INSERT INTO partidas (usuario, modo, intentos, premio_dolares, premio_colones, dolar, fecha)"
                 + " SELECT usuario, ?, ?, ?, ?, ?, ? FROM usuarios WHERE LOWER(usuario) = LOWER(?)";
@@ -77,7 +75,6 @@ public class RepositorioPartidas {
         }
     }
 
-    // Suma las monedas dentro de la misma transacción.
     private boolean sumarMonedas(Connection c, String usuario, int cantidad) throws SQLException {
         String sql = "UPDATE usuarios SET monedas = monedas + ? WHERE LOWER(usuario) = LOWER(?)";
         try (PreparedStatement ps = c.prepareStatement(sql)) {

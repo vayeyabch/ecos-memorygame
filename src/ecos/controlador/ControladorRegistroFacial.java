@@ -1,21 +1,17 @@
 package ecos.controlador;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.componentes.VisorEscaner;
 import ecos.modelo.CapturaFacial;
 import ecos.modelo.ModeloRegistroFacial;
 import ecos.modelo.ReconocedorFacial;
 import ecos.pantallas.PantallaRegistroFacial;
 import ecos.recursos.Sonido;
-// Utilidades de Java, List para las listas.
 import java.util.List;
-// Librería Swing, SwingUtilities para volver al hilo de la interfaz y Timer para esperar un momento.
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-// Controlador de PantallaRegistroFacial (paso 2 de 2), usa la cámara para pedir que la persona mire al frente y, si sale
-// bien, guarda la cuenta con su rostro, marca el check en "Mirá al frente" y suena el sonido de éxito.
-// A cargo de Valeria.
+// Controlador de PantallaRegistroFacial (paso 2 de 2): usa la cámara para pedir que la persona mire al frente y, si sale
+// bien, guarda la cuenta con su rostro.
 public class ControladorRegistroFacial {
 
     private final PantallaRegistroFacial vista;
@@ -30,7 +26,6 @@ public class ControladorRegistroFacial {
     public ControladorRegistroFacial(PantallaRegistroFacial vista, ModeloRegistroFacial modelo) {
         this.vista = vista;
         this.modelo = modelo;
-        // Al tocar "Registrar mi rostro" se llama empezar(), al entrar a la pantalla alEntrar() y al salir cancelar().
         vista.setAccionCapturar(this::empezar);
         vista.setAccionOmitir(this::omitir);
         vista.setAlEntrar(this::alEntrar);
@@ -44,7 +39,6 @@ public class ControladorRegistroFacial {
         }
     }
 
-    // Si se sale de la pantalla se detiene la cámara.
     private void cancelar() {
         if (captura != null) {
             captura.cancelar();
@@ -54,7 +48,7 @@ public class ControladorRegistroFacial {
         ModeloRegistroFacial.limpiarExistente();
     }
 
-    // Botón Omitir por ahora, si es un registro nuevo crea la cuenta sin rostro y si era una cuenta que ya existía solo vuelve.
+    // Omitir por ahora: en un registro nuevo crea la cuenta sin rostro; si la cuenta ya existía solo vuelve.
     private void omitir() {
         if (captura != null) {
             return;
@@ -76,7 +70,7 @@ public class ControladorRegistroFacial {
                 }
                 vista.getVisor().setEstado(VisorEscaner.Estado.OK);
                 vista.setTextoEstado("¡Cuenta creada! Podés registrar tu rostro después.");
-                Sonido.efecto(Sonido.EXITO);
+                Sonido.efecto("registro_ok");
                 Timer espera = new Timer(1500, e -> vista.irAAcceso());
                 espera.setRepeats(false);
                 espera.start();
@@ -146,7 +140,7 @@ public class ControladorRegistroFacial {
         });
     }
 
-    // Guarda la cuenta en la base de datos (internet), en otro hilo para no congelar la pantalla.
+    // Guarda la cuenta en la base, en otro hilo para no congelar la pantalla.
     private void guardar(List<byte[]> caras) {
         vista.getVisor().setDesplazamiento(0);
         vista.setTextoEstado("Guardando tu cuenta…");
@@ -159,10 +153,9 @@ public class ControladorRegistroFacial {
                 }
                 captura = null;
                 vista.getVisor().setEstado(VisorEscaner.Estado.OK);
-                // Check en "Mirá al frente", mensaje y sonido de éxito.
                 vista.marcarFrente();
                 vista.setTextoEstado("¡Rostro registrado! Ya podés iniciar sesión.");
-                Sonido.efecto(Sonido.EXITO);
+                Sonido.efecto("registro_ok");
                 // Un momento después de mostrar el OK vuelve al acceso para iniciar sesión.
                 Timer espera = new Timer(1500, e -> vista.irAAcceso());
                 espera.setRepeats(false);

@@ -1,6 +1,5 @@
 package ecos;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.app.Navegador;
 import ecos.app.Ventana;
 import ecos.componentes.BarraSuperior;
@@ -34,7 +33,6 @@ import ecos.pantallas.PantallaAcceso;
 import ecos.pantallas.PantallaInicio;
 import ecos.pantallas.PantallaIntro;
 import ecos.recursos.Sprites;
-// Librería Swing, SwingUtilities para ejecutar cosas en el hilo de Swing.
 import javax.swing.SwingUtilities;
 
 // Clase principal, arma la ventana, crea las pantallas, las registra en el navegador y les conecta su controlador.
@@ -42,15 +40,13 @@ public class Main {
 
     // Crea la ventana con su barra de arriba y el botón "i" de la esquina.
     public static Ventana crear() {
-        // La ventana principal, la barra de arriba, el botón "i" de abajo a la derecha y el navegador donde se registran las
-        // pantallas.
+        // La ventana, la barra de arriba, el botón "i" y el navegador donde se registran las pantallas.
         Ventana ventana = new Ventana();
         ventana.setBarraSuperior(new BarraSuperior(ventana.getNavegador()));
         ventana.setEsquinaInferior(new BotonAcercaDe(ventana.getNavegador()));
         Navegador n = ventana.getNavegador();
 
-        // Pantallas (la vista de cada una).
-        // Se crea la vista de cada pantalla.
+        // Vista de cada pantalla.
         PantallaIntro intro = new PantallaIntro();
         PantallaInicio inicio = new PantallaInicio();
         PantallaAcceso acceso = new PantallaAcceso();
@@ -65,7 +61,6 @@ public class Main {
         PantallaPatron patrones = new PantallaPatron();
         PantallaMultijugador multijugador = new PantallaMultijugador();
         PantallaModoClasico modoClasico = new PantallaModoClasico();
-        // Se registran todas las pantallas para poder navegar entre ellas por su nombre.
         // Cada pantalla se registra en el navegador con su nombre.
         n.registrar(intro);
         n.registrar(inicio);
@@ -82,7 +77,6 @@ public class Main {
         n.registrar(multijugador);
         n.registrar(modoClasico);
 
-        // Controladores (uno por pantalla). Los nuevos todavía no tienen lógica.
         // Cada controlador se conecta con su vista; los que necesitan cambiar de pantalla reciben el navegador.
         new ControladorIntro(intro, n::ir);
         new ControladorInicio(inicio, n::ir);
@@ -103,12 +97,12 @@ public class Main {
 
     // Arranca el programa, carga las imágenes, pide el dólar del día y abre la ventana en la intro.
     public static void main(String[] args) {
-        // Carga las imágenes antes de abrir la ventana. Pide el dólar del día al abrir (en segundo plano, no atrasa el arranque).
+        // Carga las imágenes antes de abrir la ventana y pide el dólar del día en segundo plano para no atrasar el
+        // arranque.
         Sprites.precargar();
         Thread dolar = new Thread(ecos.modelo.TipoCambio::actualizarSiHaceFalta, "dolar-inicio");
         dolar.setDaemon(true);
         dolar.start();
-        // Abre la ventana en la intro.
         SwingUtilities.invokeLater(() -> crear().iniciar("intro"));
     }
 }

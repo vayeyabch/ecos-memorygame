@@ -1,18 +1,14 @@
 package ecos.modelo;
 
-// Modelo de las monedas, cada cuenta acumula monedas al ganar y las gasta en el Ojo espía. Se guardan en la columna
-// monedas de la tabla usuarios, así no se pierden al cerrar el programa.
-// Las monedas NO afectan el ranking ni el premio en dinero, eso sale solo de los intentos de la partida.
-// Un jugador sin cuenta (usuario null) siempre tiene 0 monedas y no se le guarda nada.
-// Si la base falla se avisa en la consola y el juego sigue (0 monedas, no se cobra nada).
-// A cargo de Hellen.
+// Monedas de cada cuenta: se ganan al ganar y se gastan en el Ojo espía. Se guardan en la columna monedas de la tabla
+// usuarios. No afectan el ranking ni el premio en dinero. Un jugador sin cuenta siempre tiene 0 y no se le guarda nada.
+// Si la base falla se avisa en la consola y el juego sigue.
 public class ModeloMonedas {
 
-    // Lo que gana quien gana una partida. Lo que cuesta el Ojo espía.
+    // Monedas que gana quien gana una partida y lo que cuesta el Ojo espía.
     public static final int MONEDAS_POR_VICTORIA = 15;
     public static final int PRECIO_OJO = 30;
 
-    // De aquí se leen y se guardan las monedas.
     private final RepositorioUsuarios repo;
 
     public ModeloMonedas() {

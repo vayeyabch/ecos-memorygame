@@ -1,10 +1,8 @@
 package ecos.modelo;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.app.Sesion;
 
 // Modelo de VentanaLoginJugador2, revisa los datos que escribe el jugador 2 antes de jugar.
-// A cargo de Hellen.
 public class ModeloLoginJugador2 {
     private final ModeloAcceso acceso;
 
@@ -16,7 +14,6 @@ public class ModeloLoginJugador2 {
         this.acceso = acceso;
     }
 
-    // Devuelve el mensaje de error, o null si todo está bien.
     public String validar(String usuario, String clave) {
         if (usuario.isEmpty() || clave.isEmpty()) {
             return "Escribí tu usuario y tu contraseña.";

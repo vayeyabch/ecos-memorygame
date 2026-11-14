@@ -1,13 +1,10 @@
 package ecos.modelo;
 
-// Fecha y hora de la partida.
 import java.time.LocalDateTime;
 
-// Registra una victoria: calcula el premio (CalculoPremio, con el dólar de compra de TipoCambio) y lo guarda en la base.
-// En el clásico la partida y las 15 monedas se guardan juntas (todo o nada). En patrones solo se guarda la partida.
-// Sin cuenta (usuario null) no se guarda nada: no hay premio, monedas ni ranking.
-// Si la base falla se avisa en la consola, se devuelve null y el juego sigue.
-// A cargo de la Parte 2.
+// Registra una victoria: calcula el premio (CalculoPremio con el dólar de compra de TipoCambio) y lo guarda en la base.
+// En el clásico la partida y las 15 monedas se guardan juntas; en patrones solo la partida. Sin cuenta no se guarda
+// nada. Si la base falla se avisa en la consola, se devuelve null y el juego sigue.
 public class ModeloVictoria {
 
     private final RepositorioPartidas repo;
@@ -33,7 +30,6 @@ public class ModeloVictoria {
         if (usuario == null || usuario.isBlank()) {
             return null;
         }
-        // La base exige intentos mayores que 0.
         Partida partida = new Partida(usuario, ModoJuego.RED, Math.max(1, intentos), 0, 0, TipoCambio.getCompra(),
                 LocalDateTime.now());
         try {
@@ -46,11 +42,9 @@ public class ModeloVictoria {
     }
 
     private Partida registrar(String usuario, ModoJuego modo, int intentos) {
-        // Sin cuenta no se guarda nada.
         if (usuario == null || usuario.isBlank()) {
             return null;
         }
-        // Premio con la fórmula del equipo y el dólar de compra de ese momento.
         Partida partida = new Partida(usuario, modo, intentos, CalculoPremio.premioDolares(intentos),
                 CalculoPremio.premioColones(intentos), TipoCambio.getCompra(), LocalDateTime.now());
         try {

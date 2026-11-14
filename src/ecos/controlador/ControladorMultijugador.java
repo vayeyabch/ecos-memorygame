@@ -1,82 +1,68 @@
 package ecos.controlador;
 
-// Clases del propio proyecto que se usan aquí.
-import ecos.app.Idioma;                       // traduce los textos al idioma actual
-import ecos.app.Sesion;                       // nombre del usuario que inició sesión
-import ecos.modelo.ClienteJuego;              // sirve para conectarse a la IP del anfitrión
-import ecos.modelo.ConexionJuego;             // la conexión ya abierta, para enviar y recibir mensajes
-import ecos.modelo.ModeloMonedas;             // trae cuántas monedas da una victoria
-import ecos.modelo.ModeloMultijugador;        // las reglas del juego (solo las usa el anfitrión)
-import ecos.modelo.ModeloVictoria;            // guarda la partida y las monedas en la base de datos
-import ecos.modelo.Partida;                   // lo que devuelve ModeloVictoria al guardar
-import ecos.modelo.ServidorJuego;             // abre el puerto y espera al invitado
-
-import ecos.pantallas.PantallaMultijugador;   // la pantalla (lobby y tablero)
-// Utilidades de Java, List para las listas y StringJoiner para armar el texto de las cartas.
+import ecos.app.Idioma;
+import ecos.app.Sesion;
+import ecos.modelo.ClienteJuego;
+import ecos.modelo.ConexionJuego;
+import ecos.modelo.ModeloMonedas;
+import ecos.modelo.ModeloMultijugador;
+import ecos.modelo.ModeloVictoria;
+import ecos.modelo.Partida;
+import ecos.modelo.ServidorJuego;
+import ecos.pantallas.PantallaMultijugador;
 import java.util.List;
 import java.util.StringJoiner;
-// Librería Swing, SwingUtilities para volver al hilo de la interfaz y Timer para esperar un momento.
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 // Controlador de PantallaMultijugador. El anfitrión (jugador 0) tiene el ModeloMultijugador, decide cada jugada y manda
-// los eventos al invitado (jugador 1); el invitado solo manda sus clics ("CLIC i") y aplica los eventos que recibe.
-// Mensajes de la red (una línea cada uno):
-//   invitado -> anfitrión:  HOLA nombre  |  CLIC i
-//   anfitrión -> invitado:  HOLA nombre  |  TABLERO n c0,c1,...  |  eventos V, P, F, T, FIN (ver ModeloMultijugador)
-// Al terminar, cada computadora guarda su partida en la base (modo "red") y el ganador recibe las monedas. Estas partidas
-// no cuentan para el ranking.
-// A cargo de Hellen.
+// los eventos al invitado (jugador 1); el invitado solo manda sus clics y aplica los eventos que recibe. Por la red
+// viaja una línea por mensaje: el invitado manda HOLA con su nombre y CLIC con la carta tocada; el anfitrión manda HOLA,
+// TABLERO con el tamaño y las cartas, y los eventos de ModeloMultijugador. Al terminar, cada computadora guarda su
+// partida en la base (modo "red") y el ganador recibe las monedas. Estas partidas no cuentan para el ranking.
 public class ControladorMultijugador {
 
-    // La pantalla que se controla.
     private final PantallaMultijugador vista;
-    // Tamaño del tablero que elige el anfitrión (4x4 o 6x6).
     private int tamano = 4;
     // La conexión con el otro jugador (null mientras no hay).
     private ConexionJuego conexion = null;
     // El servidor que espera al invitado (solo el anfitrión lo tiene).
     private ServidorJuego servidor = null;
-    // Solo el anfitrión tiene modelo. soyAnfitrion dice qué lado soy.
+    // Guarda la partida y las monedas en la base al terminar.
+    private final ModeloVictoria victoria = new ModeloVictoria();
+    // Solo el anfitrión tiene modelo. soyAnfitrion dice de qué lado estoy.
     private ModeloMultijugador modelo = null;
     private boolean soyAnfitrion = true;
     // Nombre del otro jugador, llega en el mensaje HOLA.
     private String nombreRival = "Rival";
     // True cuando ya terminó la partida o se cortó la conexión (ya no se aceptan jugadas).
     private boolean terminada = false;
-    // Intentos (dos cartas volteadas) de cada jugador y de quién es el turno, se cuentan con los eventos.
+    // Intentos de cada jugador y de quién es el turno, se cuentan con los eventos.
     private final int[] intentos = new int[2];
     private int turnoActual = 0;
     // Puntos (parejas) de cada jugador, se actualizan con los eventos P.
     private int pts0 = 0;
     private int pts1 = 0;
 
-    // Conecta los botones de la pantalla con los métodos de este controlador.
     public ControladorMultijugador(PantallaMultijugador vista) {
         this.vista = vista;
-        // Botones 4x4 y 6x6, se guarda el tamaño y se resalta el botón.
+        // Botones 4x4 y 6x6.
         vista.setAccionTamano(n -> { tamano = n; vista.marcarTamano(n); });
-        // Botón Crear partida (anfitrión).
         vista.setAccionCrear(this::crear);
-        // Botón Unirse (invitado).
         vista.setAccionUnirse(this::unirse);
-        // Clic sobre una carta del tablero.
         vista.setAccionCarta(this::alTocarCarta);
-        // Botones Volver y Salir de la partida.
         vista.setAccionSalir(this::salir);
-        // Al entrar a la pantalla se empieza de cero; al salir se cierra la red.
+        // Al entrar se empieza de cero; al salir se cierra la red.
         vista.setAlEntrar(() -> { limpiar(); vista.marcarTamano(tamano); });
         vista.setAlSalir(this::limpiar);
     }
 
     // Cierra todo lo de la red y deja el controlador como nuevo.
     private void limpiar() {
-        // Si se estaba esperando al invitado, se deja de esperar.
         if (servidor != null) {
             servidor.cerrar();
             servidor = null;
         }
-        // Si había conexión abierta, se cierra.
         if (conexion != null) {
             conexion.cerrar();
             conexion = null;
@@ -101,33 +87,20 @@ public class ControladorMultijugador {
         vista.irAModo();
     }
 
-    // Mi nombre de usuario (si por alguna razón no hay, "Jugador").
     private static String miNombre() {
         String n = Sesion.getNombre();
         return n == null || n.isEmpty() ? "Jugador" : n;
     }
 
-    // ---------- Anfitrión (el que crea la partida) ----------
+    // Lado del anfitrión, el que crea la partida.
 
     // Botón Crear partida: abre el puerto, muestra las IP y espera al invitado.
     private void crear() {
         limpiar();
         soyAnfitrion = true;
-        // Se desactivan los botones mientras se espera.
         vista.setLobbyOcupado(true);
-        vista.setEstadoLobby("Esperando al otro jugador… Buscando tu IP pública…", false);
+        vista.setEstadoLobby(textoIps(), false);
         servidor = new ServidorJuego();
-        ServidorJuego este = servidor;
-        // La IP pública se pregunta en otro hilo (necesita internet y puede tardar).
-        new Thread(() -> {
-            String publica = ServidorJuego.ipPublica();
-            SwingUtilities.invokeLater(() -> {
-                // Solo se muestra si todavía se está esperando en esta misma partida.
-                if (servidor == este && conexion == null) {
-                    vista.setEstadoLobby(textoIps(publica), false);
-                }
-            });
-        }, "ip-publica").start();
         // Se abre el puerto. Si llega alguien se llama alLlegarInvitado; si falla se muestra el error en el lobby.
         servidor.iniciar(c -> SwingUtilities.invokeLater(() -> alLlegarInvitado(c)),
                 msg -> SwingUtilities.invokeLater(() -> {
@@ -136,13 +109,9 @@ public class ControladorMultijugador {
                 }));
     }
 
-    // Texto con las IP para decirle al otro jugador. Por internet se usa la pública, pero solo funciona si el router tiene
-    // reenviado el puerto (si no, no llega). En la misma wifi sirve la local.
-    private static String textoIps(String publica) {
-        String pub = publica == null ? "no se pudo averiguar (¿hay internet?)" : "<b>" + publica + "</b>";
-        return "Esperando al otro jugador…<br>IP pública (por internet): " + pub
-                + "<br>IP local (misma wifi): <b>" + ServidorJuego.ipLocal() + "</b>"
-                + "<br>Por internet hay que reenviar el puerto " + ServidorJuego.PUERTO + " (TCP) del router a esta computadora.";
+    // Texto que se muestra mientras se espera al invitado.
+    private static String textoIps() {
+        return "Esperando al otro jugador…<br>IP local (misma wifi): <b>" + ServidorJuego.ipLocal() + "</b>";
     }
 
     // Llegó el invitado, esperamos su "HOLA nombre" para empezar.
@@ -155,7 +124,6 @@ public class ControladorMultijugador {
 
     // Mensajes que recibe el anfitrión: HOLA (empieza la partida) y CLIC (el invitado tocó una carta).
     private void alMensajeAnfitrion(String m, ConexionJuego c) {
-        // Si es de una conexión vieja, se ignora.
         if (c != conexion) {
             return;
         }
@@ -190,7 +158,6 @@ public class ControladorMultijugador {
         if (modelo == null || terminada) {
             return;
         }
-        // El modelo devuelve los eventos que pasaron (vacío si la jugada no valía, por ejemplo si no era su turno).
         List<String> eventos = modelo.voltear(jugador, i);
         for (String ev : eventos) {
             // Cada evento se manda al invitado y se aplica aquí.
@@ -199,7 +166,6 @@ public class ControladorMultijugador {
             if (ev.startsWith("F ")) {
                 ModeloMultijugador mm = modelo;
                 Timer t = new Timer(1300, e -> {
-                    // Solo si la partida sigue siendo la misma y no terminó.
                     if (modelo == mm && !terminada) {
                         String sig = mm.continuar();
                         if (sig != null) {
@@ -221,7 +187,7 @@ public class ControladorMultijugador {
         aplicar(ev);
     }
 
-    // ---------- Invitado (el que se une) ----------
+    // Lado del invitado, el que se une.
 
     // Botón Unirse: se conecta a la IP escrita.
     private void unirse() {
@@ -234,7 +200,6 @@ public class ControladorMultijugador {
         soyAnfitrion = false;
         vista.setLobbyOcupado(true);
         vista.setEstadoLobby("Conectando…", false);
-        // Conectarse puede tardar, se hace en otro hilo para que la pantalla no se congele.
         new Thread(() -> {
             try {
                 ConexionJuego c = ClienteJuego.conectar(ip);
@@ -265,13 +230,19 @@ public class ControladorMultijugador {
         if (m.startsWith("HOLA ")) {
             nombreRival = m.substring(5);
         } else if (m.startsWith("TABLERO ")) {
-            // "TABLERO n c0,c1,c2,..." se convierte en el tamaño n y la lista de caras.
-            String[] partes = m.split(" ");
-            int n = Integer.parseInt(partes[1]);
-            String[] txt = partes[2].split(",");
-            int[] caras = new int[txt.length];
-            for (int i = 0; i < caras.length; i++) {
-                caras[i] = Integer.parseInt(txt[i]);
+            // "TABLERO n c0,c1,c2,..." se convierte en el tamaño n y la lista de caras. Si el mensaje llega mal se ignora.
+            int n;
+            int[] caras;
+            try {
+                String[] partes = m.split(" ");
+                n = Integer.parseInt(partes[1]);
+                String[] txt = partes[2].split(",");
+                caras = new int[txt.length];
+                for (int i = 0; i < caras.length; i++) {
+                    caras[i] = Integer.parseInt(txt[i]);
+                }
+            } catch (RuntimeException e) {
+                return;
             }
             terminada = false;
             reiniciarMarcador();
@@ -283,7 +254,7 @@ public class ControladorMultijugador {
         }
     }
 
-    // ---------- Los dos lados ----------
+    // Lo que comparten los dos lados.
 
     // El jugador tocó la carta i: el anfitrión juega directo; el invitado le manda el clic al anfitrión.
     private void alTocarCarta(int i) {
@@ -339,8 +310,8 @@ public class ControladorMultijugador {
         return r + " " + n0 + " " + pts0 + " - " + pts1 + " " + n1 + ".";
     }
 
-    // Fin de la partida, se guarda en la base (historial) y el que ganó recibe las monedas. NO cuenta para el ranking. Cada
-    // computadora guarda lo suyo con su propia cuenta. Se hace en otro hilo porque usa la base de datos.
+    // Al terminar se guarda la partida en el historial y el que ganó recibe las monedas. No cuenta para el ranking. Cada
+    // computadora guarda lo suyo con su cuenta, en otro hilo porque usa la base de datos.
     private void terminar() {
         vista.bloquear();
         // Quién soy (0 o 1), mis parejas, las del rival y si gané.
@@ -353,7 +324,7 @@ public class ControladorMultijugador {
         String resultado = textoFinal();
         new Thread(() -> {
             // Guarda la partida (modo "red", sin premio) y suma las monedas solo si gané.
-            Partida guardada = new ModeloVictoria().registrarRed(usuario, misIntentos, gano);
+            Partida guardada = victoria.registrarRed(usuario, misIntentos, gano);
             // Texto que se agrega al resultado según lo que pasó.
             String extra;
             if (usuario == null || usuario.isBlank()) {
@@ -365,7 +336,6 @@ public class ControladorMultijugador {
             } else {
                 extra = " " + Idioma.t("Esta vez no hay monedas.");
             }
-            // El aviso se muestra en el hilo de la pantalla.
             SwingUtilities.invokeLater(() -> vista.mostrarFin("¡Terminó la partida!",
                     resultado + extra + " " + Idioma.t("Usá «Salir de la partida» para volver.")));
         }, "guardar-partida-red").start();
@@ -373,12 +343,10 @@ public class ControladorMultijugador {
 
     // Se cortó la conexión (el otro jugador cerró el juego o se fue la red).
     private void alDesconectar(ConexionJuego c) {
-        // Si es una conexión vieja, se ignora.
         if (c != conexion) {
             return;
         }
         conexion = null;
-        // Si la partida ya había terminado, no hay nada que avisar.
         if (terminada) {
             return;
         }

@@ -1,33 +1,26 @@
 package ecos.app;
 
-// Utilidades de Java, ArrayList para listas que crecen, HashMap para guardar pares texto y traducción, List para las listas
-// y Map para el tipo de esa tabla.
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-// Expresiones regulares de Java, Matcher para encontrar partes de un texto y Pattern para describir lo que se busca.
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// Tabla de traducciones del juego, cada texto en español con su versión en inglés. Los textos que llevan datos (un nombre o
-// un número) se escriben con %s donde va el dato. Si un texto no está en la tabla se queda en español, así el juego nunca
-// se rompe por una traducción que falte.
+// Traducciones del juego: cada texto en español con su versión en inglés. Los textos con datos llevan %s donde va el
+// dato. Si un texto no está en la tabla se queda en español, así una traducción que falte no rompe nada.
 public class Textos {
 
-    // Tabla con los textos fijos (español, inglés), lista con los textos que llevan datos y patrón que encuentra el texto que
-    // hay entre etiquetas HTML.
+    // Textos fijos, textos con datos y patrón que encuentra el texto entre etiquetas HTML.
     private static final Map<String, String> TABLA = new HashMap<>();
     private static final List<Plantilla> PLANTILLAS = new ArrayList<>();
     private static final Pattern ENTRE_ETIQUETAS = Pattern.compile(">([^<>]+)<");
 
-    // Un texto con datos, el patrón que lo reconoce y cómo queda en inglés.
+    // Un texto con datos: el patrón que lo reconoce y cómo queda en inglés.
     private record Plantilla(Pattern patron, String ingles) { }
 
-    // Busca la traducción al inglés de un texto.
-    // Recibe el texto en español.
     public static String ingles(String es) {
-        // Primero busca el texto completo. Si no lo encuentra, prueba con los textos que llevan datos.
+        // Busca primero el texto completo y después los textos con datos.
         String directo = TABLA.get(es);
         if (directo != null) {
             return directo;
@@ -35,7 +28,7 @@ public class Textos {
         for (Plantilla pl : PLANTILLAS) {
             Matcher m = pl.patron().matcher(es);
             if (m.matches()) {
-                // Pone los datos en el texto en inglés. Si un dato es una palabra conocida, como Invitado, la traduce.
+                // Pone los datos en el texto en inglés; si un dato es una palabra conocida, como Invitado, la traduce.
                 Object[] datos = new Object[m.groupCount()];
                 for (int i = 0; i < datos.length; i++) {
                     datos[i] = ingles(m.group(i + 1));
@@ -43,14 +36,11 @@ public class Textos {
                 return String.format(pl.ingles(), datos);
             }
         }
-        // Si es HTML y no lo encontró, traduce las partes que hay entre las etiquetas.
         return es.startsWith("<html>") ? traducirHtml(es) : es;
     }
 
-    // Traduce solo las partes de un texto HTML que están entre etiquetas, y deja las etiquetas igual.
-    // Recibe el texto HTML en español.
+    // Traduce solo las partes de un texto HTML que están entre etiquetas.
     private static String traducirHtml(String html) {
-        // Recorre cada parte de texto. Si la conoce (fija o con datos), usa la traducción y si no, la deja igual. Copia el resto.
         Matcher m = ENTRE_ETIQUETAS.matcher(html);
         StringBuilder sb = new StringBuilder();
         while (m.find()) {
@@ -63,11 +53,8 @@ public class Textos {
         return sb.toString();
     }
 
-    // Agrega un par a la tabla.
-    // Recibe el texto en español y su traducción al inglés.
+    // Agrega un par a la tabla. Si lleva %s arma el patrón que reconoce el texto con cualquier dato en ese lugar.
     private static void p(String es, String en) {
-        // Si no lleva datos, lo guarda tal cual. Si lleva %s, arma el patrón que reconoce el texto con cualquier dato en ese
-        // lugar y lo guarda aparte.
         if (!es.contains("%s")) {
             TABLA.put(es, en);
             return;
@@ -83,7 +70,7 @@ public class Textos {
         PLANTILLAS.add(new Plantilla(Pattern.compile(regex.toString(), Pattern.DOTALL), en));
     }
 
-    // Aquí se llenan todas las traducciones, en orden de pantalla.
+    // Todas las traducciones, en orden de pantalla.
     static {
         // Nombres y palabras sueltas que se repiten en varias pantallas.
         p("Jugador 1", "Player 1");
@@ -290,12 +277,13 @@ public class Textos {
         p("Cada jugador tiene su tablero con las parejas en otro orden y juegan por turnos.", "Each player has their own board with the pairs in a different order, and you take turns.");
         p("Gana quien encuentre todas las parejas con menos intentos.", "Whoever finds all the pairs with the fewest attempts wins.");
         p("Con cuenta ganás <b>premio en dinero</b>, entrás al <b>ranking</b> y sumás monedas.", "With an account you win <b>cash prizes</b>, join the <b>ranking</b> and earn coins.");
-        p("Uno crea la partida y el otro se une con su IP. Deben estar en la misma red.", "One creates the game and the other joins with their IP. You must be on the same network.");
-        p("Comparten un solo tablero: gana quien junte más parejas.", "You share a single board: whoever collects the most pairs wins.");
-        p("Cada victoria suma <b>monedas</b>, pero no cuenta para el ranking ni para el premio en dinero.", "Each win earns <b>coins</b>, but it doesn't count toward the ranking or the cash prize.");
+        p("Uno crea la partida y el otro se une con su IP, en la misma red.", "One player hosts and the other joins with their IP, on the same network.");
+        p("Comparten un solo tablero y gana quien junte más parejas.", "You share one board and whoever collects the most pairs wins.");
+        p("No hay <b>Ojo espía</b>, porque los dos ven el mismo tablero.", "There's no <b>Spy Eye</b>, since you both see the same board.");
+        p("Ganar suma <b>monedas</b> para la partida clásica, pero no cuenta para el ranking ni para el premio.", "Winning earns <b>coins</b> for the classic game, but it doesn't count toward the ranking or the prize.");
 
         // Multijugador en red (lobby).
-        p("Dos computadoras, un tablero. Ganás monedas si ganás la partida, no cuenta para el ranking.", "Two computers, one board. You earn coins if you win the game; it doesn't count toward the ranking.");
+        p("Dos computadoras y un solo tablero, por eso aquí no hay Ojo espía. Si ganás sumás monedas para la partida clásica, pero no cuenta para el ranking.", "Two computers and one board, so there's no Spy Eye here. If you win you earn coins for the classic game, but it doesn't count toward the ranking.");
         p("TABLERO", "BOARD");
         p("SI VAS A CREAR LA PARTIDA", "IF YOU'RE CREATING THE GAME");
         p("SI TE VAS A UNIR", "IF YOU'RE JOINING");
@@ -304,14 +292,8 @@ public class Textos {
         p("Unirse", "Join");
         p("Volver", "Back");
         p("Salir de la partida", "Leave game");
-        p("Esperando al otro jugador… Buscando tu IP pública…", "Waiting for the other player… Looking up your public IP…");
         p("Esperando al otro jugador…", "Waiting for the other player…");
-        p("IP pública (por internet):", "Public IP (over the internet):");
-        p("IP pública (por internet): %s", "Public IP (over the internet): %s");
-        p("no se pudo averiguar (¿hay internet?)", "couldn't be determined (is there internet?)");
-        p("(no se pudo averiguar)", "(couldn't be determined)");
         p("IP local (misma wifi):", "Local IP (same wifi):");
-        p("Por internet hay que reenviar el puerto %s (TCP) del router a esta computadora.", "Over the internet you need to forward port %s (TCP) on the router to this computer.");
         p("No se pudo abrir el puerto %s. ¿Ya hay una partida creada?", "Could not open port %s. Is there already a game created?");
         p("Escribí la IP del anfitrión.", "Type the host's IP.");
         p("Conectando…", "Connecting…");

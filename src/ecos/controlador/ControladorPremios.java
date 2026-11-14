@@ -1,18 +1,15 @@
 package ecos.controlador;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.app.Sesion;
 import ecos.modelo.ModeloMonedas;
 import ecos.modelo.RankingPremios;
 import ecos.modelo.TipoCambio;
 import ecos.pantallas.PantallaPremios;
-// Librería Swing, SwingUtilities para ejecutar cosas en el hilo de Swing.
 import javax.swing.SwingUtilities;
 
-// Controlador de PantallaPremios, al entrar muestra lo último que se sabía y, en segundo plano, pide el dólar del día al
-// BCCR (una vez al día), lee el top 5 real de la base y las monedas de quien juega. Cuando todo llega, refresca la pantalla.
-// La vista no toca el modelo, todo lo que muestra se lo pasa este controlador.
-// A cargo de Allison.
+// Controlador de PantallaPremios: al entrar muestra lo último que se sabía y, en segundo plano, pide el dólar del día al
+// BCCR (una vez al día), lee el top 5 de la base y las monedas de quien juega. Cuando todo llega, refresca la pantalla.
+// La vista no toca el modelo, este controlador le pasa todo.
 public class ControladorPremios {
 
     private final PantallaPremios vista;
@@ -23,7 +20,6 @@ public class ControladorPremios {
     private volatile int misMonedas = 0;
     private int carga = 0;
 
-    // Guarda la vista y le dice que, cuando se entre a la pantalla, ejecute alEntrar.
     public ControladorPremios(PantallaPremios vista) {
         this.vista = vista;
         vista.setAlEntrar(this::alEntrar);
@@ -31,7 +27,6 @@ public class ControladorPremios {
 
     // Al entrar se muestra lo que ya se sabe y en segundo plano se pide todo lo que usa internet o la base.
     private void alEntrar() {
-        // Primero lo que ya se sabe, para que la pantalla nunca salga vacía.
         mostrar();
         final int actual = ++carga;
         final String usuario = Sesion.getNombre();
@@ -65,7 +60,6 @@ public class ControladorPremios {
             dolares[i] = ranking.dolares(i);
         }
         vista.mostrar(ranking.dolarDelDia(), nombres, intentos, colones, dolares);
-        // Monedas de quien inició sesión.
         vista.setMonedas(Sesion.getNombre(), misMonedas);
     }
 }

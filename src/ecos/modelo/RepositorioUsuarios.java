@@ -1,6 +1,5 @@
 package ecos.modelo;
 
-// Base de datos, la conexión, la consulta con ? y el resultado.
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,13 +7,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-// Guarda y busca cuentas en la tabla usuarios, incluidas sus monedas.
-// Cada método abre y cierra su conexión (ConexionBD). Si la base falla lanza RuntimeException; quien lo llama decide qué
-// mostrar. Las monedas se cambian con una sola instrucción SQL para que nunca queden negativas.
-// A cargo de Valeria.
+// Guarda y busca cuentas de la tabla usuarios, con sus monedas. Cada método abre y cierra su conexión (ConexionBD). Si
+// la base falla lanza RuntimeException. Las monedas se cambian con una sola instrucción SQL para que nunca queden
+// negativas.
 public class RepositorioUsuarios {
 
-    // Busca una cuenta por su usuario (sin importar mayúsculas). null si no existe.
+    // Busca una cuenta por usuario sin importar mayúsculas; null si no existe.
     public Usuario buscarPorUsuario(String usuario) {
         String sql = "SELECT usuario, nombre, apellidos, correo, clave_hash, rostro, monedas FROM usuarios"
                 + " WHERE LOWER(usuario) = LOWER(?)";
@@ -32,12 +30,11 @@ public class RepositorioUsuarios {
         }
     }
 
-    // Dice si ya existe un usuario con ese nombre.
     public boolean existe(String usuario) {
         return buscarPorUsuario(usuario) != null;
     }
 
-    // Guarda una cuenta nueva, o actualiza sus datos si ya existía. Las monedas NO se tocan aquí.
+    // Guarda una cuenta nueva, o actualiza sus datos si ya existía. Las monedas no se tocan aquí.
     public void guardar(Usuario u) {
         String upd = "UPDATE usuarios SET nombre=?, apellidos=?, correo=?, clave_hash=?, rostro=? WHERE LOWER(usuario)=LOWER(?)";
         String ins = "INSERT INTO usuarios (usuario, nombre, apellidos, correo, clave_hash, rostro) VALUES (?,?,?,?,?,?)";
@@ -80,14 +77,13 @@ public class RepositorioUsuarios {
         }
     }
 
-    // Cobra monedas solo si le alcanzan, todo en una instrucción. true si se cobró, false si no tenía suficientes.
+    // Cobra monedas solo si le alcanzan, en una instrucción. Devuelve false si no tenía suficientes.
     public boolean cobrarMonedas(String usuario, int cantidad) {
         String sql = "UPDATE usuarios SET monedas = monedas - ? WHERE LOWER(usuario) = LOWER(?) AND monedas >= ?";
         try (Connection c = ConexionBD.abrir(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, cantidad);
             ps.setString(2, usuario);
             ps.setInt(3, cantidad);
-            // Filas cambiadas, 1 = cobró, 0 = no alcanzaba.
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             throw new RuntimeException("Error al cobrar monedas", e);

@@ -1,6 +1,5 @@
 package ecos.controlador;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.app.Sesion;
 import ecos.componentes.VisorEscaner;
 import ecos.modelo.CapturaFacial;
@@ -9,15 +8,12 @@ import ecos.modelo.ReconocedorFacial;
 import ecos.modelo.Usuario;
 import ecos.pantallas.PantallaLoginFacial;
 import ecos.recursos.Sonido;
-// Utilidades de Java, List para las listas.
 import java.util.List;
-// Librería Swing, SwingUtilities para volver al hilo de la interfaz y Timer para esperar un momento.
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-// Controlador de PantallaLoginFacial, usa la cámara para pedir que la persona mire al frente y, si sale bien, busca a
-// quién pertenece el rostro. Si lo reconoce, inicia sesión y va al menú.
-// A cargo de Valeria.
+// Controlador de PantallaLoginFacial: usa la cámara para pedir que la persona mire al frente y busca a quién pertenece
+// el rostro. Si lo reconoce, inicia sesión y va al menú.
 public class ControladorLoginFacial {
 
     private final PantallaLoginFacial vista;
@@ -32,13 +28,11 @@ public class ControladorLoginFacial {
     public ControladorLoginFacial(PantallaLoginFacial vista, ModeloLoginFacial modelo) {
         this.vista = vista;
         this.modelo = modelo;
-        // Al tocar "Escanear mi rostro" se llama empezar(), al entrar a la pantalla alEntrar() y al salir cancelar().
         vista.setAccionEscanear(this::empezar);
         vista.setAlEntrar(() -> captura = null);
         vista.setAlSalir(this::cancelar);
     }
 
-    // Si se sale de la pantalla se detiene la cámara.
     private void cancelar() {
         if (captura != null) {
             captura.cancelar();
@@ -127,7 +121,6 @@ public class ControladorLoginFacial {
                     return;
                 }
                 captura = null;
-                // Inicia sesión igual que con la contraseña.
                 Sesion.setNombre(u.getUsuario());
                 vista.getVisor().setEstado(VisorEscaner.Estado.OK);
                 vista.setTextoEstado("¡Rostro reconocido! Hola, " + u.getUsuario() + ".");

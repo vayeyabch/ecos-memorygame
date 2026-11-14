@@ -1,19 +1,15 @@
 package ecos.modelo;
 
-// Entrada y salida de Java, para leer y escribir texto por el socket.
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-// Red de Java, Socket para la conexión entre las dos computadoras.
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-// Acciones de Java, Consumer para una acción que recibe un dato.
 import java.util.function.Consumer;
 
 // Una conexión ya establecida entre los dos jugadores. Envía y recibe mensajes de texto, una línea por mensaje.
-// A cargo de Hellen.
 public class ConexionJuego {
 
     private final Socket socket;
@@ -34,8 +30,8 @@ public class ConexionJuego {
         }
     }
 
-    // Empieza a escuchar en otro hilo (para no congelar la pantalla). Cada mensaje llega a alMensaje; si se corta la
-    // conexión se llama alCerrar. Ojo, ambas se ejecutan en el hilo de la red, no en el de la interfaz.
+    // Escucha en otro hilo para no congelar la pantalla. Cada mensaje llega a alMensaje y, si se corta la conexión, se
+    // llama alCerrar. Ambas corren en el hilo de la red, no en el de la interfaz.
     public void escuchar(Consumer<String> alMensaje, Runnable alCerrar) {
         Thread t = new Thread(() -> {
             try {
@@ -44,7 +40,6 @@ public class ConexionJuego {
                     alMensaje.accept(linea);
                 }
             } catch (IOException e) {
-                // Se cortó la conexión, se avisa abajo.
             }
             boolean avisar = !cerrada;
             cerrar();
@@ -56,13 +51,12 @@ public class ConexionJuego {
         t.start();
     }
 
-    // Cierra la conexión (no avisa a alCerrar).
+    // Cierra la conexión sin avisar a alCerrar.
     public void cerrar() {
         cerrada = true;
         try {
             socket.close();
         } catch (IOException e) {
-            // Ya estaba cerrada.
         }
     }
 }

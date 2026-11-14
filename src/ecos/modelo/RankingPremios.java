@@ -4,18 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// Modelo de PantallaPremios, el top 5 real. Lee de la tabla partidas la mejor partida de cada usuario, ordenada por premio
-// en dólares (las monedas no influyen). Los premios se muestran como se guardaron: con el dólar de ese día.
-// cargar() usa la base de datos, llamarlo fuera del hilo de la interfaz. Si la base falla, se queda con el último top
-// leído (o vacío si nunca se pudo leer).
-// A cargo de Allison.
+// Modelo de PantallaPremios: el top 5 real. Lee de la tabla partidas la mejor partida de cada usuario, ordenada por
+// premio en dólares, con el dólar con que se guardó. cargar() usa la base, llamarlo fuera del hilo de la interfaz; si
+// falla se queda con el último top leído.
 public class RankingPremios {
 
-    // Cuántos puestos tiene el ranking.
     public static final int PUESTOS = 5;
 
     private final RepositorioPartidas repo;
-    // Último top leído (se reemplaza completo, nunca se modifica).
+    // Último top leído, se reemplaza completo.
     private volatile List<Partida> top = Collections.emptyList();
 
     public RankingPremios() {
@@ -37,7 +34,6 @@ public class RankingPremios {
         }
     }
 
-    // Cuántos puestos hay llenos (0 a 5).
     public int cantidad() {
         return top.size();
     }

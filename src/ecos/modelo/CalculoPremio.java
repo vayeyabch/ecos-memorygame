@@ -1,21 +1,17 @@
 package ecos.modelo;
 
-// Utilidades de Java, Locale para dar formato según el país.
 import java.util.Locale;
 
-// Calcula el premio de una partida, premio = 1 / intentos x 100 x dólar del día, y arma el texto para mostrarlo.
-// La consultan la ventana de victoria (Isa) y la pantalla de Premios (Allison), así la fórmula solo existe aquí.
-// El dólar lo toma de TipoCambio. No guarda nada, solo calcula.
-// A cargo de Allison.
+// Calcula el premio de una partida (1 / intentos x 100 x dólar del día) y arma el texto para mostrarlo. La usan la
+// ventana de victoria y la pantalla de Premios, así la fórmula solo existe aquí. El dólar lo toma de TipoCambio.
 public class CalculoPremio {
 
     // Premio en dólares, 1 / intentos x 100.
     public static double premioDolares(int intentos) {
-        // Max evita dividir entre 0.
         return 1.0 / Math.max(1, intentos) * 100;
     }
 
-    // Premio en colones, el premio en dólares x el dólar (venta) del día.
+    // Premio en colones: el premio en dólares x el dólar de venta del día.
     public static double premioColones(int intentos) {
         return premioDolares(intentos) * TipoCambio.getCompra();
     }

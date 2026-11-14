@@ -1,8 +1,7 @@
 package ecos.modelo;
 
-// Modelo de PantallaRegistro (paso 1 de 2), revisa los datos del formulario. Si están bien los deja guardados en memoria
-// para registrar el rostro (paso 2, que es opcional) o para crear la cuenta de una vez sin rostro.
-// A cargo de Valeria.
+// Modelo de PantallaRegistro (paso 1 de 2): revisa el formulario y deja la cuenta pendiente para registrar el rostro
+// (paso 2, opcional) o para crearla sin rostro.
 public class ModeloRegistro {
 
     // Límites de la tabla usuarios y largo mínimo de la contraseña.
@@ -12,11 +11,10 @@ public class ModeloRegistro {
     private static final int MAX_USUARIO = 20;
     private static final int MIN_CLAVE = 6;
 
-    // Cuenta a medio crear. Es static porque la pantalla del paso 1 y la del paso 2 tienen cada una su controlador y su
-    // modelo, y los datos tienen que pasar de una a otra (igual que Sesion). La contraseña ya viene en hash.
+    // Cuenta a medio crear. Es static porque los pasos 1 y 2 tienen cada uno su controlador y su modelo, y los datos
+    // pasan de uno a otro, como en Sesion. La contraseña ya viene en hash.
     private static Usuario pendiente = null;
 
-    // De aquí se revisa si el usuario ya existe.
     private final RepositorioUsuarios repo;
 
     public ModeloRegistro() {
@@ -37,7 +35,6 @@ public class ModeloRegistro {
                 || usuario.length() > MAX_USUARIO) {
             return "Algún campo es demasiado largo.";
         }
-        // Algo@algo.algo, sin espacios.
         if (!correo.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
             return "El correo no es válido.";
         }
@@ -58,7 +55,6 @@ public class ModeloRegistro {
             e.printStackTrace();
             return "No se pudo conectar con la base de datos.";
         }
-        // Todo bien, queda pendiente de registrar el rostro. La contraseña se guarda ya convertida en hash.
         pendiente = new Usuario(usuario, nombre, apellidos, correo, Seguridad.hash(clave));
         return null;
     }

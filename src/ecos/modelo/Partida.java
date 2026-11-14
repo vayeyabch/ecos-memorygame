@@ -1,11 +1,8 @@
 package ecos.modelo;
 
-// Fecha y hora de la partida.
 import java.time.LocalDateTime;
 
-// Datos de una partida ganada por una cuenta (una fila de la tabla partidas).
-// Es solo una "caja de datos", guarda y entrega información.
-// A cargo de la Parte 2.
+// Datos de una partida ganada por una cuenta, una fila de la tabla partidas.
 public class Partida {
 
     private final String usuario;

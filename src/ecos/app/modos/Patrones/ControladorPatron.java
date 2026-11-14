@@ -1,22 +1,17 @@
 package ecos.app.modos.Patrones;
 
-// Clases del propio proyecto que se usan aquí.
 import ecos.app.Sesion;
 import ecos.pantallas.PantallaPatron;
-// Utilidades de Java, List para las listas.
 import java.util.List;
-// Acciones de Java, Consumer para una acción que recibe un dato.
 import java.util.function.Consumer;
-// Librería Swing, Timer para los relojes.
 import javax.swing.Timer;
 
-// Controlador del modo patrones con el juego completo.
-// Primero se muestra un patrón (3 casillas en el nivel 1) y el jugador lo repite en el mismo orden, con 12 segundos en total
-// y máximo 2 entre casillas. Si acierta, el siguiente patrón tiene una casilla más, y si falla, termina el juego.
+// Controlador del modo patrones. Se muestra un patrón (3 casillas en el nivel 1) y el jugador lo repite en el mismo
+// orden, con 12 segundos en total y máximo 2 entre casillas. Si acierta, el siguiente patrón tiene una casilla más; si
+// falla, termina el juego.
 public class ControladorPatron {
 
-    // Segundos de la barra grande y de la delgada, cuánto se ve encendida cada casilla del patrón y la pausa entre una
-    // casilla y otra.
+    // Segundos de la barra grande y de la delgada, tiempo que se ve encendida cada casilla y pausa entre casillas.
     private static final double TIEMPO_TOTAL = 12.0;
     private static final double TIEMPO_ENTRE = 2.0;
     private static final int ENCENDIDA_MS = 600;
@@ -26,57 +21,50 @@ public class ControladorPatron {
 
     private enum Fase { ESPERANDO, MOSTRANDO, JUGANDO, TERMINADO }
 
-    // La pantalla que muestra el juego, el modo de cambiar de pantalla, el reloj que llama a tick() cada 0.1 s y las reglas
-    // con el patrón que hay que repetir.
+    // Pantalla, cómo cambiar de pantalla, reloj que llama a tick() cada 0.1 s y reglas con el patrón a repetir.
     private final PantallaPatron vista;
     private final Consumer<String> irA;
     private final Timer reloj = new Timer(100, e -> tick());
     private SecuenciaPatron secuencia = new SecuenciaPatron();
-    // La fase actual del juego y los segundos que quedan de los 12 y de los 2 entre casillas. La barra delgada corre desde
-    // la primera casilla.
+    // Fase actual y segundos que quedan de los 12 y de los 2 entre casillas. La barra delgada corre desde la primera
+    // casilla.
     private Fase fase = Fase.TERMINADO;
     private double total = TIEMPO_TOTAL;
     private double entre = TIEMPO_ENTRE;
     private boolean entreActivo = false;
-    // Último segundo en que sonó el aviso. Sirve para ignorar temporizadores de una partida anterior.
+    // Último segundo en que sonó el aviso y número de partida, para ignorar temporizadores viejos.
     private int ultimoSegundo = 99;
     private int partida = 0;
 
-    // Constructor que guarda la pantalla y le dice qué método llamar en cada evento.
     public ControladorPatron(PantallaPatron vista, Consumer<String> irA) {
         this.vista = vista;
         this.irA = irA;
-        // Al tocar una casilla se llama clic(), al pulsar Empezar empezar(), al entrar a la pantalla iniciar() y al salir salir().
         vista.setAlClicCasilla(this::clic);
         vista.setAlEmpezar(this::empezar);
         vista.setAlEntrar(this::iniciar);
         vista.setAlSalir(this::salir);
     }
 
-    // Partida nueva, nivel 1 y todo listo para pulsar "Empezar".
+    // Partida nueva: nivel 1 y todo listo para pulsar Empezar.
     private void iniciar() {
         partida++;
         reloj.stop();
-        // Vuelve al nivel 1.
         secuencia = new SecuenciaPatron();
         fase = Fase.ESPERANDO;
         total = TIEMPO_TOTAL;
         entre = TIEMPO_ENTRE;
-        // La barra delgada todavía no corre.
         entreActivo = false;
         ultimoSegundo = 99;
         vista.setNivel(secuencia.getNivel(), secuencia.getCasillas());
         vista.setInfo("Pulsá empezar");
         vista.setTiempoTotal(total, TIEMPO_TOTAL);
         vista.setTiempoEntre(entre, TIEMPO_ENTRE);
-        // Casillas bloqueadas. aparece el botón "Empezar".
+        // Casillas bloqueadas y botón Empezar visible.
         vista.setJugable(false);
         vista.setBotonEmpezar(true);
     }
 
-    // Al salir de la pantalla se cancela todo lo pendiente.
     private void salir() {
-        // Invalida los temporizadores que quedaban.
         partida++;
         reloj.stop();
         fase = Fase.TERMINADO;
@@ -84,37 +72,34 @@ public class ControladorPatron {
 
     // Crea el patrón del nivel y lo muestra casilla por casilla.
     private void empezar() {
-        // Solo se puede empezar si estamos esperando.
         if (fase != Fase.ESPERANDO) {
             return;
         }
-        // Sortea el patrón del nivel. Ahora se enseña el patrón. Desaparece el botón "Empezar". casillas bloqueadas.
+        // Se sortea el patrón, se muestra y mientras tanto no se puede tocar nada.
         secuencia.nuevaRonda();
         fase = Fase.MOSTRANDO;
         vista.setBotonEmpezar(false);
         vista.setJugable(false);
         vista.setInfo("Memoriza el patrón");
-        // La barra grande se llena. La barra delgada se llena.
+        // Las dos barras se llenan.
         vista.setTiempoTotal(TIEMPO_TOTAL, TIEMPO_TOTAL);
         vista.setTiempoEntre(TIEMPO_ENTRE, TIEMPO_ENTRE);
         SonidosPartidaPatron.empezar();
         despues(500, () -> mostrarPaso(0));
     }
 
-    // Enseña la casilla número k del patrón y luego pasa a la siguiente (recursivo con pausas).
+    // Enciende la casilla k del patrón y luego pasa a la siguiente, con pausas.
     private void mostrarPaso(int k) {
         List<Integer> patron = secuencia.getPatron();
-        // Ya se mostraron todas.
         if (k >= patron.size()) {
             comenzarTurno();
             return;
         }
-        // La casilla que toca mostrar. Suena su nota.
+        // Enciende la casilla que toca y suena su nota.
         int casilla = patron.get(k);
         vista.encender(casilla, true);
         SonidosPartidaPatron.casilla(casilla);
         despues(ENCENDIDA_MS, () -> {
-            // Y se pasa a la siguiente.
             vista.encender(casilla, false);
             despues(PAUSA_MS, () -> mostrarPaso(k + 1));
         });
@@ -122,62 +107,52 @@ public class ControladorPatron {
 
     // Ya se mostró el patrón, ahora le toca al jugador.
     private void comenzarTurno() {
-        // El jugador puede tocar casillas. la barra grande se recarga. La barra delgada se recarga. La barra delgada todavía no corre.
+        // Las dos barras se recargan y el jugador ya puede tocar.
         fase = Fase.JUGANDO;
         total = TIEMPO_TOTAL;
         entre = TIEMPO_ENTRE;
         entreActivo = false;
-        // Para que suene el aviso de los últimos 3 segundos. mensaje en la pantalla. La barra grande se recarga. La barra
-        // delgada se recarga.
         ultimoSegundo = 99;
         vista.setInfo("¡Tu turno!");
         vista.setTiempoTotal(total, TIEMPO_TOTAL);
         vista.setTiempoEntre(entre, TIEMPO_ENTRE);
-        // Se pueden tocar las casillas. empiezan a correr los 12 segundos.
         vista.setJugable(true);
         reloj.restart();
     }
 
-    // El jugador toca una casilla.
     private void clic(int casilla) {
-        // Fuera de turno se ignora el clic.
         if (fase != Fase.JUGANDO) {
             return;
         }
-        // CORRECTA, NIVEL_COMPLETO o INCORRECTA. Se equivocó, pierde.
         SecuenciaPatron.Resultado resultado = secuencia.pulsar(casilla);
         if (resultado == SecuenciaPatron.Resultado.INCORRECTA) {
             SonidosPartidaPatron.fallo();
             terminar("Esa casilla no era la del patrón");
             return;
         }
-        // Acertó, suena su nota y se enciende un momento. La barra delgada se recarga con cada acierto.
+        // Acertó: suena su nota y se enciende un momento.
         SonidosPartidaPatron.casilla(casilla);
         vista.encender(casilla, true);
         despues(240, () -> vista.encender(casilla, false));
         entre = TIEMPO_ENTRE;
-        // Desde el primer acierto corre la barra delgada. La barra delgada se recarga.
+        // Desde el primer acierto corre la barra delgada, que se recarga con cada acierto.
         entreActivo = true;
         vista.setTiempoEntre(entre, TIEMPO_ENTRE);
         if (resultado == SecuenciaPatron.Resultado.NIVEL_COMPLETO) {
-            // Sube el nivel y empieza la ronda siguiente.
             nivelSuperado();
         }
     }
 
-    // Repitió todo el patrón, sube el nivel y empieza la ronda siguiente.
+    // Repitió todo el patrón: sube el nivel y empieza la ronda siguiente.
     private void nivelSuperado() {
-        // El tiempo se detiene.
         reloj.stop();
         fase = Fase.ESPERANDO;
         vista.setJugable(false);
-        // Un nivel más (patrón con una casilla extra).
         secuencia.subirNivel();
         SonidosPartidaPatron.nivelSuperado();
         // Muestra el nivel y cuántas casillas tiene.
         vista.mostrarNivelSuperado(secuencia.getNivel(), secuencia.getCasillas());
         vista.setInfo("¡Muy bien!");
-        // Cuando termina el aviso, empieza la siguiente ronda.
         despues(ANIMACION_NIVEL_MS, this::empezar);
     }
 
@@ -187,7 +162,6 @@ public class ControladorPatron {
         if (fase != Fase.JUGANDO) {
             return;
         }
-        // Resta 0.1 s (sin bajar de 0).
         total = Math.max(0, total - 0.1);
         vista.setTiempoTotal(total, TIEMPO_TOTAL);
         // La barra delgada solo baja después del primer acierto.
@@ -195,19 +169,17 @@ public class ControladorPatron {
             entre = Math.max(0, entre - 0.1);
             vista.setTiempoEntre(entre, TIEMPO_ENTRE);
         }
-        // Segundo actual redondeado hacia arriba.
         int s = (int) Math.ceil(total);
-         // En los últimos 3 segundos suena un aviso por segundo
+         // En los últimos 3 segundos suena un aviso por segundo; en el 3 suena la cuenta regresiva completa.
         if (total <= 3 && total > 0 && s != ultimoSegundo) {
             ultimoSegundo = s;
-            // En el segundo 3 suena la cuenta regresiva completa.
             if (s == 3) {
                 SonidosPartidaPatron.cuentaRegresiva();
             } else {
                 SonidosPartidaPatron.tick();
             }
         }
-        // Se acabó el tiempo, pierde.
+        // Se acabó el tiempo.
         if (total <= 0) {
             terminar("Se acabaron los 12 segundos");
         // Pasaron 2 s sin tocar casilla.
@@ -216,19 +188,17 @@ public class ControladorPatron {
         }
     }
 
-    // El jugador perdió, suena la derrota y sale la ventana final, que muestra el motivo por el que terminó. Este modo no
-    // da premio ni monedas y no guarda nada en la base de datos.
+    // El jugador perdió: suena la derrota y sale la ventana final con el motivo. Este modo no da premio ni monedas.
     private void terminar(String motivo) {
         reloj.stop();
         fase = Fase.TERMINADO;
         vista.setJugable(false);
         vista.setInfo("Fin del juego");
         SonidosPartidaPatron.derrota();
-        // Nivel en el que perdió y casillas de ese patrón.
         final int actual = partida;
         int nivel = secuencia.getNivel();
         int casillas = secuencia.getCasillas();
-        // Espera 0.7 s para que se oiga la derrota y abre la ventana final, con los botones de volver al menú y jugar otra vez.
+        // Espera 0.7 s para que se oiga la derrota y abre la ventana final.
         despues(700, () -> {
             if (actual == partida) {
                 VentanaFinPatron.mostrar(vista, Sesion.getNombre(), nivel, casillas, motivo,
@@ -237,12 +207,10 @@ public class ControladorPatron {
         });
     }
 
-    // Hace algo una sola vez después de unos milisegundos (si la partida sigue siendo la misma).
+    // Hace algo una sola vez después de unos milisegundos, si la partida sigue siendo la misma.
     private void despues(int ms, Runnable accion) {
-        // Guarda en qué partida estamos.
         final int actual = partida;
         Timer t = new Timer(ms, e -> {
-            // Solo si sigue siendo la misma partida.
             if (actual == partida) {
                 accion.run();
             }
