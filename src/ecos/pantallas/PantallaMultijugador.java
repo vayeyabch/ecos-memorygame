@@ -62,7 +62,7 @@ public class PantallaMultijugador extends Pantalla {
 
     public PantallaMultijugador() {
         // Id de esta pantalla y a cuál vuelve.
-        super("multijugador", "modo_clasico");
+        super("multijugador", "menu");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 24, 16));
         raiz.setOpaque(false);

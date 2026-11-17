@@ -34,7 +34,7 @@ public class PantallaReglasClasico extends Pantalla {
     private Runnable alComenzar = () -> { };
 
     public PantallaReglasClasico() {
-        super("reglas_clasico", "modo_clasico");
+        super("reglas_clasico", "menu");
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(MARGEN_SUPERIOR, 16, 24, 16));
 
