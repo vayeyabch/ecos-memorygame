@@ -1,12 +1,20 @@
 package ecos.app.modos.JuegoC;
 
+// Sesion: datos compartidos (tamaño del tablero, jugador 1 y 2, si el 2 es invitado).
 import ecos.app.Sesion;
+// CalculoPremio: da el texto del premio (colones y dólares) según los intentos.
 import ecos.modelo.CalculoPremio;
+// ModeloMonedas: saldo de monedas, precio del Ojo espía y monedas por victoria.
 import ecos.modelo.ModeloMonedas;
+// ModeloVictoria: guarda la partida ganada (y las monedas) en la base de datos.
 import ecos.modelo.ModeloVictoria;
+// Partida: objeto de la partida guardada; es null si no se pudo guardar.
 import ecos.modelo.Partida;
+// PantallaClasico: la vista que este controlador maneja.
 import ecos.pantallas.PantallaClasico;
+// Consumer: función que recibe un dato; aquí recibe el id de la pantalla a la que ir.
 import java.util.function.Consumer;
+// Timer (de Swing): reloj que ejecuta algo cada cierto tiempo sin congelar la ventana.
 import javax.swing.Timer;
 
 // Controlador del modo clásico: une la pantalla (cartas, barra, sonidos) con las reglas. Cada jugada dura 10 segundos,
@@ -26,6 +34,7 @@ public class ControladorJuegoClasico {
     // siempre 0).
     private final PantallaClasico vista;
     private final Consumer<String> irA;
+    // La lambda e -> tick() es lo que hace el reloj cada 100 ms.
     private final Timer reloj = new Timer(100, e -> tick());
     private final ModeloMonedas monedas = new ModeloMonedas();
     // Guarda la victoria (partida y 15 monedas) en la base.
@@ -42,20 +51,26 @@ public class ControladorJuegoClasico {
     // Aciertos seguidos del jugador con el turno.
     private int racha = 0;
 
+    // Conecta la vista con este controlador por medio de ganchos (referencias a métodos con ::).
     public ControladorJuegoClasico(PantallaClasico vista, Consumer<String> irA) {
         this.vista = vista;
         this.irA = irA;
+        // Cuando se toca una carta, la pantalla llama a clic.
         vista.setAlClicCarta(this::clic);
+        // Cuando se toca el Ojo espía, llama a clicOjo.
         vista.setAlClicOjo(this::clicOjo);
+        // Al entrar a la pantalla arranca una partida; al salir se detiene.
         vista.setAlEntrar(this::iniciar);
         vista.setAlSalir(this::salir);
     }
 
     // Prepara una partida nueva desde cero.
     private void iniciar() {
+        // Sube el número de partida: así los temporizadores de la partida anterior se ignoran.
         partida++;
         int n = Sesion.getTamano();
         modelo = new PartidaClasica(n);
+        // Herramienta de pruebas: imprime las cartas en la consola.
         ImpresorParejasClasico.imprimir(modelo);
         // Imagen de cada carta de cada jugador, en una lista que entiende la pantalla.
         int[][] caras = new int[2][];
@@ -89,16 +104,19 @@ public class ControladorJuegoClasico {
         });
     }
 
+    // Al salir de la pantalla: invalida los temporizadores pendientes y detiene el reloj.
     private void salir() {
         partida++;
         reloj.stop();
     }
 
+    // Se tocó una carta (p = jugador, indice = posición de la carta).
     private void clic(int p, int indice) {
         // Se ignora el clic si no hay partida, si se espera o si ya terminó.
         if (modelo == null || esperando || modelo.terminado()) {
             return;
         }
+        // El modelo dice qué pasó con esa carta.
         PartidaClasica.Jugada jugada = modelo.seleccionar(p, indice);
         if (jugada == PartidaClasica.Jugada.IGNORADA) {
             return;
@@ -113,6 +131,7 @@ public class ControladorJuegoClasico {
         }
     }
 
+    // Decide si las dos cartas volteadas fueron pareja o no.
     private void resolver(int p) {
         // Marca acierto o fallo y actualiza los intentos.
         int a = modelo.getCartaA();
@@ -123,6 +142,7 @@ public class ControladorJuegoClasico {
         if (resultado == PartidaClasica.Jugada.ACIERTO) {
             vista.marcarPareja(p, a, b);
             vista.setParejas(p, modelo.getParejas(p));
+            // Racha: aciertos seguidos; con 2 o más suena el sonido de racha.
             racha++;
             if (racha >= 2) {
                 SonidosPartidaClasica.racha();
@@ -132,6 +152,7 @@ public class ControladorJuegoClasico {
                 terminar();
                 return;
             }
+            // Acertar suma 7 segundos y el mismo jugador sigue.
             tiempo += BONUS;
             quitarUrgencia();
             vista.setTiempo(tiempo, TIEMPO_MAX, false);
@@ -170,8 +191,10 @@ public class ControladorJuegoClasico {
         if (modelo == null || esperando) {
             return;
         }
+        // Math.max(0, ...) evita que el tiempo quede negativo.
         tiempo = Math.max(0, tiempo - 0.1);
         vista.setTiempo(tiempo, TIEMPO_MAX, false);
+        // Math.ceil redondea hacia arriba: con 2.3 s el "segundo actual" es 3.
         int s = (int) Math.ceil(tiempo);
         if (tiempo <= 3 && tiempo > 0 && s != ultimoSegundo) {
             ultimoSegundo = s;
@@ -183,6 +206,7 @@ public class ControladorJuegoClasico {
                 SonidosPartidaClasica.musicaUrgente();
             }
         }
+        // Se acabó el tiempo: se destapa la carta que había volteado y pasa el turno.
         if (tiempo <= 0) {
             int carta = modelo.cancelarSeleccion();
             if (carta >= 0) {
@@ -206,6 +230,7 @@ public class ControladorJuegoClasico {
         reloj.stop();
         quitarUrgencia();
         esperando = true;
+        // final: la lambda de abajo necesita una copia que no cambie.
         final int actual = partida;
         int ganador = modelo.ganador();
         // Puntaje: los intentos del ganador. Es null si juega sin cuenta.
@@ -218,6 +243,7 @@ public class ControladorJuegoClasico {
         // Guardar usa la base, así que se hace en segundo plano. Sin cuenta no se guarda nada.
         Thread t = new Thread(() -> {
             Partida guardada = victoria.registrarClasico(cuenta, puntaje);
+            // Texto que se muestra según lo que pasó al guardar.
             String extra = cuenta == null ? "Sin cuenta no hay premio ni monedas."
                     : guardada != null ? "+" + ModeloMonedas.MONEDAS_POR_VICTORIA + " monedas para " + cuenta
                     : "No se pudo guardar la victoria (revisá la conexión).";
@@ -230,6 +256,7 @@ public class ControladorJuegoClasico {
                 }
             });
         }, "guardar-victoria");
+        // Hilo daemon: no impide que el programa se cierre.
         t.setDaemon(true);
         t.start();
     }
@@ -244,6 +271,7 @@ public class ControladorJuegoClasico {
 
     // El jugador toca el Ojo espía: avisa si no puede o no alcanzan las monedas; si todo está bien pide confirmar.
     private void clicOjo(int p) {
+        // Solo se puede en tu turno y antes de voltear la primera carta.
         if (modelo == null || esperando || p != modelo.getTurno() || modelo.hayPrimera()) {
             vista.avisarOjoNoDisponible();
             return;
@@ -257,6 +285,7 @@ public class ControladorJuegoClasico {
 
     // Cobra el Ojo espía y muestra las cartas un momento.
     private void comprarOjo(int p) {
+        // Se vuelve a revisar todo y se cobra; si el cobro falla, no se hace nada.
         if (modelo == null || esperando || p != modelo.getTurno() || modelo.hayPrimera() || !monedas.comprarOjo(cuenta(p))) {
             return;
         }
@@ -278,6 +307,7 @@ public class ControladorJuegoClasico {
                 accion.run();
             }
         });
+        // No repetir: se ejecuta una sola vez.
         t.setRepeats(false);
         t.start();
     }

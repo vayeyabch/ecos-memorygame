@@ -1,8 +1,12 @@
 package ecos.app.modos.Patrones;
 
+// ArrayList: lista donde se guarda el patrón de casillas.
 import java.util.ArrayList;
+// Collections: ayudante; aquí devuelve la lista como "solo lectura".
 import java.util.Collections;
+// List: tipo de la lista del patrón.
 import java.util.List;
+// Random: sortea las casillas al azar.
 import java.util.Random;
 
 // Reglas del modo patrones. No dibuja nada, solo lleva la cuenta. El nivel 1 tiene 3 casillas y cada nivel superado suma
@@ -20,6 +24,7 @@ public class SecuenciaPatron {
     private final Random azar = new Random();
     private final List<Integer> patron = new ArrayList<>();
     private int nivel = 1;
+    // posicion: cuál casilla del patrón toca ahora (empieza en 0).
     private int posicion = 0;
 
     public int getNivel() {
@@ -35,9 +40,11 @@ public class SecuenciaPatron {
     public void nuevaRonda() {
         patron.clear();
         posicion = 0;
+        // anterior: la última casilla sorteada (-1 al inicio, que no es ninguna casilla).
         int anterior = -1;
         for (int i = 0; i < getCasillas(); i++) {
             int casilla;
+            // do-while: sortea y repite mientras salga la misma que la anterior.
             do {
                 casilla = azar.nextInt(CASILLAS_TABLERO);
             } while (casilla == anterior);
@@ -46,12 +53,14 @@ public class SecuenciaPatron {
         }
     }
 
+    // Devuelve el patrón como lista de solo lectura, para que nadie de afuera lo cambie.
     public List<Integer> getPatron() {
         return Collections.unmodifiableList(patron);
     }
 
     // El jugador toca una casilla: ¿es la que sigue en el patrón?
     public Resultado pulsar(int casilla) {
+        // Si no hay patrón o la casilla no es la que toca, se equivocó.
         if (posicion >= patron.size() || casilla != patron.get(posicion)) {
             return Resultado.INCORRECTA;
         }

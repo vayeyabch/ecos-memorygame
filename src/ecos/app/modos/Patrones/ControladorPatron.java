@@ -1,9 +1,14 @@
 package ecos.app.modos.Patrones;
 
+// Sesion: da el nombre de quien juega para la ventana final.
 import ecos.app.Sesion;
+// PantallaPatron: la vista que este controlador maneja.
 import ecos.pantallas.PantallaPatron;
+// List: tipo de la lista de casillas del patrón.
 import java.util.List;
+// Consumer: función que recibe un dato; aquí recibe el id de la pantalla a la que ir.
 import java.util.function.Consumer;
+// Timer (de Swing): reloj que ejecuta algo cada cierto tiempo sin congelar la ventana.
 import javax.swing.Timer;
 
 // Controlador del modo patrones. Se muestra un patrón (3 casillas en el nivel 1) y el jugador lo repite en el mismo
@@ -19,6 +24,7 @@ public class ControladorPatron {
     // Espera mientras pasa el aviso de nivel.
     private static final int ANIMACION_NIVEL_MS = 1800;
 
+    // Las fases del juego: esperando que se pulse Empezar, mostrando el patrón, jugando el usuario, o terminado.
     private enum Fase { ESPERANDO, MOSTRANDO, JUGANDO, TERMINADO }
 
     // Pantalla, cómo cambiar de pantalla, reloj que llama a tick() cada 0.1 s y reglas con el patrón a repetir.
@@ -36,6 +42,7 @@ public class ControladorPatron {
     private int ultimoSegundo = 99;
     private int partida = 0;
 
+    // Conecta la vista con el controlador por ganchos (referencias a métodos con ::).
     public ControladorPatron(PantallaPatron vista, Consumer<String> irA) {
         this.vista = vista;
         this.irA = irA;
@@ -64,6 +71,7 @@ public class ControladorPatron {
         vista.setBotonEmpezar(true);
     }
 
+    // Al salir: invalida temporizadores pendientes, detiene el reloj y marca el juego como terminado.
     private void salir() {
         partida++;
         reloj.stop();
@@ -72,6 +80,7 @@ public class ControladorPatron {
 
     // Crea el patrón del nivel y lo muestra casilla por casilla.
     private void empezar() {
+        // Solo se puede empezar si se está esperando.
         if (fase != Fase.ESPERANDO) {
             return;
         }
@@ -85,12 +94,14 @@ public class ControladorPatron {
         vista.setTiempoTotal(TIEMPO_TOTAL, TIEMPO_TOTAL);
         vista.setTiempoEntre(TIEMPO_ENTRE, TIEMPO_ENTRE);
         SonidosPartidaPatron.empezar();
+        // Medio segundo después, empieza a mostrar la casilla 0 del patrón.
         despues(500, () -> mostrarPaso(0));
     }
 
     // Enciende la casilla k del patrón y luego pasa a la siguiente, con pausas.
     private void mostrarPaso(int k) {
         List<Integer> patron = secuencia.getPatron();
+        // Si ya se mostraron todas, le toca al jugador.
         if (k >= patron.size()) {
             comenzarTurno();
             return;
@@ -99,6 +110,7 @@ public class ControladorPatron {
         int casilla = patron.get(k);
         vista.encender(casilla, true);
         SonidosPartidaPatron.casilla(casilla);
+        // Después de 600 ms la apaga, y 250 ms después muestra la siguiente (recursión por tiempo).
         despues(ENCENDIDA_MS, () -> {
             vista.encender(casilla, false);
             despues(PAUSA_MS, () -> mostrarPaso(k + 1));
@@ -120,10 +132,13 @@ public class ControladorPatron {
         reloj.restart();
     }
 
+    // El jugador tocó una casilla.
     private void clic(int casilla) {
+        // Solo cuenta mientras juega el usuario.
         if (fase != Fase.JUGANDO) {
             return;
         }
+        // El modelo compara con la casilla que toca y devuelve el resultado.
         SecuenciaPatron.Resultado resultado = secuencia.pulsar(casilla);
         if (resultado == SecuenciaPatron.Resultado.INCORRECTA) {
             SonidosPartidaPatron.fallo();
@@ -153,6 +168,7 @@ public class ControladorPatron {
         // Muestra el nivel y cuántas casillas tiene.
         vista.mostrarNivelSuperado(secuencia.getNivel(), secuencia.getCasillas());
         vista.setInfo("¡Muy bien!");
+        // Cuando termina el aviso, empieza la ronda siguiente.
         despues(ANIMACION_NIVEL_MS, this::empezar);
     }
 
@@ -201,6 +217,7 @@ public class ControladorPatron {
         // Espera 0.7 s para que se oiga la derrota y abre la ventana final.
         despues(700, () -> {
             if (actual == partida) {
+                // Dos botones: uno va al menú y el otro vuelve a jugar (iniciar).
                 VentanaFinPatron.mostrar(vista, Sesion.getNombre(), nivel, casillas, motivo,
                         () -> irA.accept("menu"), this::iniciar);
             }
